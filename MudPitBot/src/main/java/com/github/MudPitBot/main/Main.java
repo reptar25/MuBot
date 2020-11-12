@@ -1,4 +1,4 @@
-package main;
+package com.github.MudPitBot.main;
 
 public class Main {
 
