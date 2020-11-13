@@ -1,6 +1,5 @@
 package com.github.MudPitBot.botCommand.sound;
 
-import com.github.MudPitBot.botCommand.BotReceiver;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
