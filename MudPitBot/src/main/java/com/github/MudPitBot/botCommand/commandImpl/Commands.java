@@ -3,11 +3,11 @@ package com.github.MudPitBot.botCommand.commandImpl;
 import java.util.HashMap;
 
 import com.github.MudPitBot.botCommand.BotReceiver;
-import com.github.MudPitBot.botCommand.commandInterface.CommandInterface;
+import com.github.MudPitBot.botCommand.commandInterface.Command;
 
 public abstract class Commands {
 	
-	public static final HashMap<String, CommandInterface> COMMANDS = new HashMap<>();
+	public static final HashMap<String, Command> COMMANDS = new HashMap<>();
 	private static final BotReceiver RECEIVER = BotReceiver.getInstance();
 	
 	/*

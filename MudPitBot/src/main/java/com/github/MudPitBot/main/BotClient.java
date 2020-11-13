@@ -3,9 +3,8 @@ package com.github.MudPitBot.main;
 import java.util.Map.Entry;
 
 import com.github.MudPitBot.botCommand.BotCommandExecutor;
-import com.github.MudPitBot.botCommand.BotReceiver;
 import com.github.MudPitBot.botCommand.commandImpl.Commands;
-import com.github.MudPitBot.botCommand.commandInterface.CommandInterface;
+import com.github.MudPitBot.botCommand.commandInterface.Command;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -53,7 +52,7 @@ public class BotClient {
 	        final String content = event.getMessage().getContent().toLowerCase(); // 3.1 Message.getContent() is a String
 	        //System.out.println("MESSAGE CREATED: "+content);
 	        LOGGER.info(("New messaged created: "+content));
-	        for (final Entry<String, CommandInterface> entry : Commands.COMMANDS.entrySet()) {
+	        for (final Entry<String, Command> entry : Commands.COMMANDS.entrySet()) {
 	            // We will be using ! as our "prefix" to any command in the system.
 	            if (content.startsWith('!' + entry.getKey().toLowerCase())) {
 	            	executor.executeCommand(entry.getValue(), event);
