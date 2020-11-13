@@ -19,6 +19,7 @@ public abstract class Commands {
 		COMMANDS.put("echo", new EchoCommand(RECEIVER));
 		COMMANDS.put("leave", new LeaveVoiceCommand(RECEIVER));
 		COMMANDS.put("roll", new RollCommand(RECEIVER));
+		COMMANDS.put("play", new PlayCommand(RECEIVER));
 	}
 
 }

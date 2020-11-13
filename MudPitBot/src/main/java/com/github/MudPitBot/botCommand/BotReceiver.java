@@ -3,6 +3,9 @@ package com.github.MudPitBot.botCommand;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import com.github.MudPitBot.botCommand.sound.TrackScheduler;
+import com.github.MudPitBot.main.Main;
+
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
@@ -22,8 +25,8 @@ public class BotReceiver {
 
 	private static final Logger LOGGER = Loggers.getLogger(BotReceiver.class);
 	private static BotReceiver instance;
-
 	private static Random rand = new Random();
+	private static TrackScheduler scheduler;
 
 	public static BotReceiver getInstance() {
 		if (instance == null)
@@ -32,6 +35,7 @@ public class BotReceiver {
 	}
 
 	private BotReceiver() {
+		scheduler = new TrackScheduler(Main.player);
 	}
 
 	/*
@@ -39,27 +43,23 @@ public class BotReceiver {
 	 */
 	public void join(MessageCreateEvent event) {
 		if (event != null) {
-			if (event.getMember() != null) {
-				// get member who used command
-				final Member member = event.getMember().orElse(null);
-				if (member != null) {
-
-					// get voice channel member is in
-					final VoiceState voiceState = member.getVoiceState().block();
-					if (voiceState != null) {
-						final VoiceChannel channel = voiceState.getChannel().block();
-						if (channel != null) {
-							// check if bot is currently connected to another voice channel and disconnect
-							// from it before trying to join a new one.
-							if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
-								event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
-							}
-							LOGGER.info(("Bot joining voice chat channel."));
-							// join returns a VoiceConnection which would be required if we were
-							// adding disconnection features, but for now we are just ignoring it.
-							channel.join(spec -> spec.asRequest()).block();
-
+			// get member who used command
+			final Member member = event.getMember().orElse(null);
+			if (member != null) {
+				// get voice channel member is in
+				final VoiceState voiceState = member.getVoiceState().block();
+				if (voiceState != null) {
+					final VoiceChannel channel = voiceState.getChannel().block();
+					if (channel != null) {
+						// check if bot is currently connected to another voice channel and disconnect
+						// from it before trying to join a new one.
+						if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
+							event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
 						}
+						// join returns a VoiceConnection which would be required if we were
+						// adding disconnection features, but for now we are just ignoring it.
+						channel.join(spec -> spec.setProvider(Main.provider)).block();//
+
 					}
 				}
 			}
@@ -121,10 +121,10 @@ public class BotReceiver {
 				if (event.getMessage().getContent() != null) {
 					// will be the 2nd part of command eg "1d20"
 					String[] splitString = event.getMessage().getContent().split(" ");
-					if(splitString.length <= 1) {
+					if (splitString.length <= 1) {
 						return;
 					}
-					
+
 					String dice = splitString[1];
 
 					// only roll if 2nd part of command matches the reg ex
@@ -148,12 +148,25 @@ public class BotReceiver {
 						sb.append("Rolled a " + diceSum + "\n");
 						// channel to display the results in
 						MessageChannel channel = event.getMessage().getChannel().block();
-						if(channel != null)
+						if (channel != null)
 							channel.createMessage(sb.toString()).block();
 					}
 				}
 			}
 		}
+	}
+
+	/*
+	 * Attempts to play the link in the message
+	 */
+	public void play(MessageCreateEvent event) {
+		final String content = event.getMessage().getContent();
+		final String[] command = content.split(" ");
+		if (command.length <= 1 || command.length > 2) {
+			return;
+		}
+		Main.playerManager.loadItem(command[1], scheduler);
+		LOGGER.info("Loaded music item");
 	}
 
 }
