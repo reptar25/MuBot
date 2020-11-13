@@ -11,7 +11,7 @@ public abstract class Commands {
 	private static final BotReceiver RECEIVER = BotReceiver.getInstance();
 	
 	/*
-	 * Command names should always be in lower-case here since we do .toLowerCase() on the command to make them none case sensitive.
+	 * Command names should always be in lower-case here since we do .toLowerCase() on the command to make them non case sensitive.
 	 */
 	static {
 		COMMANDS.put("join", new JoinVoiceCommand(RECEIVER));
