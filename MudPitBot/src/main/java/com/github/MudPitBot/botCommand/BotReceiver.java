@@ -35,7 +35,7 @@ public class BotReceiver {
 	}
 
 	/*
-	 * Bot joins the channel as the user who uses the command.
+	 * Bot joins the same voice channel as the user who uses the command.
 	 */
 	public void join(MessageCreateEvent event) {
 		// get member who used command
