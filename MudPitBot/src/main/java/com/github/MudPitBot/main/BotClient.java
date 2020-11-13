@@ -19,7 +19,7 @@ import reactor.util.Loggers;
  */
 public class BotClient {
 	
-	private static final Logger LOGGER = Loggers.getLogger(BotReceiver.class);
+	private static final Logger LOGGER = Loggers.getLogger(BotClient.class);
 	private GatewayDiscordClient client;
 	private BotCommandExecutor executor = new BotCommandExecutor();
 	private static BotClient instance;
