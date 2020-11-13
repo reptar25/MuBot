@@ -1,7 +1,9 @@
-package com.github.MudPitBot.botCommand;
+package com.github.MudPitBot.main;
 
 import java.util.Map.Entry;
 
+import com.github.MudPitBot.botCommand.BotCommandExecutor;
+import com.github.MudPitBot.botCommand.BotReceiver;
 import com.github.MudPitBot.botCommand.commandImpl.Commands;
 import com.github.MudPitBot.botCommand.commandInterface.CommandInterface;
 

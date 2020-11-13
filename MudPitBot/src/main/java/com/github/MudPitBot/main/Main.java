@@ -1,7 +1,5 @@
 package com.github.MudPitBot.main;
 
-import com.github.MudPitBot.botCommand.BotClient;
-
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 
