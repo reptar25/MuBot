@@ -24,6 +24,7 @@ class BotReceiverTest {
 		receiver.join(event);
 		receiver.leave(event);
 		receiver.echo(event);
+		receiver.roll(event);
 	}
 	
 	@Test
@@ -32,6 +33,7 @@ class BotReceiverTest {
 		receiver.join(event);
 		receiver.leave(event);
 		receiver.echo(event);
+		receiver.roll(event);
 	}
 	
 	@Test
@@ -40,6 +42,7 @@ class BotReceiverTest {
 		receiver.join(event);
 		receiver.leave(event);
 		receiver.echo(event);
+		receiver.roll(event);
 	}
 
 }
