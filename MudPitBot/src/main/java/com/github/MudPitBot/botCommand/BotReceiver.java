@@ -120,7 +120,12 @@ public class BotReceiver {
 			if (event.getMessage() != null) {
 				if (event.getMessage().getContent() != null) {
 					// will be the 2nd part of command eg "1d20"
-					String dice = event.getMessage().getContent().split(" ")[1];
+					String[] splitString = event.getMessage().getContent().split(" ");
+					if(splitString.length <= 1) {
+						return;
+					}
+					
+					String dice = splitString[1];
 
 					// only roll if 2nd part of command matches the reg ex
 					if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
