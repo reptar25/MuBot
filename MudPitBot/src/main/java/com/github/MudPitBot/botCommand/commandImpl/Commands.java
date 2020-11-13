@@ -1,9 +1,9 @@
-package com.github.MudPitBot.commandImpl;
+package com.github.MudPitBot.botCommand.commandImpl;
 
 import java.util.HashMap;
 
 import com.github.MudPitBot.botCommand.BotReceiver;
-import com.github.MudPitBot.commandInterface.CommandInterface;
+import com.github.MudPitBot.botCommand.commandInterface.CommandInterface;
 
 public class Commands {
 	

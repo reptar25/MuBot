@@ -19,19 +19,20 @@ import reactor.util.Loggers;
 * https://www.baeldung.com/java-command-pattern
 */
 public class BotReceiver {
-	
+
 	private static final Logger LOGGER = Loggers.getLogger(BotReceiver.class);
 	public static BotReceiver instance;
-	
+
 	private static Random rand = new Random();
-	
+
 	public static BotReceiver getInstance() {
-		if(instance == null)
+		if (instance == null)
 			instance = new BotReceiver();
 		return instance;
 	}
-	
-	private BotReceiver() {}
+
+	private BotReceiver() {
+	}
 
 	/*
 	 * Bot joins the channel as the user who uses the command.
@@ -46,29 +47,31 @@ public class BotReceiver {
 			if (voiceState != null) {
 				final VoiceChannel channel = voiceState.getChannel().block();
 				if (channel != null) {
-					// check if bot is currently connected to another voice channel and disconnect from it before trying to join a new one.
-					if(event.getMessage().getGuild().block().getVoiceConnection().block()!=null) {
+					// check if bot is currently connected to another voice channel and disconnect
+					// from it before trying to join a new one.
+					if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
 						event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
 					}
 					LOGGER.info(("Bot joining voice chat channel."));
 					// join returns a VoiceConnection which would be required if we were
 					// adding disconnection features, but for now we are just ignoring it.
 					channel.join(spec -> spec.asRequest()).block();
-					
+
 				}
 			}
 		}
 	}
 
 	/*
-	 * Bot leaves the voice channel if its the same as the one the user is connected to.
+	 * Bot leaves the voice channel if its the same as the one the user is connected
+	 * to.
 	 */
 	public void leave(MessageCreateEvent event) {
 		Guild guild = event.getMessage().getGuild().block();
 		VoiceConnection botConnection = guild.getVoiceConnection().block();
 		// If the client isn't in a voiceChannel, don't execute any other code
 		if (botConnection == null) {
-			//System.out.println("BOT NOT IN A VOICE CHANNEL");
+			// System.out.println("BOT NOT IN A VOICE CHANNEL");
 			return;
 		}
 		// get member who used command
@@ -83,7 +86,7 @@ public class BotReceiver {
 				if (memberChannelId == botChannelId) {
 					botConnection.disconnect().block();
 					LOGGER.info("Bot disconnecting from voice channel.");
-					//System.out.println("DISCONNECTING");
+					// System.out.println("DISCONNECTING");
 				}
 			}
 		}
@@ -95,40 +98,38 @@ public class BotReceiver {
 	public void echo(MessageCreateEvent event) {
 		event.getMessage().getChannel().block().createMessage("echo!").block();
 	}
-	
+
 	/*
 	 * Bot rolls dice and displays results
 	 */
 	public void roll(MessageCreateEvent event) {
-		
+
 		// will be the 2nd part of command eg "1d20"
 		String dice = event.getMessage().getContent().split(" ")[1];
-		
-		if(Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
+
+		// only roll if 2nd part of command matches the reg ex
+		if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
 			LOGGER.info(("Regex matches"));
-		}
-		else {
-			return;
-		}
-		
-		StringBuilder sb = new StringBuilder();		
-		sb.append("Rolling "+dice+"\n");
 
-		String[] splitDiceString = dice.split("d");
-		int numOfDice = Integer.parseInt(splitDiceString[0]);
-		int numOfSides = Integer.parseInt(splitDiceString[1]);
-		int diceSum = 0;
-		
-		for(int i = 0; i < numOfDice; i++) {
-			int roll = rand.nextInt(numOfSides)+1;
-			sb.append("Dice "+(i+1)+" was a "+roll+"\n");
-			diceSum += roll;
-		}
+			StringBuilder sb = new StringBuilder();
+			sb.append("Rolling " + dice + "\n");
 
-		sb.append("Rolled a "+diceSum+"\n");
-		// channel to display the results in
-		MessageChannel channel = event.getMessage().getChannel().block();
-		channel.createMessage(sb.toString()).block();
+			String[] splitDiceString = dice.split("d");
+			int numOfDice = Integer.parseInt(splitDiceString[0]);
+			int numOfSides = Integer.parseInt(splitDiceString[1]);
+			int diceSum = 0;
+
+			for (int i = 0; i < numOfDice; i++) {
+				int roll = rand.nextInt(numOfSides) + 1;
+				sb.append("Dice " + (i + 1) + " was a " + roll + "\n");
+				diceSum += roll;
+			}
+
+			sb.append("Rolled a " + diceSum + "\n");
+			// channel to display the results in
+			MessageChannel channel = event.getMessage().getChannel().block();
+			channel.createMessage(sb.toString()).block();
+		}
 	}
 
 }

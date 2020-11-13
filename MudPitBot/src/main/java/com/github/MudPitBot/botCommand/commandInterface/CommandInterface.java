@@ -1,4 +1,4 @@
-package com.github.MudPitBot.commandInterface;
+package com.github.MudPitBot.botCommand.commandInterface;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
