@@ -38,25 +38,29 @@ public class BotReceiver {
 	 * Bot joins the same voice channel as the user who uses the command.
 	 */
 	public void join(MessageCreateEvent event) {
-		// get member who used command
-		final Member member = event.getMember().orElse(null);
-		if (member != null) {
+		if (event != null) {
+			if (event.getMember() != null) {
+				// get member who used command
+				final Member member = event.getMember().orElse(null);
+				if (member != null) {
 
-			// get voice channel member is in
-			final VoiceState voiceState = member.getVoiceState().block();
-			if (voiceState != null) {
-				final VoiceChannel channel = voiceState.getChannel().block();
-				if (channel != null) {
-					// check if bot is currently connected to another voice channel and disconnect
-					// from it before trying to join a new one.
-					if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
-						event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
+					// get voice channel member is in
+					final VoiceState voiceState = member.getVoiceState().block();
+					if (voiceState != null) {
+						final VoiceChannel channel = voiceState.getChannel().block();
+						if (channel != null) {
+							// check if bot is currently connected to another voice channel and disconnect
+							// from it before trying to join a new one.
+							if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
+								event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
+							}
+							LOGGER.info(("Bot joining voice chat channel."));
+							// join returns a VoiceConnection which would be required if we were
+							// adding disconnection features, but for now we are just ignoring it.
+							channel.join(spec -> spec.asRequest()).block();
+
+						}
 					}
-					LOGGER.info(("Bot joining voice chat channel."));
-					// join returns a VoiceConnection which would be required if we were
-					// adding disconnection features, but for now we are just ignoring it.
-					channel.join(spec -> spec.asRequest()).block();
-
 				}
 			}
 		}
@@ -67,26 +71,30 @@ public class BotReceiver {
 	 * to.
 	 */
 	public void leave(MessageCreateEvent event) {
-		Guild guild = event.getMessage().getGuild().block();
-		VoiceConnection botConnection = guild.getVoiceConnection().block();
-		// If the client isn't in a voiceChannel, don't execute any other code
-		if (botConnection == null) {
-			// System.out.println("BOT NOT IN A VOICE CHANNEL");
-			return;
-		}
-		// get member who used command
-		final Member member = event.getMember().orElse(null);
-		if (member != null) {
-			// get voice channel member is in
-			final VoiceState voiceState = member.getVoiceState().block();
-			if (voiceState != null) {
-				long botChannelId = botConnection.getChannelId().block().asLong();
-				long memberChannelId = voiceState.getChannel().block().getId().asLong();
+		if (event != null) {
+			if (event.getMessage() != null) {
+				Guild guild = event.getMessage().getGuild().block();
+				VoiceConnection botConnection = guild.getVoiceConnection().block();
+				// If the client isn't in a voiceChannel, don't execute any other code
+				if (botConnection == null) {
+					// System.out.println("BOT NOT IN A VOICE CHANNEL");
+					return;
+				}
+				// get member who used command
+				final Member member = event.getMember().orElse(null);
+				if (member != null) {
+					// get voice channel member is in
+					final VoiceState voiceState = member.getVoiceState().block();
+					if (voiceState != null) {
+						long botChannelId = botConnection.getChannelId().block().asLong();
+						long memberChannelId = voiceState.getChannel().block().getId().asLong();
 
-				if (memberChannelId == botChannelId) {
-					botConnection.disconnect().block();
-					LOGGER.info("Bot disconnecting from voice channel.");
-					// System.out.println("DISCONNECTING");
+						if (memberChannelId == botChannelId) {
+							botConnection.disconnect().block();
+							LOGGER.info("Bot disconnecting from voice channel.");
+							// System.out.println("DISCONNECTING");
+						}
+					}
 				}
 			}
 		}
@@ -96,7 +104,11 @@ public class BotReceiver {
 	 * Bot replies with a simple echo message
 	 */
 	public void echo(MessageCreateEvent event) {
-		event.getMessage().getChannel().block().createMessage("echo!").block();
+		if (event != null) {
+			if (event.getMessage() != null) {
+				event.getMessage().getChannel().block().createMessage("echo!").block();
+			}
+		}
 	}
 
 	/*
@@ -104,31 +116,33 @@ public class BotReceiver {
 	 */
 	public void roll(MessageCreateEvent event) {
 
-		// will be the 2nd part of command eg "1d20"
-		String dice = event.getMessage().getContent().split(" ")[1];
+		if (event != null) {
+			// will be the 2nd part of command eg "1d20"
+			String dice = event.getMessage().getContent().split(" ")[1];
 
-		// only roll if 2nd part of command matches the reg ex
-		if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
-			LOGGER.info(("Regex matches"));
+			// only roll if 2nd part of command matches the reg ex
+			if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
+				LOGGER.info(("Regex matches"));
 
-			StringBuilder sb = new StringBuilder();
-			sb.append("Rolling " + dice + "\n");
+				StringBuilder sb = new StringBuilder();
+				sb.append("Rolling " + dice + "\n");
 
-			String[] splitDiceString = dice.split("d");
-			int numOfDice = Integer.parseInt(splitDiceString[0]);
-			int numOfSides = Integer.parseInt(splitDiceString[1]);
-			int diceSum = 0;
+				String[] splitDiceString = dice.split("d");
+				int numOfDice = Integer.parseInt(splitDiceString[0]);
+				int numOfSides = Integer.parseInt(splitDiceString[1]);
+				int diceSum = 0;
 
-			for (int i = 0; i < numOfDice; i++) {
-				int roll = rand.nextInt(numOfSides) + 1;
-				sb.append("Dice " + (i + 1) + " was a " + roll + "\n");
-				diceSum += roll;
+				for (int i = 0; i < numOfDice; i++) {
+					int roll = rand.nextInt(numOfSides) + 1;
+					sb.append("Dice " + (i + 1) + " was a " + roll + "\n");
+					diceSum += roll;
+				}
+
+				sb.append("Rolled a " + diceSum + "\n");
+				// channel to display the results in
+				MessageChannel channel = event.getMessage().getChannel().block();
+				channel.createMessage(sb.toString()).block();
 			}
-
-			sb.append("Rolled a " + diceSum + "\n");
-			// channel to display the results in
-			MessageChannel channel = event.getMessage().getChannel().block();
-			channel.createMessage(sb.toString()).block();
 		}
 	}
 
