@@ -40,8 +40,8 @@ public class BotClient {
 	}
 
 	/*
-	 * Sets up a listen on the event dispatcher for when messages are created. Whenever a messaged is typed in chat it should filter through this method.
-	 * This method implements executing commands that are received.
+	 * Sets up a listener on the event dispatcher for when messages are created. Whenever a messaged is typed in chat that the bot is able to see it should filter 
+	 * through this method.
 	 */
 	private void setupListener() {
 		client.getEventDispatcher().on(MessageCreateEvent.class)
