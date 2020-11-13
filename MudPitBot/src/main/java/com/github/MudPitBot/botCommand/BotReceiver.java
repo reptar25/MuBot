@@ -3,6 +3,7 @@ package com.github.MudPitBot.botCommand;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import com.github.MudPitBot.botCommand.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 import com.github.MudPitBot.main.Main;
 
@@ -169,4 +170,29 @@ public class BotReceiver {
 		LOGGER.info("Loaded music item");
 	}
 
+	/*
+	 * Sets the volume of the LavaPlayer
+	 */
+	public void volume(MessageCreateEvent event) {
+		final String content = event.getMessage().getContent();
+		final String[] command = content.split(" ");
+		if (command.length <= 1 || command.length > 2) {
+			return;
+		}
+
+		if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
+			int volume = Integer.parseInt(command[1]);
+			Main.player.setVolume(volume);
+			LOGGER.info("Set volume to " + volume);
+		}
+
+	}
+
+	/*
+	 * Stops the LavaPlayer if it is playing anything
+	 */
+	public void stop(MessageCreateEvent event) {
+		Main.player.stopTrack();
+		LOGGER.info("Stopped music");
+	}
 }
