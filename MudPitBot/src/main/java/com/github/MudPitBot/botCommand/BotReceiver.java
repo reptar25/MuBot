@@ -21,7 +21,7 @@ import reactor.util.Loggers;
 public class BotReceiver {
 
 	private static final Logger LOGGER = Loggers.getLogger(BotReceiver.class);
-	public static BotReceiver instance;
+	private static BotReceiver instance;
 
 	private static Random rand = new Random();
 
