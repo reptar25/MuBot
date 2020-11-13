@@ -44,23 +44,25 @@ public class BotReceiver {
 	 */
 	public void join(MessageCreateEvent event) {
 		if (event != null) {
-			// get member who used command
-			final Member member = event.getMember().orElse(null);
-			if (member != null) {
-				// get voice channel member is in
-				final VoiceState voiceState = member.getVoiceState().block();
-				if (voiceState != null) {
-					final VoiceChannel channel = voiceState.getChannel().block();
-					if (channel != null) {
-						// check if bot is currently connected to another voice channel and disconnect
-						// from it before trying to join a new one.
-						if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
-							event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
-						}
-						// join returns a VoiceConnection which would be required if we were
-						// adding disconnection features, but for now we are just ignoring it.
-						channel.join(spec -> spec.setProvider(Main.provider)).block();//
+			if (event.getMember() != null) {
+				// get member who used command
+				final Member member = event.getMember().orElse(null);
+				if (member != null) {
+					// get voice channel member is in
+					final VoiceState voiceState = member.getVoiceState().block();
+					if (voiceState != null) {
+						final VoiceChannel channel = voiceState.getChannel().block();
+						if (channel != null) {
+							// check if bot is currently connected to another voice channel and disconnect
+							// from it before trying to join a new one.
+							if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
+								event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
+							}
+							// join returns a VoiceConnection which would be required if we were
+							// adding disconnection features, but for now we are just ignoring it.
+							channel.join(spec -> spec.setProvider(Main.provider)).block();//
 
+						}
 					}
 				}
 			}
@@ -161,38 +163,47 @@ public class BotReceiver {
 	 * Attempts to play the link in the message
 	 */
 	public void play(MessageCreateEvent event) {
-		final String content = event.getMessage().getContent();
-		final String[] command = content.split(" ");
-		if (command.length <= 1 || command.length > 2) {
-			return;
+		if (event != null) {
+			if (event.getMessage() != null) {
+				final String content = event.getMessage().getContent();
+				final String[] command = content.split(" ");
+				if (command.length <= 1 || command.length > 2) {
+					return;
+				}
+				Main.playerManager.loadItem(command[1], scheduler);
+				LOGGER.info("Loaded music item");
+			}
 		}
-		Main.playerManager.loadItem(command[1], scheduler);
-		LOGGER.info("Loaded music item");
 	}
 
 	/*
 	 * Sets the volume of the LavaPlayer
 	 */
 	public void volume(MessageCreateEvent event) {
-		final String content = event.getMessage().getContent();
-		final String[] command = content.split(" ");
-		if (command.length <= 1 || command.length > 2) {
-			return;
-		}
+		if (event != null) {
+			if (event.getMessage() != null) {
+				final String content = event.getMessage().getContent();
+				final String[] command = content.split(" ");
+				if (command.length <= 1 || command.length > 2) {
+					return;
+				}
 
-		if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
-			int volume = Integer.parseInt(command[1]);
-			Main.player.setVolume(volume);
-			LOGGER.info("Set volume to " + volume);
+				if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
+					int volume = Integer.parseInt(command[1]);
+					Main.player.setVolume(volume);
+					LOGGER.info("Set volume to " + volume);
+				}
+			}
 		}
-
 	}
 
 	/*
 	 * Stops the LavaPlayer if it is playing anything
 	 */
 	public void stop(MessageCreateEvent event) {
-		Main.player.stopTrack();
-		LOGGER.info("Stopped music");
+		if (Main.player != null) {
+			Main.player.stopTrack();
+			LOGGER.info("Stopped music");
+		}
 	}
 }
