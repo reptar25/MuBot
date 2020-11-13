@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.regex.Pattern;
 
 import com.github.MudPitBot.botCommand.sound.LavaPlayerAudioProvider;
+import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 import com.github.MudPitBot.main.Main;
 
@@ -36,7 +37,7 @@ public class BotReceiver {
 	}
 
 	private BotReceiver() {
-		scheduler = new TrackScheduler(Main.player);
+		scheduler = new TrackScheduler(PlayerManager.player);
 	}
 
 	/*
@@ -60,7 +61,7 @@ public class BotReceiver {
 							}
 							// join returns a VoiceConnection which would be required if we were
 							// adding disconnection features, but for now we are just ignoring it.
-							channel.join(spec -> spec.setProvider(Main.provider)).block();//
+							channel.join(spec -> spec.setProvider(PlayerManager.provider)).block();//
 
 						}
 					}
@@ -170,7 +171,7 @@ public class BotReceiver {
 				if (command.length <= 1 || command.length > 2) {
 					return;
 				}
-				Main.playerManager.loadItem(command[1], scheduler);
+				PlayerManager.playerManager.loadItem(command[1], scheduler);
 				LOGGER.info("Loaded music item");
 			}
 		}
@@ -190,7 +191,7 @@ public class BotReceiver {
 
 				if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
 					int volume = Integer.parseInt(command[1]);
-					Main.player.setVolume(volume);
+					PlayerManager.player.setVolume(volume);
 					LOGGER.info("Set volume to " + volume);
 				}
 			}
@@ -201,8 +202,8 @@ public class BotReceiver {
 	 * Stops the LavaPlayer if it is playing anything
 	 */
 	public void stop(MessageCreateEvent event) {
-		if (Main.player != null) {
-			Main.player.stopTrack();
+		if (PlayerManager.player != null) {
+			PlayerManager.player.stopTrack();
 			LOGGER.info("Stopped music");
 		}
 	}
