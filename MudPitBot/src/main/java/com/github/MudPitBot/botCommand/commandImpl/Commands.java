@@ -7,6 +7,7 @@ import com.github.MudPitBot.botCommand.commandInterface.Command;
 
 public abstract class Commands {
 	
+	// Structure that maps string commands to the concrete implementation of that command
 	public static final HashMap<String, Command> COMMANDS = new HashMap<>();
 	private static final BotReceiver RECEIVER = BotReceiver.getInstance();
 	
