@@ -1,6 +1,7 @@
 package com.github.MudPitBot.botCommand;
 
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
@@ -102,6 +103,13 @@ public class BotReceiver {
 		
 		// will be the 2nd part of command eg "1d20"
 		String dice = event.getMessage().getContent().split(" ")[1];
+		
+		if(Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
+			LOGGER.info(("Regex matches"));
+		}
+		else {
+			return;
+		}
 		
 		StringBuilder sb = new StringBuilder();		
 		sb.append("Rolling "+dice+"\n");
