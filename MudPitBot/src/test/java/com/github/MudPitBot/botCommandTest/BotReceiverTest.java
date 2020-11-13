@@ -18,8 +18,6 @@ class BotReceiverTest {
 	@Mock
     MessageCreateEvent event = mock(MessageCreateEvent.class);
 	
-	//private final BotReceiver receiver = BotReceiver.getInstance();
-	
 	@Test
 	void nullEvent() {
 		when(event).thenReturn(null);
