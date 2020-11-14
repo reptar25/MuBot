@@ -220,7 +220,7 @@ public class BotReceiver {
 	}
 
 	/*
-	 * Mutes all other users in the channel
+	 * Mutes all users in the channel besides bots and itself
 	 */
 	private static boolean muteToggle = false;
 
@@ -228,25 +228,31 @@ public class BotReceiver {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				muteToggle = !muteToggle;
-				// var members =
-				// event.getMember().orElse(null).getVoiceState().block().getGuild().block().getMembers().collectList().block();
-				// event.getMember().orElse(null).edit(spec ->
-				// spec.setMute(muteToggle)).block();
+				// gets the member's channel who sent the message, and then all the VoiceStates
+				// connected to that channel
 				List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
 						.getVoiceStates().collectList().block();
 				if (users != null) {
 					for (VoiceState user : users) {
-						LOGGER.info("Muting user " + user.getUser().block().getUsername());
+
+						// don't mute itself or other bots
 						if (user.getMember().block().isBot())
 							continue;
+
+						LOGGER.info("Muting user " + user.getUser().block().getUsername());
 						user.getMember().block().edit(spec -> spec.setMute(muteToggle)).block();
 					}
 				}
-//				event.getMember().orElse(null).getVoiceState().block().getChannel().block().getGuild().block().requestMembers().blockLast();
-//				for(Member member : members) {
-//					member.edit(spec -> spec.setMute(muteToggle));
-//				}
 			}
+		}
+	}
+
+	/*
+	 * Clears the current queue of all objects
+	 */
+	public void clearQueue(MessageCreateEvent event) {
+		if(event != null) {
+			scheduler.clearQueue();
 		}
 	}
 }

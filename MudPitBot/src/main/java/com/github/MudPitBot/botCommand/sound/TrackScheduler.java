@@ -83,6 +83,13 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		// player.
 		player.startTrack(queue.poll(), false);
 	}
+	
+	/*
+	 * Clears the queue of all objects
+	 */
+	public void clearQueue() {
+		queue.clear();
+	}
 
 	/*
 	 * Called when the current track ends
