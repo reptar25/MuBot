@@ -10,6 +10,7 @@ public class Main {
 		String token = System.getenv("token");
 		if (token == null)
 			token = args[0];
+
 		final GatewayDiscordClient client = DiscordClientBuilder.create(token).build().login().block();
 
 		BotClient.create(client);

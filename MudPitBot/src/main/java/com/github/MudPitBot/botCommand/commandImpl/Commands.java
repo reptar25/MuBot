@@ -25,6 +25,8 @@ public abstract class Commands {
 		COMMANDS.put("volume", new VolumeCommand(RECEIVER));
 		COMMANDS.put("stop", new StopCommand(RECEIVER));
 		COMMANDS.put("skip", new SkipCommand(RECEIVER));
+		COMMANDS.put("next", new SkipCommand(RECEIVER));
+		COMMANDS.put("mute", new MuteCommand(RECEIVER));
 	}
 
 }

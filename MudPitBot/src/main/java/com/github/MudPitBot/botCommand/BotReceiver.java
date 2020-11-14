@@ -1,5 +1,7 @@
 package com.github.MudPitBot.botCommand;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
@@ -214,5 +217,36 @@ public class BotReceiver {
 	public void skip(MessageCreateEvent event) {
 		if (scheduler != null)
 			scheduler.nextTrack();
+	}
+
+	/*
+	 * Mutes all other users in the channel
+	 */
+	private static boolean muteToggle = false;
+
+	public void mute(MessageCreateEvent event) {
+		if (event != null) {
+			if (event.getMessage() != null) {
+				muteToggle = !muteToggle;
+				// var members =
+				// event.getMember().orElse(null).getVoiceState().block().getGuild().block().getMembers().collectList().block();
+				// event.getMember().orElse(null).edit(spec ->
+				// spec.setMute(muteToggle)).block();
+				List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
+						.getVoiceStates().collectList().block();
+				if (users != null) {
+					for (VoiceState user : users) {
+						LOGGER.info("Muting user " + user.getUser().block().getUsername());
+						if (user.getMember().block().isBot())
+							continue;
+						user.getMember().block().edit(spec -> spec.setMute(muteToggle)).block();
+					}
+				}
+//				event.getMember().orElse(null).getVoiceState().block().getChannel().block().getGuild().block().requestMembers().blockLast();
+//				for(Member member : members) {
+//					member.edit(spec -> spec.setMute(muteToggle));
+//				}
+			}
+		}
 	}
 }
