@@ -57,7 +57,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		LOGGER.info("Playlist loaded");
 
 		for (AudioTrack track : playlist.getTracks()) {
-			queue.offer(track);
+			queue(track);
 		}
 	}
 
