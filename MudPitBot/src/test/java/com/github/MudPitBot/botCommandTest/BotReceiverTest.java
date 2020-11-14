@@ -40,5 +40,13 @@ class BotReceiverTest {
 			c.execute(event);
 		}
 	}
+	
+	@Test
+	void nullGuild() {
+		when(event.getGuild()).thenReturn(null);
+		for (Command c : Commands.COMMANDS.values()) {
+			c.execute(event);
+		}
+	}
 
 }

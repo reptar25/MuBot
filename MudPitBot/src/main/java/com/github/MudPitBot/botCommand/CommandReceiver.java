@@ -76,25 +76,27 @@ public class CommandReceiver {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				Guild guild = event.getMessage().getGuild().block();
-				VoiceConnection botConnection = guild.getVoiceConnection().block();
-				// If the client isn't in a voiceChannel, don't execute any other code
-				if (botConnection == null) {
-					// System.out.println("BOT NOT IN A VOICE CHANNEL");
-					return;
-				}
-				// get member who used command
-				final Member member = event.getMember().orElse(null);
-				if (member != null) {
-					// get voice channel member is in
-					final VoiceState voiceState = member.getVoiceState().block();
-					if (voiceState != null) {
-						long botChannelId = botConnection.getChannelId().block().asLong();
-						long memberChannelId = voiceState.getChannel().block().getId().asLong();
-						// check if user and bot are in the same channel
-						if (memberChannelId == botChannelId) {
-							botConnection.disconnect().block();
-							LOGGER.info("Bot disconnecting from voice channel.");
-							// System.out.println("DISCONNECTING");
+				if (guild != null) {
+					VoiceConnection botConnection = guild.getVoiceConnection().block();
+					// If the client isn't in a voiceChannel, don't execute any other code
+					if (botConnection == null) {
+						// System.out.println("BOT NOT IN A VOICE CHANNEL");
+						return;
+					}
+					// get member who used command
+					final Member member = event.getMember().orElse(null);
+					if (member != null) {
+						// get voice channel member is in
+						final VoiceState voiceState = member.getVoiceState().block();
+						if (voiceState != null) {
+							long botChannelId = botConnection.getChannelId().block().asLong();
+							long memberChannelId = voiceState.getChannel().block().getId().asLong();
+							// check if user and bot are in the same channel
+							if (memberChannelId == botChannelId) {
+								botConnection.disconnect().block();
+								LOGGER.info("Bot disconnecting from voice channel.");
+								// System.out.println("DISCONNECTING");
+							}
 						}
 					}
 				}
@@ -246,7 +248,7 @@ public class CommandReceiver {
 	 * Clears the current queue of all objects
 	 */
 	public void clearQueue(MessageCreateEvent event) {
-		if(event != null) {
+		if (event != null) {
 			scheduler.clearQueue();
 		}
 	}
