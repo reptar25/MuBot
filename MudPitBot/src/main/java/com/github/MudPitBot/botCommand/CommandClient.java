@@ -1,8 +1,7 @@
-package com.github.MudPitBot.main;
+package com.github.MudPitBot.botCommand;
 
 import java.util.Map.Entry;
 
-import com.github.MudPitBot.botCommand.BotCommandExecutor;
 import com.github.MudPitBot.botCommand.commandImpl.Commands;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
 
@@ -16,22 +15,22 @@ import reactor.util.Loggers;
  *  by specifying what commands to execute and at what stages of the process to execute them.
  *  https://www.baeldung.com/java-command-pattern
  */
-public class BotClient {
+public class CommandClient {
 	
-	private static final Logger LOGGER = Loggers.getLogger(BotClient.class);
+	private static final Logger LOGGER = Loggers.getLogger(CommandClient.class);
 	private GatewayDiscordClient client;
-	private BotCommandExecutor executor = new BotCommandExecutor();
-	private static BotClient instance;
+	private CommandExecutor executor = new CommandExecutor();
+	private static CommandClient instance;
 	
-	public static BotClient create(GatewayDiscordClient client) {
+	public static CommandClient create(GatewayDiscordClient client) {
 		
 		if(instance == null)
-			instance = new BotClient(client);
+			instance = new CommandClient(client);
 		
 		return instance;
 	}
 	
-	private BotClient(GatewayDiscordClient client) 
+	private CommandClient(GatewayDiscordClient client) 
 	{
 		this.client = client;
 		

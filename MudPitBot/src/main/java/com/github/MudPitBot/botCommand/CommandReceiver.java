@@ -21,20 +21,20 @@ import reactor.util.Loggers;
 * It's the component that performs the actual action when the command's execute() method is called.
 * https://www.baeldung.com/java-command-pattern
 */
-public class BotReceiver {
+public class CommandReceiver {
 
-	private static final Logger LOGGER = Loggers.getLogger(BotReceiver.class);
-	private static BotReceiver instance;
+	private static final Logger LOGGER = Loggers.getLogger(CommandReceiver.class);
+	private static CommandReceiver instance;
 	private static Random rand = new Random();
 	private static TrackScheduler scheduler;
 
-	public static BotReceiver getInstance() {
+	public static CommandReceiver getInstance() {
 		if (instance == null)
-			instance = new BotReceiver();
+			instance = new CommandReceiver();
 		return instance;
 	}
 
-	private BotReceiver() {
+	private CommandReceiver() {
 		scheduler = new TrackScheduler(PlayerManager.player);
 	}
 

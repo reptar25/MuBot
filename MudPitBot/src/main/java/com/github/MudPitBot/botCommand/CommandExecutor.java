@@ -9,7 +9,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 * It only knows the command's interface.
 * https://www.baeldung.com/java-command-pattern
 */
-public class BotCommandExecutor {
+public class CommandExecutor {
 	
     public void executeCommand(Command command, MessageCreateEvent event) {
     	command.execute(event);

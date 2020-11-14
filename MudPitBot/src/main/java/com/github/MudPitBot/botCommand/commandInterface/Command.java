@@ -1,6 +1,6 @@
 package com.github.MudPitBot.botCommand.commandInterface;
 
-import com.github.MudPitBot.botCommand.BotReceiver;
+import com.github.MudPitBot.botCommand.CommandReceiver;
 
 /*
  * Implementation of the Command design pattern.
@@ -8,9 +8,9 @@ import com.github.MudPitBot.botCommand.BotReceiver;
 
 public abstract class Command implements CommandInterface {
 	
-	protected BotReceiver receiver;
+	protected CommandReceiver receiver;
 
-	public Command(BotReceiver receiver) {
+	public Command(CommandReceiver receiver) {
 		this.receiver = receiver;
 	}
 }
