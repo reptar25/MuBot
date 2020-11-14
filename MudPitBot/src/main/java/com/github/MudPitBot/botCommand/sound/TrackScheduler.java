@@ -26,6 +26,9 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		this.player = player;
 
 		TrackScheduler.queue = new LinkedBlockingQueue<>();
+		
+		// add this as a listener so we can listen for tracks ending
+		player.addListener(this);
 	}
 	
 	  public void queue(AudioTrack track) {
@@ -34,7 +37,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		    // track goes to the queue instead.
 		    if (!player.startTrack(track, true)) {
 		      queue.offer(track);
-		      LOGGER.info("Track added to the queue");
+		      LOGGER.info("Track added to the queue: "+queue.size());
 		    }
 		  }
 
@@ -88,6 +91,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		// Only start the next track if the end reason is suitable for it (FINISHED or
 		// LOAD_FAILED)
+		LOGGER.info("TRACK ENDED");
 		if (endReason.mayStartNext) {
 			nextTrack();
 		}
