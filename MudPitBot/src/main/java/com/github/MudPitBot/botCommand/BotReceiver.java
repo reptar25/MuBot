@@ -207,4 +207,12 @@ public class BotReceiver {
 			LOGGER.info("Stopped music");
 		}
 	}
+
+	/*
+	 * Stops the current song and plays the next in queue if there is any
+	 */
+	public void skip(MessageCreateEvent event) {
+		if (scheduler != null)
+			scheduler.nextTrack();
+	}
 }

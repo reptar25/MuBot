@@ -24,6 +24,7 @@ public abstract class Commands {
 		COMMANDS.put("play", new PlayCommand(RECEIVER));
 		COMMANDS.put("volume", new VolumeCommand(RECEIVER));
 		COMMANDS.put("stop", new StopCommand(RECEIVER));
+		COMMANDS.put("skip", new SkipCommand(RECEIVER));
 	}
 
 }
