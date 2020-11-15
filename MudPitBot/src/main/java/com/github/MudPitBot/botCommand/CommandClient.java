@@ -50,7 +50,7 @@ public class CommandClient {
 	    .subscribe(event -> {
 	        final String content = event.getMessage().getContent().toLowerCase(); // 3.1 Message.getContent() is a String
 	        //System.out.println("MESSAGE CREATED: "+content);
-	        StringBuilder sb = new StringBuilder("New message created :");
+	        StringBuilder sb = new StringBuilder("New message created: ");
 	        // add the user name and put the message in quotes
 	        sb.append(event.getMember().orElse(null).getUsername()).append(" - \"").append(content).append("\"");
 	        LOGGER.info(sb.toString());
