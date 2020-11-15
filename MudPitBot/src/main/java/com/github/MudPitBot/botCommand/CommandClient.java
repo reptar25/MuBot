@@ -50,7 +50,9 @@ public class CommandClient {
 	    .subscribe(event -> {
 	        final String content = event.getMessage().getContent().toLowerCase(); // 3.1 Message.getContent() is a String
 	        //System.out.println("MESSAGE CREATED: "+content);
-	        LOGGER.info(("New message created: "+content));
+	        StringBuilder sb = new StringBuilder("New message created :");
+	        sb.append(event.getMember().orElse(null).getUsername()).append(" - \"").append(content).append("\"");
+	        LOGGER.info(sb.toString());
 	        for (final Entry<String, Command> entry : Commands.COMMANDS.entrySet()) {
 	            // We will be using ! as our "prefix" to any command in the system.
 	            if (content.startsWith('!' + entry.getKey().toLowerCase())) {
