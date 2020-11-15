@@ -193,7 +193,11 @@ public class CommandReceiver {
 				if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
 					int volume = Integer.parseInt(command[1]);
 					PlayerManager.player.setVolume(volume);
-					LOGGER.info("Set volume to " + volume);
+					StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
+					LOGGER.info(sb.toString());
+					MessageChannel channel = event.getMessage().getChannel().block();
+					if (channel != null)
+						channel.createMessage(sb.toString()).block();
 				}
 			}
 		}
@@ -277,10 +281,10 @@ public class CommandReceiver {
 					sb.append("The queue is empty.");
 				}
 
-				if (event.getMessage().getChannel() != null) {
+				MessageChannel channel = event.getMessage().getChannel().block();
+				if (channel != null)
 					// send back message to channel we had received the command in
-					event.getMessage().getChannel().block().createMessage(sb.toString()).block();
-				}
+					channel.createMessage(sb.toString()).block();
 			}
 		}
 	}
@@ -294,14 +298,16 @@ public class CommandReceiver {
 				StringBuilder sb = new StringBuilder("Now playing: ");
 				// get the track that's currently playing
 				AudioTrack track = scheduler.getNowPlaying();
-				if(track != null) {
+				if (track != null) {
 					// add track title and author
-					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ").append(track.getInfo().author);
+					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
+							.append(track.getInfo().author);
 				}
-				
-				if(event.getMessage().getChannel() != null) {
+
+				MessageChannel channel = event.getMessage().getChannel().block();
+				if (channel != null) {
 					// send back message to channel we had received the command in
-					event.getMessage().getChannel().block().createMessage(sb.toString()).block();
+					channel.createMessage(sb.toString()).block();
 				}
 			}
 		}
