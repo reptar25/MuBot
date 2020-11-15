@@ -30,6 +30,8 @@ public class CommandReceiver {
 	private static Random rand = new Random();
 	private static TrackScheduler scheduler;
 
+	public static boolean muteToggle = false;
+
 	public static CommandReceiver getInstance() {
 		if (instance == null)
 			instance = new CommandReceiver();
@@ -224,7 +226,6 @@ public class CommandReceiver {
 	/*
 	 * Mutes all {@link Member} in the channel besides bots and itself
 	 */
-	private static boolean muteToggle = false;
 
 	public void mute(MessageCreateEvent event) {
 		if (event != null) {
