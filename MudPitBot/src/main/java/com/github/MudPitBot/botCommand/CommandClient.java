@@ -22,8 +22,8 @@ public class CommandClient {
 	private CommandExecutor executor = new CommandExecutor();
 	private static CommandClient instance;
 	
+	// Singleton create method=
 	public static CommandClient create(GatewayDiscordClient client) {
-		
 		if(instance == null)
 			instance = new CommandClient(client);
 		
@@ -51,6 +51,7 @@ public class CommandClient {
 	        final String content = event.getMessage().getContent().toLowerCase(); // 3.1 Message.getContent() is a String
 	        //System.out.println("MESSAGE CREATED: "+content);
 	        StringBuilder sb = new StringBuilder("New message created :");
+	        // add the user name and put the message in quotes
 	        sb.append(event.getMember().orElse(null).getUsername()).append(" - \"").append(content).append("\"");
 	        LOGGER.info(sb.toString());
 	        for (final Entry<String, Command> entry : Commands.COMMANDS.entrySet()) {
