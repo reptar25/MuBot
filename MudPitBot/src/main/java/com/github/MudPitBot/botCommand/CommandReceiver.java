@@ -272,12 +272,32 @@ public class CommandReceiver {
 						sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
 								.append(track.getInfo().author).append("\n");
 					}
-				}
-				else {
+				} else {
 					sb.append("The queue is empty.");
 				}
 
-				event.getMessage().getChannel().block().createMessage(sb.toString()).block();
+				if (event.getMessage().getChannel() != null) {
+					event.getMessage().getChannel().block().createMessage(sb.toString()).block();
+				}
+			}
+		}
+	}
+
+	/*
+	 * Print out the info for the currently playing song
+	 */
+	public void nowPlaying(MessageCreateEvent event) {
+		if (event != null) {
+			if (event.getMessage() != null) {
+				StringBuilder sb = new StringBuilder("Now playing: ");
+				AudioTrack track = scheduler.getNowPlaying();
+				if(track != null) {
+					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ").append(track.getInfo().author);
+				}
+				
+				if(event.getMessage().getChannel() != null) {
+					event.getMessage().getChannel().block().createMessage(sb.toString()).block();
+				}
 			}
 		}
 	}

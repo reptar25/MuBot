@@ -110,6 +110,14 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		}
 		return ret;
 	}
+	
+	/*
+	 * Gets the track that is currently playing.
+	 * @return the AudioTrack that is playing
+	 */
+	public AudioTrack getNowPlaying() {
+		return player.getPlayingTrack();
+	}
 
 	/*
 	 * Called when the current track ends
