@@ -93,6 +93,11 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		queue.clear();
 	}
 	
+	
+	/**
+	 * Gets a list of the  songs that are currently in the queue.
+	 * @return List of queued songs
+	 */
 	public List<AudioTrack> getQueue(){
 		List<AudioTrack> ret = new ArrayList<AudioTrack>();
 		Object[] queueArr = queue.toArray();
