@@ -1,5 +1,7 @@
 package com.github.MudPitBot.botCommand.sound;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -89,6 +91,19 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 */
 	public void clearQueue() {
 		queue.clear();
+	}
+	
+	public List<AudioTrack> getQueue(){
+		List<AudioTrack> ret = new ArrayList<AudioTrack>();
+		Object[] queueArr = queue.toArray();
+		for(int i = 0; i <  queueArr.length; i++) {
+			if(queueArr[i] instanceof AudioTrack) {
+				AudioTrack track = (AudioTrack) queueArr[i];
+				ret.add(track);
+			}
+
+		}
+		return ret;
 	}
 
 	/*

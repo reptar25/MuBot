@@ -28,6 +28,7 @@ public abstract class Commands {
 		COMMANDS.put("next", new SkipCommand(RECEIVER));
 		COMMANDS.put("mute", new MuteCommand(RECEIVER));
 		COMMANDS.put("clear", new ClearCommand(RECEIVER));
+		COMMANDS.put("viewqueue", new ViewQueueCommand(RECEIVER));
 	}
 
 }

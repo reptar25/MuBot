@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
@@ -249,6 +251,34 @@ public class CommandReceiver {
 	public void clearQueue(MessageCreateEvent event) {
 		if (event != null) {
 			scheduler.clearQueue();
+		}
+	}
+
+	/*
+	 * Prints out a list of the currently queued songs
+	 */
+	public void viewQueue(MessageCreateEvent event) {
+		if (event != null) {
+			if (event.getMessage() != null) {
+				// get list of songs currently in the queue
+				List<AudioTrack> queue = scheduler.getQueue();
+				StringBuilder sb = new StringBuilder();
+				// if the queue is not empty
+				if (queue.size() > 0) {
+					// print total number of songs
+					sb.append("Number of songs in queue: ").append(queue.size()).append("\n");
+					for (AudioTrack track : queue) {
+						// print title and author of song on its own line
+						sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
+								.append(track.getInfo().author).append("\n");
+					}
+				}
+				else {
+					sb.append("The queue is empty.");
+				}
+
+				event.getMessage().getChannel().block().createMessage(sb.toString()).block();
+			}
 		}
 	}
 }
