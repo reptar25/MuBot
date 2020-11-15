@@ -59,8 +59,7 @@ public class CommandReceiver {
 							}
 							// join returns a VoiceConnection which would be required if we were
 							// adding disconnection features, but for now we are just ignoring it.
-							channel.join(spec -> spec.setProvider(PlayerManager.provider)).block();//
-
+							channel.join(spec -> spec.setProvider(PlayerManager.provider)).block();
 						}
 					}
 				}
