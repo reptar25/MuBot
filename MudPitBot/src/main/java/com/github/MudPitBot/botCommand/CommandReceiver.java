@@ -218,7 +218,7 @@ public class CommandReceiver {
 	}
 
 	/*
-	 * Mutes all users in the channel besides bots and itself
+	 * Mutes all {@link Member} in the channel besides bots and itself
 	 */
 	private static boolean muteToggle = false;
 
@@ -227,7 +227,7 @@ public class CommandReceiver {
 			if (event.getMessage() != null) {
 				muteToggle = !muteToggle;
 				// gets the member's channel who sent the message, and then all the VoiceStates
-				// connected to that channel
+				// connected to that channel. From there we can get the Member of the VoiceState
 				List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
 						.getVoiceStates().collectList().block();
 				if (users != null) {
@@ -238,6 +238,7 @@ public class CommandReceiver {
 							continue;
 
 						LOGGER.info("Muting user " + user.getUser().block().getUsername());
+						// mute all users
 						user.getMember().block().edit(spec -> spec.setMute(muteToggle)).block();
 					}
 				}
@@ -277,6 +278,7 @@ public class CommandReceiver {
 				}
 
 				if (event.getMessage().getChannel() != null) {
+					// send back message to channel we had received the command in
 					event.getMessage().getChannel().block().createMessage(sb.toString()).block();
 				}
 			}
@@ -290,12 +292,15 @@ public class CommandReceiver {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				StringBuilder sb = new StringBuilder("Now playing: ");
+				// get the track that's currently playing
 				AudioTrack track = scheduler.getNowPlaying();
 				if(track != null) {
+					// add track title and author
 					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ").append(track.getInfo().author);
 				}
 				
 				if(event.getMessage().getChannel() != null) {
+					// send back message to channel we had received the command in
 					event.getMessage().getChannel().block().createMessage(sb.toString()).block();
 				}
 			}
