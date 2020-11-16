@@ -242,7 +242,8 @@ public class CommandReceiver {
 				List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
 						.getVoiceStates().collectList().block();
 				if (users != null) {
-					muteChannelId = event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId().asLong();
+					muteChannelId = event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
+							.asLong();
 					for (VoiceState user : users) {
 
 						// don't mute itself or other bots
@@ -290,9 +291,13 @@ public class CommandReceiver {
 				}
 
 				MessageChannel channel = event.getMessage().getChannel().block();
-				if (channel != null)
+				if (channel != null) {
 					// send back message to channel we had received the command in
-					channel.createMessage(sb.toString()).block();
+					String messageString = sb.toString();
+					if (sb.toString().length() <= 2000)
+						messageString = sb.substring(0, 1999);
+					channel.createMessage(messageString).block();
+				}
 			}
 		}
 	}
