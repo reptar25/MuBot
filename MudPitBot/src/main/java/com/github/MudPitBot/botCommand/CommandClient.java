@@ -71,12 +71,19 @@ public class CommandClient {
 				});
 
 		client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
+			
+			if(!CommandReceiver.muteToggle) {
+				return;
+			}
 
 			// if its a bot who joined, do not execute any more code
 			if (event.getCurrent().getMember().block().isBot()) {
 				return;
 			}
 
+			if (event.getCurrent().getChannelId() == null) {
+				return;
+			}
 			// get channel id of user who joined
 			long userChannelId = event.getCurrent().getChannelId().orElse(null).asLong();
 			// get bot channel id
@@ -91,7 +98,7 @@ public class CommandClient {
 					if (CommandReceiver.muteToggle)
 						// mute the member that just joined
 						event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
-						LOGGER.info("Muting "+event.getCurrent().getUser().block().getUsername());
+					LOGGER.info("Muting " + event.getCurrent().getUser().block().getUsername());
 				}
 			}
 			// if user joined another channel, make sure they arent muted still
@@ -107,7 +114,7 @@ public class CommandClient {
 							if (CommandReceiver.muteToggle)
 								// unmute the leaving member
 								event.getCurrent().getMember().block().edit(spec -> spec.setMute(false)).block();
-							LOGGER.info("Unmuting "+event.getCurrent().getUser().block().getUsername());
+							LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
 						}
 					}
 				}
