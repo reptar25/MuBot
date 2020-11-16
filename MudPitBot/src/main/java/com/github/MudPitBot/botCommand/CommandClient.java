@@ -80,27 +80,35 @@ public class CommandClient {
 			// get channel id of user who joined
 			long userChannelId = event.getCurrent().getChannelId().orElse(null).asLong();
 			// get bot channel id
-			long botChannelId = client.getSelf().block().asMember(client.getSelfId()).block().getVoiceState().block()
-					.getChannelId().orElse(null).asLong();
+			// long botChannelId =
+			// client.getSelf().block().asMember(client.getSelfId()).block().getVoiceState().block()
+			// .getChannelId().orElse(null).asLong();
 
-			// if user join same channel as bot
-			if (userChannelId == botChannelId) {
-				// if the mute toggle is enabled
-				if (CommandReceiver.muteToggle)
-					// mute the member that just joined
-					event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
+			// if user join same channel as mute channel
+			if (userChannelId == CommandReceiver.muteChannelId) {
+				if (event.isJoinEvent() || event.isMoveEvent()) {
+					// if the mute toggle is enabled
+					if (CommandReceiver.muteToggle)
+						// mute the member that just joined
+						event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
+						LOGGER.info("Muting "+event.getCurrent().getUser().block().getUsername());
+				}
 			}
 			// if user joined another channel, make sure they arent muted still
 			else {
 				VoiceState oldVoiceState = event.getOld().orElse(null);
 				if (oldVoiceState != null) {
-					long oldChannelId = oldVoiceState.getChannelId().orElse(null).asLong();
-					// if the channel their are leaving is the channel the bot was in
-					if (oldChannelId == botChannelId) {
-						// if the mute toggle is enabled
-						if (CommandReceiver.muteToggle)
-							// unmute the leaving member
-							event.getCurrent().getMember().block().edit(spec -> spec.setMute(false)).block();
+
+					if (event.isMoveEvent() || event.isMoveEvent()) {
+						long oldChannelId = oldVoiceState.getChannelId().orElse(null).asLong();
+						// if the channel their are leaving is the channel that was muted
+						if (oldChannelId == CommandReceiver.muteChannelId) {
+							// if the mute toggle is enabled
+							if (CommandReceiver.muteToggle)
+								// unmute the leaving member
+								event.getCurrent().getMember().block().edit(spec -> spec.setMute(false)).block();
+							LOGGER.info("Unmuting "+event.getCurrent().getUser().block().getUsername());
+						}
 					}
 				}
 

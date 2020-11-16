@@ -31,6 +31,7 @@ public class CommandReceiver {
 	private static TrackScheduler scheduler;
 
 	public static boolean muteToggle = false;
+	public static long muteChannelId = 0;
 
 	public static CommandReceiver getInstance() {
 		if (instance == null)
@@ -231,11 +232,17 @@ public class CommandReceiver {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				muteToggle = !muteToggle;
+
+//				if (event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
+//						.asLong() != botChannelId) {
+//					return;
+//				}
 				// gets the member's channel who sent the message, and then all the VoiceStates
 				// connected to that channel. From there we can get the Member of the VoiceState
 				List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
 						.getVoiceStates().collectList().block();
 				if (users != null) {
+					muteChannelId = event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId().asLong();
 					for (VoiceState user : users) {
 
 						// don't mute itself or other bots
