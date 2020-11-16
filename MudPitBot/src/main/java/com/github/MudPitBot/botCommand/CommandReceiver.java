@@ -79,7 +79,7 @@ public class CommandReceiver {
 	 */
 	public void leave(MessageCreateEvent event) {
 		if (event != null) {
-			if (event.getMessage() != null) {
+			if (event.getMessage() != null && event.getClient() != null) {
 				Guild guild = event.getMessage().getGuild().block();
 				if (guild != null) {
 					VoiceConnection botConnection = guild.getVoiceConnection().block();
@@ -114,7 +114,7 @@ public class CommandReceiver {
 	 */
 	public void echo(MessageCreateEvent event) {
 		if (event != null) {
-			if (event.getMessage() != null) {
+			if (event.getMessage() != null && event.getClient() != null) {
 				event.getMessage().getChannel().block().createMessage("echo!").block();
 			}
 		}
@@ -171,13 +171,15 @@ public class CommandReceiver {
 	public void play(MessageCreateEvent event) {
 		if (event != null) {
 			if (event.getMessage() != null) {
-				final String content = event.getMessage().getContent();
-				final String[] command = content.split(" ");
-				if (command.length <= 1 || command.length > 2) {
-					return;
+				if (event.getMessage().getContent() != null) {
+					final String content = event.getMessage().getContent();
+					final String[] command = content.split(" ");
+					if (command.length <= 1 || command.length > 2) {
+						return;
+					}
+					PlayerManager.playerManager.loadItem(command[1], scheduler);
+					LOGGER.info("Loaded music item");
 				}
-				PlayerManager.playerManager.loadItem(command[1], scheduler);
-				LOGGER.info("Loaded music item");
 			}
 		}
 	}
@@ -186,23 +188,21 @@ public class CommandReceiver {
 	 * Sets the volume of the LavaPlayer
 	 */
 	public void volume(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMessage() != null) {
-				final String content = event.getMessage().getContent();
-				final String[] command = content.split(" ");
-				if (command.length <= 1 || command.length > 2) {
-					return;
-				}
+		if (event != null && event.getMessage() != null && event.getMessage().getContent() != null) {
+			final String content = event.getMessage().getContent();
+			final String[] command = content.split(" ");
+			if (command.length <= 1 || command.length > 2) {
+				return;
+			}
 
-				if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
-					int volume = Integer.parseInt(command[1]);
-					PlayerManager.player.setVolume(volume);
-					StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
-					LOGGER.info(sb.toString());
-					MessageChannel channel = event.getMessage().getChannel().block();
-					if (channel != null)
-						channel.createMessage(sb.toString()).block();
-				}
+			if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
+				int volume = Integer.parseInt(command[1]);
+				PlayerManager.player.setVolume(volume);
+				StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
+				LOGGER.info(sb.toString());
+				MessageChannel channel = event.getMessage().getChannel().block();
+				if (channel != null)
+					channel.createMessage(sb.toString()).block();
 			}
 		}
 	}
@@ -230,31 +230,29 @@ public class CommandReceiver {
 	 */
 
 	public void mute(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMessage() != null) {
-				muteToggle = !muteToggle;
+		if (event != null && event.getMessage() != null && event.getMember().isPresent()) {
+			muteToggle = !muteToggle;
 
 //				if (event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
 //						.asLong() != botChannelId) {
 //					return;
 //				}
-				// gets the member's channel who sent the message, and then all the VoiceStates
-				// connected to that channel. From there we can get the Member of the VoiceState
-				List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
-						.getVoiceStates().collectList().block();
-				if (users != null) {
-					muteChannelId = event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
-							.asLong();
-					for (VoiceState user : users) {
+			// gets the member's channel who sent the message, and then all the VoiceStates
+			// connected to that channel. From there we can get the Member of the VoiceState
+			List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
+					.getVoiceStates().collectList().block();
+			if (users != null) {
+				muteChannelId = event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
+						.asLong();
+				for (VoiceState user : users) {
 
-						// don't mute itself or other bots
-						if (user.getMember().block().isBot())
-							continue;
+					// don't mute itself or other bots
+					if (user.getMember().block().isBot())
+						continue;
 
-						LOGGER.info("Muting user " + user.getUser().block().getUsername());
-						// mute all users
-						user.getMember().block().edit(spec -> spec.setMute(muteToggle)).block();
-					}
+					LOGGER.info("Muting user " + user.getUser().block().getUsername());
+					// mute all users
+					user.getMember().block().edit(spec -> spec.setMute(muteToggle)).block();
 				}
 			}
 		}
@@ -274,7 +272,7 @@ public class CommandReceiver {
 	 */
 	public void viewQueue(MessageCreateEvent event) {
 		if (event != null) {
-			if (event.getMessage() != null) {
+			if (event.getMessage() != null && event.getClient() != null) {
 				// get list of songs currently in the queue
 				List<AudioTrack> queue = scheduler.getQueue();
 				StringBuilder sb = new StringBuilder();
@@ -295,10 +293,12 @@ public class CommandReceiver {
 				if (channel != null) {
 					// send back message to channel we had received the command in
 					String messageString = sb.toString();
-					
-					// if the message is longer than 2000 character, trim it so that its not over the max character limit.
+
+					// if the message is longer than 2000 character, trim it so that its not over
+					// the max character limit.
 					if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
-						messageString = sb.substring(0, Message.MAX_CONTENT_LENGTH-1);
+						messageString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
+					
 					channel.createMessage(messageString).block();
 				}
 			}
@@ -321,7 +321,7 @@ public class CommandReceiver {
 				}
 
 				MessageChannel channel = event.getMessage().getChannel().block();
-				if (channel != null) {
+				if (channel != null && event.getClient() != null) {
 					// send back message to channel we had received the command in
 					channel.createMessage(sb.toString()).block();
 				}
