@@ -294,7 +294,7 @@ public class CommandReceiver {
 				if (channel != null) {
 					// send back message to channel we had received the command in
 					String messageString = sb.toString();
-					if (sb.toString().length() <= 2000)
+					if (sb.toString().length() >= 2000)
 						messageString = sb.substring(0, 1999);
 					channel.createMessage(messageString).block();
 				}
