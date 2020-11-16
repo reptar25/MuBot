@@ -12,6 +12,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
@@ -294,8 +295,10 @@ public class CommandReceiver {
 				if (channel != null) {
 					// send back message to channel we had received the command in
 					String messageString = sb.toString();
-					if (sb.toString().length() >= 2000)
-						messageString = sb.substring(0, 1999);
+					
+					// if the message is longer than 2000 character, trim it so that its not over the max character limit.
+					if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
+						messageString = sb.substring(0, Message.MAX_CONTENT_LENGTH-1);
 					channel.createMessage(messageString).block();
 				}
 			}
