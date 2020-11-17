@@ -62,6 +62,11 @@ public class CommandReceiver {
 							// from it before trying to join a new one.
 							if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
 								event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
+								try {
+									Thread.sleep(1000);
+								} catch (InterruptedException e) {
+									LOGGER.error(e.toString());
+								}
 							}
 							// join returns a VoiceConnection which would be required if we were
 							// adding disconnection features, but for now we are just ignoring it.
@@ -298,7 +303,7 @@ public class CommandReceiver {
 					// the max character limit.
 					if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
 						messageString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
-					
+
 					channel.createMessage(messageString).block();
 				}
 			}

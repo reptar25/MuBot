@@ -9,6 +9,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
+import discord4j.core.object.entity.Member;
 import discord4j.core.spec.Spec;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -53,26 +54,35 @@ public class CommandClient {
 				// to be done, but instead of blocking the thread, waiting for it
 				// to finish, it will just execute the results asynchronously.
 				.subscribe(event -> {
-					final String content = event.getMessage().getContent().toLowerCase(); // 3.1 Message.getContent() is
-																							// a String
-					// System.out.println("MESSAGE CREATED: "+content);
-					StringBuilder sb = new StringBuilder("New message created: ");
-					// add the user name and put the message in quotes
-					sb.append(event.getMember().orElse(null).getUsername()).append(" - \"").append(content)
-							.append("\"");
-					LOGGER.info(sb.toString());
-					for (final Entry<String, Command> entry : Commands.COMMANDS.entrySet()) {
-						// We will be using ! as our "prefix" to any command in the system.
-						if (content.startsWith('!' + entry.getKey().toLowerCase())) {
-							executor.executeCommand(entry.getValue(), event);
-							break;
+					if (event.getMessage() != null && event.getMessage().getContent() != null) {
+						// 3.1 Message.getContent() is a String
+						final String content = event.getMessage().getContent().toLowerCase();
+						// System.out.println("MESSAGE CREATED: "+content);
+						StringBuilder sb = new StringBuilder("New message created: ");
+
+						Member member = event.getMember().orElse(null);
+						// add the user name and put the message in quotes
+						if (member != null) {
+							sb.append(member.getUsername());
+						}
+						else {
+							sb.append(event.getMessage().getAuthor().orElse(null).getUsername());
+						}
+						sb.append(" - \"").append(content).append("\"");
+						LOGGER.info(sb.toString());
+						for (final Entry<String, Command> entry : Commands.COMMANDS.entrySet()) {
+							// We will be using ! as our "prefix" to any command in the system.
+							if (content.startsWith('!' + entry.getKey().toLowerCase())) {
+								executor.executeCommand(entry.getValue(), event);
+								break;
+							}
 						}
 					}
 				});
 
 		client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
-			
-			if(!CommandReceiver.muteToggle) {
+
+			if (!CommandReceiver.muteToggle) {
 				return;
 			}
 
