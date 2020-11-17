@@ -4,17 +4,23 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import com.github.MudPitBot.botCommand.poll.Poll;
 import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
+import com.github.MudPitBot.botCommand.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.Embed;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.object.reaction.ReactionEmoji;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Color;
 import discord4j.voice.VoiceConnection;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -328,7 +334,37 @@ public class CommandReceiver {
 				MessageChannel channel = event.getMessage().getChannel().block();
 				if (channel != null && event.getClient() != null) {
 					// send back message to channel we had received the command in
-					channel.createMessage(sb.toString()).block();
+					channel.createMessage(sb.toString()).block().addReaction(null);
+				}
+			}
+		}
+	}
+
+	/*
+	 * Creates a poll in the channel
+	 */
+	public void poll(MessageCreateEvent event) {
+		if (event != null) {
+			if (event.getClient() != null) {
+				if (event.getMessage() != null) {
+					MessageChannel channel = event.getMessage().getChannel().block();
+					if (channel != null) {
+						Poll poll = new Poll.Builder(event).build();//new Poll(event);
+
+						if (poll.getAnswers().size() <= 1) {
+							return;
+						}
+
+						Message message = channel
+								.createEmbed(spec -> spec.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
+										.setTitle(poll.getTitle()).setDescription(poll.getDescription()))
+								.block();
+						
+						if (message != null) {
+							poll.addReactions(message);
+							//message.pin().block();
+						}
+					}
 				}
 			}
 		}

@@ -30,6 +30,7 @@ public abstract class Commands {
 		COMMANDS.put("clear", new ClearCommand(RECEIVER));
 		COMMANDS.put("viewqueue", new ViewQueueCommand(RECEIVER));
 		COMMANDS.put("nowplaying", new NowPlayingCommand(RECEIVER));
+		COMMANDS.put("poll", new PollCommand(RECEIVER));
 	}
 
 }
