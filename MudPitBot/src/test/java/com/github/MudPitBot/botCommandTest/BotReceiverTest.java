@@ -2,8 +2,8 @@ package com.github.MudPitBot.botCommandTest;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import com.github.MudPitBot.botCommand.commandImpl.Commands;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.Commands;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
@@ -32,49 +32,51 @@ class BotReceiverTest {
 
 	@Mock
 	Mono<Guild> monoGuild = mock(Mono.class);
+	
+	String[] args = null;
 
-//	@Test
-//	void nullEvent() {
-//		when(mockEvent).thenReturn(null);
-//		for (Command c : Commands.values()) {
-//			c.execute(mockEvent);
-//		}
-//	}
-//
-//	@Test
-//	void nullMessage() {
-//		when(mockEvent.getMessage()).thenReturn(null);
-//		for (Command c : Commands.values()) {
-//			c.execute(mockEvent);
-//		}
-//	}
-//
-//	@Test
-//	void nullMember() {
-//		when(mockEvent.getMember()).thenReturn(null);
-//		for (Command c : Commands.values()) {
-//			c.execute(mockEvent);
-//		}
-//	}
-//
-//	@Test
-//	void nullGuild() {
-//		when(mockEvent.getGuild()).thenReturn(monoGuild);
-//		when(mockEvent.getGuild().block()).thenReturn(mockGuild);
-//		for (Command c : Commands.values()) {
-//			c.execute(mockEvent);
-//		}
-//	}
-//
-//	@Test
-//	void nullChannel() {
-//		// when(mockEvent.getMessage()).thenReturn(mockMessage);
-//		when(mockEvent.getMessage()).thenReturn(mockMessage);
-//		when(mockEvent.getMessage().getChannel()).thenReturn(monoChannel);
-//		when(mockEvent.getMessage().getChannel().block()).thenReturn(mockChannel);
-//		for (Command c : Commands.values()) {
-//			c.execute(mockEvent);
-//		}
-//	}
+	@Test
+	void nullEvent() {
+		when(mockEvent).thenReturn(null);
+		for (Command c : Commands.values()) {
+			c.execute(mockEvent, args);
+		}
+	}
+
+	@Test
+	void nullMessage() {
+		when(mockEvent.getMessage()).thenReturn(null);
+		for (Command c : Commands.values()) {
+			c.execute(mockEvent, args);
+		}
+	}
+
+	@Test
+	void nullMember() {
+		when(mockEvent.getMember()).thenReturn(null);
+		for (Command c : Commands.values()) {
+			c.execute(mockEvent, args);
+		}
+	}
+
+	@Test
+	void nullGuild() {
+		when(mockEvent.getGuild()).thenReturn(monoGuild);
+		when(mockEvent.getGuild().block()).thenReturn(mockGuild);
+		for (Command c : Commands.values()) {
+			c.execute(mockEvent, args);
+		}
+	}
+
+	@Test
+	void nullChannel() {
+		// when(mockEvent.getMessage()).thenReturn(mockMessage);
+		when(mockEvent.getMessage()).thenReturn(mockMessage);
+		when(mockEvent.getMessage().getChannel()).thenReturn(monoChannel);
+		when(mockEvent.getMessage().getChannel().block()).thenReturn(mockChannel);
+		for (Command c : Commands.values()) {
+			c.execute(mockEvent, args);
+		}
+	}
 
 }
