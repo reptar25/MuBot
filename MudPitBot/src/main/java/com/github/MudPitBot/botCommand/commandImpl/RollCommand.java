@@ -16,4 +16,9 @@ public class RollCommand extends Command {
 		receiver.roll(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "roll";
+	}
+
 }

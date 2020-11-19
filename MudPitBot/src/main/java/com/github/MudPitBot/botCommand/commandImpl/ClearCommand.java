@@ -16,4 +16,9 @@ public class ClearCommand extends Command {
 		receiver.clearQueue(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "clear";
+	}
+
 }

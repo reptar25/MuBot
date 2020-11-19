@@ -16,4 +16,9 @@ public class SkipCommand extends Command {
 		receiver.skip(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "skip";
+	}
+
 }

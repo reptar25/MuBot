@@ -16,4 +16,9 @@ public class PollCommand extends Command {
 		receiver.poll(event, params);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "poll";
+	}
+
 }

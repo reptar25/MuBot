@@ -16,4 +16,9 @@ public class MuteCommand extends Command {
 		receiver.mute(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "mute";
+	}
+
 }

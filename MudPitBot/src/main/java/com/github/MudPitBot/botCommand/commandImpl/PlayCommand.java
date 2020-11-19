@@ -16,4 +16,9 @@ public class PlayCommand extends Command {
 		receiver.play(event, params);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "play";
+	}
+
 }

@@ -9,8 +9,11 @@ import com.github.MudPitBot.botCommand.CommandReceiver;
 public abstract class Command implements CommandInterface {
 	
 	protected CommandReceiver receiver;
+	protected String commandTrigger;
 
 	public Command(CommandReceiver receiver) {
 		this.receiver = receiver;
 	}
+	
+	public abstract String getCommandTrigger();
 }

@@ -16,4 +16,9 @@ public class ViewQueueCommand extends Command {
 		receiver.viewQueue(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "viewqueue";
+	}
+
 }

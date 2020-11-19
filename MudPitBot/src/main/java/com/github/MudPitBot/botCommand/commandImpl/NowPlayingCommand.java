@@ -16,4 +16,9 @@ public class NowPlayingCommand extends Command {
 		receiver.nowPlaying(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "nowplaying";
+	}
+
 }

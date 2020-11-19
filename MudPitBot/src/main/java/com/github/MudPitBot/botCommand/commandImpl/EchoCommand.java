@@ -16,4 +16,9 @@ public class EchoCommand extends Command {
 		receiver.echo(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "echo";
+	}
+
 }

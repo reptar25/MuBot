@@ -16,4 +16,9 @@ public class VolumeCommand extends Command {
 		receiver.volume(event, params);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "volume";
+	}
+
 }

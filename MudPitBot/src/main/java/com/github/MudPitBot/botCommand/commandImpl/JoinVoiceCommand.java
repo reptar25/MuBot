@@ -16,4 +16,9 @@ public class JoinVoiceCommand extends Command {
 		receiver.join(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "join";
+	}
+
 }

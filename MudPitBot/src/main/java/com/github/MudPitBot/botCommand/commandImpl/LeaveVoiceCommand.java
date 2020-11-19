@@ -16,4 +16,9 @@ public class LeaveVoiceCommand extends Command {
 		receiver.leave(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "leave";
+	}
+
 }

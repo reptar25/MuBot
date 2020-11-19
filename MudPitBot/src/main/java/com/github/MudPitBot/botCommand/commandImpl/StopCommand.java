@@ -16,4 +16,9 @@ public class StopCommand extends Command {
 		receiver.stop(event);
 	}
 
+	@Override
+	public String getCommandTrigger() {
+		return "stop";
+	}
+
 }
