@@ -158,13 +158,14 @@ public class CommandReceiver {
 				if (event.getMessage().getContent() != null) {
 					
 					// unpause
-					if(params.length == 0 && scheduler.isPaused()) {
+					if(params[0].isEmpty() && scheduler.isPaused()) {
 						scheduler.pause(false);
+						return;
 					}
 					
 					if (params.length <= 0 || params.length > 1) {
 						LOGGER.error("Too many or few params for play");
-						//return;
+						return;
 					}
 					PlayerManager.playerManager.loadItem(params[0], scheduler);
 					LOGGER.info("Loaded music item: "+params[0]);
