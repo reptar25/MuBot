@@ -21,7 +21,7 @@ public abstract class Commands {
 
 	/*
 	 * Command names should always be in lower-case here since we do .toLowerCase()
-	 * on the command to make them non case sensitive.
+	 * when checking the command to make them non case sensitive.
 	 */
 	static {
 		COMMANDS.put("join", new JoinVoiceCommand(RECEIVER));

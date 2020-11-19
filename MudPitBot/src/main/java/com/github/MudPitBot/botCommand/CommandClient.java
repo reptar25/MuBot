@@ -55,7 +55,7 @@ public class CommandClient {
 				.subscribe(event -> {
 					if (event.getMessage() != null && event.getMessage().getContent() != null) {
 						// 3.1 Message.getContent() is a String
-						final String content = event.getMessage().getContent().toLowerCase();
+						final String content = event.getMessage().getContent();
 
 						// print out new message to logs
 						logMessage(event, content);
@@ -142,7 +142,7 @@ public class CommandClient {
 			for (final Entry<String, Command> entry : Commands.entries()) {
 				// We will be using ! as our "prefix" to any command in the system.
 				if (command.startsWith('!' + entry.getKey().toLowerCase())) {
-					command = command.replaceAll('!'+ entry.getKey().toLowerCase(), "").trim();
+					command = command.replaceAll('!'+ entry.getKey(), "").trim();
 					String[] params = command.split(" ");
 					executor.executeCommand(event, entry.getValue(), params);
 					break;

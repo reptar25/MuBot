@@ -161,7 +161,7 @@ public class CommandReceiver {
 						//return;
 					}
 					PlayerManager.playerManager.loadItem(params[0], scheduler);
-					LOGGER.info("Loaded music item");
+					LOGGER.info("Loaded music item: "+params[0]);
 				}
 			}
 		}
