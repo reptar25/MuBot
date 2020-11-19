@@ -7,19 +7,14 @@ import java.util.regex.Pattern;
 import com.github.MudPitBot.botCommand.poll.Poll;
 import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
-import com.github.MudPitBot.botCommand.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.Embed;
 import discord4j.core.object.VoiceState;
-import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
-import discord4j.core.object.reaction.ReactionEmoji;
-import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.rest.util.Color;
 import discord4j.voice.VoiceConnection;
 import reactor.util.Logger;
@@ -39,6 +34,8 @@ public class CommandReceiver {
 
 	public static boolean muteToggle = false;
 	public static long muteChannelId = 0;
+
+	private static VoiceConnection currentVoiceConnection;
 
 	public static CommandReceiver getInstance() {
 		if (instance == null)
@@ -76,7 +73,8 @@ public class CommandReceiver {
 							}
 							// join returns a VoiceConnection which would be required if we were
 							// adding disconnection features, but for now we are just ignoring it.
-							channel.join(spec -> spec.setProvider(PlayerManager.provider)).block();
+							currentVoiceConnection = channel.join(spec -> spec.setProvider(PlayerManager.provider))
+									.block();
 						}
 					}
 				}
@@ -85,38 +83,13 @@ public class CommandReceiver {
 	}
 
 	/*
-	 * Bot leaves the voice channel if its the same as the one the user is connected
-	 * to.
+	 * Bot leaves any voice channel it has previously joined into using the join
+	 * command
 	 */
 	public void leave(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMessage() != null && event.getClient() != null) {
-				Guild guild = event.getMessage().getGuild().block();
-				if (guild != null) {
-					VoiceConnection botConnection = guild.getVoiceConnection().block();
-					// If the client isn't in a voiceChannel, don't execute any other code
-					if (botConnection == null) {
-						// System.out.println("BOT NOT IN A VOICE CHANNEL");
-						return;
-					}
-					// get member who used command
-					final Member member = event.getMember().orElse(null);
-					if (member != null) {
-						// get voice channel member is in
-						final VoiceState voiceState = member.getVoiceState().block();
-						if (voiceState != null) {
-							long botChannelId = botConnection.getChannelId().block().asLong();
-							long memberChannelId = voiceState.getChannel().block().getId().asLong();
-							// check if user and bot are in the same channel
-							if (memberChannelId == botChannelId) {
-								botConnection.disconnect().block();
-								LOGGER.info("Bot disconnecting from voice channel.");
-								// System.out.println("DISCONNECTING");
-							}
-						}
-					}
-				}
-			}
+		if (currentVoiceConnection != null) {
+			currentVoiceConnection.disconnect().block();
+			LOGGER.info("Discconecting from channel");
 		}
 	}
 
@@ -349,20 +322,23 @@ public class CommandReceiver {
 				if (event.getMessage() != null) {
 					MessageChannel channel = event.getMessage().getChannel().block();
 					if (channel != null) {
-						Poll poll = new Poll.Builder(event).build();//new Poll(event);
+						// create a new poll object
+						Poll poll = new Poll.Builder(event).build();;
 
+						// if the poll is invalid just stop
 						if (poll.getAnswers().size() <= 1) {
 							return;
 						}
 
-						Message message = channel
-								.createEmbed(spec -> spec.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
-										.setTitle(poll.getTitle()).setDescription(poll.getDescription()))
-								.block();
-						
+						// create the embed to put the poll into
+						Message message = channel.createEmbed(spec -> spec.setColor(Color.of(23, 53, 77))
+								.setFooter(poll.getFooter(), poll.getFooterURL()).setTitle(poll.getTitle())
+								.setDescription(poll.getDescription())).block();
+
 						if (message != null) {
+							// add reactions as vote tickers, number of reactions depends on number of answers
 							poll.addReactions(message);
-							//message.pin().block();
+							// message.pin().block();
 						}
 					}
 				}
