@@ -21,7 +21,7 @@ import reactor.util.Loggers;
 public class CommandClient {
 
 	private static final Logger LOGGER = Loggers.getLogger(CommandClient.class);
-	private static final char COMMAND_PREFIX = '1';
+	private static final char COMMAND_PREFIX = '!';
 	private GatewayDiscordClient client;
 	private CommandExecutor executor = new CommandExecutor();
 	private static CommandClient instance;
