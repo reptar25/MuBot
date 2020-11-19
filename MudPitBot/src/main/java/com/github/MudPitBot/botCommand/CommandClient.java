@@ -2,8 +2,8 @@ package com.github.MudPitBot.botCommand;
 
 import java.util.Map.Entry;
 
-import com.github.MudPitBot.botCommand.commandImpl.Commands;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.Commands;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;

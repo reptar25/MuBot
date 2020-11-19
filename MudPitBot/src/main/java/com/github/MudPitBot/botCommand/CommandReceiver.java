@@ -156,6 +156,12 @@ public class CommandReceiver {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				if (event.getMessage().getContent() != null) {
+					
+					// unpause
+					if(params.length == 0 && scheduler.isPaused()) {
+						scheduler.pause(false);
+					}
+					
 					if (params.length <= 0 || params.length > 1) {
 						LOGGER.error("Too many or few params for play");
 						//return;
@@ -343,5 +349,9 @@ public class CommandReceiver {
 				}
 			}
 		}
+	}
+
+	public void pause() {
+		scheduler.pause(!scheduler.isPaused());
 	}
 }

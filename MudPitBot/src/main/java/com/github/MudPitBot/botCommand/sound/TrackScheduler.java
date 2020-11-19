@@ -28,29 +28,31 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		this.player = player;
 
 		TrackScheduler.queue = new LinkedBlockingQueue<>();
-		
+
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
 	}
-	
-	  public void queue(AudioTrack track) {
-		    // Calling startTrack with the noInterrupt set to true will start the track only if nothing is currently playing. If
-		    // something is playing, it returns false and does nothing. In that case the player was already playing so this
-		    // track goes to the queue instead.
-		    if (!player.startTrack(track, true)) {
-		      queue.offer(track);
-		      LOGGER.info("Track added to the queue: "+queue.size());
-		    }
-		  }
+
+	public void queue(AudioTrack track) {
+		// Calling startTrack with the noInterrupt set to true will start the track only
+		// if nothing is currently playing. If
+		// something is playing, it returns false and does nothing. In that case the
+		// player was already playing so this
+		// track goes to the queue instead.
+		if (!player.startTrack(track, true)) {
+			queue.offer(track);
+			LOGGER.info("Track added to the queue: " + queue.size());
+		}
+	}
 
 	@Override
 	public void trackLoaded(final AudioTrack track) {
 		// LavaPlayer found an audio source for us to play
-		//if (player.getPlayingTrack() != null)
-		//	player.playTrack(track);
-		//else {
+		// if (player.getPlayingTrack() != null)
+		// player.playTrack(track);
+		// else {
 		queue(track);
-		//}
+		// }
 	}
 
 	@Override
@@ -85,24 +87,24 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		// player.
 		player.startTrack(queue.poll(), false);
 	}
-	
+
 	/*
 	 * Clears the queue of all objects
 	 */
 	public void clearQueue() {
 		queue.clear();
 	}
-	
-	
+
 	/**
-	 * Gets a list of the  songs that are currently in the queue.
+	 * Gets a list of the songs that are currently in the queue.
+	 * 
 	 * @return List of queued songs
 	 */
-	public List<AudioTrack> getQueue(){
+	public List<AudioTrack> getQueue() {
 		List<AudioTrack> ret = new ArrayList<AudioTrack>();
 		Object[] queueArr = queue.toArray();
-		for(int i = 0; i <  queueArr.length; i++) {
-			if(queueArr[i] instanceof AudioTrack) {
+		for (int i = 0; i < queueArr.length; i++) {
+			if (queueArr[i] instanceof AudioTrack) {
 				AudioTrack track = (AudioTrack) queueArr[i];
 				ret.add(track);
 			}
@@ -110,9 +112,29 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		}
 		return ret;
 	}
-	
+
+	/**
+	 * @return true if player is currently paused, false otherwise
+	 */
+	public boolean isPaused() {
+
+		if (player == null)
+			return false;
+
+		return player.isPaused();
+	}
+
+	/**
+	 * @param pause sets if the player is paused or not
+	 */
+	public void pause(boolean pause) {
+		if (player != null)
+			player.setPaused(pause);
+	}
+
 	/*
 	 * Gets the track that is currently playing.
+	 * 
 	 * @return the AudioTrack that is playing
 	 */
 	public AudioTrack getNowPlaying() {
