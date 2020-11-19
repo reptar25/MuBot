@@ -163,7 +163,7 @@ public class CommandReceiver {
 						return;
 					}
 					
-					if (params.length <= 0 || params.length > 1) {
+					if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
 						LOGGER.error("Too many or few params for play");
 						return;
 					}
@@ -179,6 +179,8 @@ public class CommandReceiver {
 	 */
 	public void volume(MessageCreateEvent event, String[] params) {
 		if (event != null && event.getMessage() != null) {
+			if(params == null)
+				return;
 			//final String content = event.getMessage().getContent();
 			//final String[] command = content.split(" ");
 			if (params.length <= 0 || params.length > 1) {
