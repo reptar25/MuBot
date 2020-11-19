@@ -67,7 +67,7 @@ public abstract class Commands {
 				Class<?> clazz = Class.forName(c.getName());
 				Constructor<?> constructor = clazz.getConstructor(CommandReceiver.class);
 				Command instance = (Command) constructor.newInstance(RECEIVER);
-				COMMANDS.put(instance.getCommandTrigger(), instance);
+				COMMANDS.put(instance.getCommandTrigger().toLowerCase(), instance);
 
 			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) {
