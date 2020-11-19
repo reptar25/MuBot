@@ -21,6 +21,7 @@ import reactor.util.Loggers;
 public class CommandClient {
 
 	private static final Logger LOGGER = Loggers.getLogger(CommandClient.class);
+	private static final char COMMAND_PREFIX = '1';
 	private GatewayDiscordClient client;
 	private CommandExecutor executor = new CommandExecutor();
 	private static CommandClient instance;
@@ -70,13 +71,15 @@ public class CommandClient {
 		 */
 		client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
 
-			// Checks whether a member should be muted on joining a voice channel and mutes them if so
+			// Checks whether a member should be muted on joining a voice channel and mutes
+			// them if so
 			muteOnJoin(event);
 		});
 	};
 
 	/**
-	 * Checks if the new voice channel is the channel the bot currently has muted, and mutes the member if it is
+	 * Checks if the new voice channel is the channel the bot currently has muted,
+	 * and mutes the member if it is
 	 * 
 	 * @param event event of the channel change
 	 */
@@ -136,13 +139,14 @@ public class CommandClient {
 	private void processMessage(MessageCreateEvent event, String content) {
 		// split content at ! to allow for compound commands (more than 1 command in 1
 		// message)
-		String[] commands = content.split("(?=!)");
+		// this regex splits at !, but doesn't remove it from the resulting string
+		String[] commands = content.split("(?="+COMMAND_PREFIX+")");
 		for (String command : commands) {
 			command = command.trim();
 			for (final Entry<String, Command> entry : Commands.entries()) {
 				// We will be using ! as our "prefix" to any command in the system.
-				if (command.startsWith('!' + entry.getKey().toLowerCase())) {
-					command = command.replaceAll('!'+ entry.getKey(), "").trim();
+				if (command.startsWith(COMMAND_PREFIX + entry.getKey().toLowerCase())) {
+					command = command.replaceAll(COMMAND_PREFIX + entry.getKey(), "").trim();
 					String[] params = command.split(" ");
 					executor.executeCommand(event, entry.getValue(), params);
 					break;
