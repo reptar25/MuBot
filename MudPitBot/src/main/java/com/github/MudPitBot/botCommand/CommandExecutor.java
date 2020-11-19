@@ -11,8 +11,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 */
 public class CommandExecutor {
 	
-    public void executeCommand(Command command, MessageCreateEvent event) {
-    	command.execute(event);
+    public void executeCommand(MessageCreateEvent event, Command command, String[] params) {//MessageCreateEvent event
+    	command.execute(event, params);
     }
 
 }

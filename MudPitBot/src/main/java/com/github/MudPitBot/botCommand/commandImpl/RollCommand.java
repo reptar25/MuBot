@@ -12,7 +12,7 @@ public class RollCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event) {
+	public void execute(MessageCreateEvent event, String[] params) {
 		receiver.roll(event);
 	}
 

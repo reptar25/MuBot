@@ -25,15 +25,16 @@ public final class Poll {
 	public static class Builder {
 
 		private MessageCreateEvent event;
+		private String[] params;
 		private String footer;
 		private String footerURL;
 		private String title;
 		private ArrayList<String> answers = new ArrayList<String>();
 		private String description;
 
-		public Builder(MessageCreateEvent event) {
+		public Builder(MessageCreateEvent event, String[] params) {
 			this.event = event;
-
+			this.params = params;
 			buildPoll();
 		}
 
@@ -43,11 +44,32 @@ public final class Poll {
 				return;
 			}
 
-			buildAnswers(event.getMessage().getContent());
+			buildAnswers(params);
 
 			if (answers.isEmpty())
 				return;
 
+			buildFooter();
+
+			buildDescription();
+		}
+
+		private void buildAnswers(String[] params) {
+			//String[] splitCommand = command.split(" \"");
+
+			if (params.length < 3) {
+				LOGGER.info("Not enough arguments for poll command");
+				return;
+			}
+
+			title = params[0].replaceAll("\"", "");
+
+			for (int i = 1; i < params.length; i++) {
+				answers.add(params[i].replaceAll("\"", ""));
+			}
+		}
+		
+		private void buildFooter() {
 			Date date = new Date(System.currentTimeMillis());
 			DateFormat df = new SimpleDateFormat("EEEE, MMMM dd");// , 'at' hh:mm a
 			String timeStamp = df.format(date);
@@ -60,8 +82,6 @@ public final class Poll {
 			Member member = event.getMember().orElse(null);
 			if (member != null)
 				this.footerURL = member.getAvatarUrl();
-
-			buildDescription();
 		}
 
 		private void buildDescription() {
@@ -72,21 +92,6 @@ public final class Poll {
 			}
 
 			description = sb.toString();
-		}
-
-		private void buildAnswers(String command) {
-			String[] splitCommand = command.split(" \"");
-
-			if (splitCommand.length < 3) {
-				LOGGER.info("Not enough arguments for poll command");
-				return;
-			}
-
-			title = splitCommand[1].replaceAll("\"", "");
-
-			for (int i = 2; i < splitCommand.length; i++) {
-				answers.add(splitCommand[i].replaceAll("\"", ""));
-			}
 		}
 
 		public Poll build() {

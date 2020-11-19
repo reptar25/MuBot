@@ -10,7 +10,6 @@ import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
-import discord4j.core.spec.Spec;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -26,7 +25,7 @@ public class CommandClient {
 	private CommandExecutor executor = new CommandExecutor();
 	private static CommandClient instance;
 
-	// Singleton create method=
+	// Singleton create method
 	public static CommandClient create(GatewayDiscordClient client) {
 		if (instance == null)
 			instance = new CommandClient(client);
@@ -137,12 +136,15 @@ public class CommandClient {
 	private void processMessage(MessageCreateEvent event, String content) {
 		// split content at ! to allow for compound commands (more than 1 command in 1
 		// message)
-		String[] commands = content.split("!");
-		for (final String command : commands) {
+		String[] commands = content.split("(?=!)");
+		for (String command : commands) {
+			command = command.trim();
 			for (final Entry<String, Command> entry : Commands.entries()) {
 				// We will be using ! as our "prefix" to any command in the system.
 				if (command.startsWith('!' + entry.getKey().toLowerCase())) {
-					executor.executeCommand(entry.getValue(), event);
+					command = command.replaceAll('!'+ entry.getKey().toLowerCase(), "").trim();
+					String[] params = command.split(" ");
+					executor.executeCommand(event, entry.getValue(), params);
 					break;
 				}
 			}

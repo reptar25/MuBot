@@ -13,7 +13,8 @@ public abstract class Commands {
 	// TODO: There is probably a better way to handle this other than a static map,
 	// but this works for now.
 
-	// Immutable structure that maps string commands to the concrete implementation of that
+	// Immutable structure that maps string commands to the concrete implementation
+	// of that
 	// command.
 	private static final HashMap<String, Command> COMMANDS = new HashMap<>();
 	private static final CommandReceiver RECEIVER = CommandReceiver.getInstance();
@@ -38,20 +39,27 @@ public abstract class Commands {
 		COMMANDS.put("nowplaying", new NowPlayingCommand(RECEIVER));
 		COMMANDS.put("poll", new PollCommand(RECEIVER));
 	}
-	
-	
+
 	/**
 	 * @return the entries of the command map
 	 */
-	public static final Set<Entry<String, Command>> entries (){
+	public static final Set<Entry<String, Command>> entries() {
 		return COMMANDS.entrySet();
 	}
-	
+
 	/**
 	 * @return the values of the command map
 	 */
-	public static final Collection<Command> values () {
+	public static final Collection<Command> values() {
 		return COMMANDS.values();
+	}
+
+	public static final boolean containsKey(String key) {
+		return COMMANDS.containsKey(key);
+	}
+	
+	public static final Command get(String key) {
+		return COMMANDS.get(key);
 	}
 
 }

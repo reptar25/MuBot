@@ -12,8 +12,8 @@ public class PlayCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event) {
-		receiver.play(event);
+	public void execute(MessageCreateEvent event, String[] params) {
+		receiver.play(event, params);
 	}
 
 }

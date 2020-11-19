@@ -12,8 +12,8 @@ public class VolumeCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event) {
-		receiver.volume(event);
+	public void execute(MessageCreateEvent event, String[] params) {
+		receiver.volume(event, params);
 	}
 
 }

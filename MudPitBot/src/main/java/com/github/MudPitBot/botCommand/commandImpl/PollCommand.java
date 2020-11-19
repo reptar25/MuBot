@@ -12,8 +12,8 @@ public class PollCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event) {
-		receiver.poll(event);
+	public void execute(MessageCreateEvent event, String[] params) {
+		receiver.poll(event, params);
 	}
 
 }

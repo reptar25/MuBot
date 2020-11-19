@@ -152,16 +152,15 @@ public class CommandReceiver {
 	/*
 	 * Attempts to play the link in the message
 	 */
-	public void play(MessageCreateEvent event) {
+	public void play(MessageCreateEvent event, String[] params) {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				if (event.getMessage().getContent() != null) {
-					final String content = event.getMessage().getContent();
-					final String[] command = content.split(" ");
-					if (command.length <= 1 || command.length > 2) {
-						return;
+					if (params.length <= 0 || params.length > 1) {
+						LOGGER.error("Too many or few params for play");
+						//return;
 					}
-					PlayerManager.playerManager.loadItem(command[1], scheduler);
+					PlayerManager.playerManager.loadItem(params[0], scheduler);
 					LOGGER.info("Loaded music item");
 				}
 			}
@@ -171,16 +170,16 @@ public class CommandReceiver {
 	/*
 	 * Sets the volume of the LavaPlayer
 	 */
-	public void volume(MessageCreateEvent event) {
-		if (event != null && event.getMessage() != null && event.getMessage().getContent() != null) {
-			final String content = event.getMessage().getContent();
-			final String[] command = content.split(" ");
-			if (command.length <= 1 || command.length > 2) {
-				return;
+	public void volume(MessageCreateEvent event, String[] params) {
+		if (event != null && event.getMessage() != null) {
+			//final String content = event.getMessage().getContent();
+			//final String[] command = content.split(" ");
+			if (params.length <= 0 || params.length > 1) {
+				LOGGER.error("Too many or few params for volume");
 			}
 
-			if (Pattern.matches("[1-9]*[0-9]*[0-9]", command[1])) {
-				int volume = Integer.parseInt(command[1]);
+			if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
+				int volume = Integer.parseInt(params[0]);
 				PlayerManager.player.setVolume(volume);
 				StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
 				LOGGER.info(sb.toString());
@@ -316,14 +315,14 @@ public class CommandReceiver {
 	/*
 	 * Creates a poll in the channel
 	 */
-	public void poll(MessageCreateEvent event) {
+	public void poll(MessageCreateEvent event, String[] params) {
 		if (event != null) {
 			if (event.getClient() != null) {
 				if (event.getMessage() != null) {
 					MessageChannel channel = event.getMessage().getChannel().block();
 					if (channel != null) {
 						// create a new poll object
-						Poll poll = new Poll.Builder(event).build();;
+						Poll poll = new Poll.Builder(event, params).build();
 
 						// if the poll is invalid just stop
 						if (poll.getAnswers().size() <= 1) {

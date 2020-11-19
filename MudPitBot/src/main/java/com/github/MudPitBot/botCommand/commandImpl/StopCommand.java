@@ -12,7 +12,7 @@ public class StopCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event) {
+	public void execute(MessageCreateEvent event, String[] params) {
 		receiver.stop(event);
 	}
 

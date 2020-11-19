@@ -12,7 +12,7 @@ public class SkipCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event) {
+	public void execute(MessageCreateEvent event, String[] params) {
 		receiver.skip(event);
 	}
 
