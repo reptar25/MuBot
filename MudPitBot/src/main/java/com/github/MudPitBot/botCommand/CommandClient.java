@@ -70,7 +70,7 @@ public class CommandClient {
 						}
 						sb.append(" - \"").append(content).append("\"");
 						LOGGER.info(sb.toString());
-						for (final Entry<String, Command> entry : Commands.COMMANDS.entrySet()) {
+						for (final Entry<String, Command> entry : Commands.entries()) {
 							// We will be using ! as our "prefix" to any command in the system.
 							if (content.startsWith('!' + entry.getKey().toLowerCase())) {
 								executor.executeCommand(entry.getValue(), event);

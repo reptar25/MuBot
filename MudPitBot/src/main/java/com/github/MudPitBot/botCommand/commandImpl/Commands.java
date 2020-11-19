@@ -1,15 +1,21 @@
 package com.github.MudPitBot.botCommand.commandImpl;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.github.MudPitBot.botCommand.CommandReceiver;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
 
 public abstract class Commands {
 
-	// Structure that maps string commands to the concrete implementation of that
-	// command
-	public static final HashMap<String, Command> COMMANDS = new HashMap<>();
+	// TODO: There is probably a better way to handle this other than a static map,
+	// but this works for now.
+
+	// Immutable structure that maps string commands to the concrete implementation of that
+	// command.
+	private static final HashMap<String, Command> COMMANDS = new HashMap<>();
 	private static final CommandReceiver RECEIVER = CommandReceiver.getInstance();
 
 	/*
@@ -31,6 +37,21 @@ public abstract class Commands {
 		COMMANDS.put("viewqueue", new ViewQueueCommand(RECEIVER));
 		COMMANDS.put("nowplaying", new NowPlayingCommand(RECEIVER));
 		COMMANDS.put("poll", new PollCommand(RECEIVER));
+	}
+	
+	
+	/**
+	 * @return the entries of the command map
+	 */
+	public static final Set<Entry<String, Command>> entries (){
+		return COMMANDS.entrySet();
+	}
+	
+	/**
+	 * @return the values of the command map
+	 */
+	public static final Collection<Command> values () {
+		return COMMANDS.values();
 	}
 
 }

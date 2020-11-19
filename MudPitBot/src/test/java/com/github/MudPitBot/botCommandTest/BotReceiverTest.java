@@ -36,7 +36,7 @@ class BotReceiverTest {
 	@Test
 	void nullEvent() {
 		when(mockEvent).thenReturn(null);
-		for (Command c : Commands.COMMANDS.values()) {
+		for (Command c : Commands.values()) {
 			c.execute(mockEvent);
 		}
 	}
@@ -44,7 +44,7 @@ class BotReceiverTest {
 	@Test
 	void nullMessage() {
 		when(mockEvent.getMessage()).thenReturn(null);
-		for (Command c : Commands.COMMANDS.values()) {
+		for (Command c : Commands.values()) {
 			c.execute(mockEvent);
 		}
 	}
@@ -52,7 +52,7 @@ class BotReceiverTest {
 	@Test
 	void nullMember() {
 		when(mockEvent.getMember()).thenReturn(null);
-		for (Command c : Commands.COMMANDS.values()) {
+		for (Command c : Commands.values()) {
 			c.execute(mockEvent);
 		}
 	}
@@ -61,7 +61,7 @@ class BotReceiverTest {
 	void nullGuild() {
 		when(mockEvent.getGuild()).thenReturn(monoGuild);
 		when(mockEvent.getGuild().block()).thenReturn(mockGuild);
-		for (Command c : Commands.COMMANDS.values()) {
+		for (Command c : Commands.values()) {
 			c.execute(mockEvent);
 		}
 	}
@@ -72,7 +72,7 @@ class BotReceiverTest {
 		when(mockEvent.getMessage()).thenReturn(mockMessage);
 		when(mockEvent.getMessage().getChannel()).thenReturn(monoChannel);
 		when(mockEvent.getMessage().getChannel().block()).thenReturn(mockChannel);
-		for (Command c : Commands.COMMANDS.values()) {
+		for (Command c : Commands.values()) {
 			c.execute(mockEvent);
 		}
 	}
