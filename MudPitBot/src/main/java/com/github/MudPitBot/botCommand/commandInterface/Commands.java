@@ -52,8 +52,9 @@ public abstract class Commands {
 	 * extend Command automatically get added to the map without any extra work
 	 */
 	private static void buildCommandMap() {
-		// scan urls that contain 'my.package', include inputs starting with
-		// 'my.package', use the default scanners
+		// scan urls that contain 'com.github.MudPitBot.botCommand.commandImpl', include
+		// inputs starting with'com.github.MudPitBot.botCommand.commandImpl', use the
+		// default scanners
 		Reflections reflections = new Reflections("com.github.MudPitBot.botCommand.commandImpl");
 		// get a set of all the subclasses of Command
 		Set<Class<? extends Command>> subTypes = reflections.getSubTypesOf(Command.class);
@@ -70,7 +71,6 @@ public abstract class Commands {
 
 			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -81,14 +81,6 @@ public abstract class Commands {
 	 */
 	public static final Collection<Command> values() {
 		return COMMANDS.values();
-	}
-
-	public static final boolean containsKey(String key) {
-		return COMMANDS.containsKey(key);
-	}
-
-	public static final Command get(String key) {
-		return COMMANDS.get(key);
 	}
 
 }
