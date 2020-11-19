@@ -1,4 +1,4 @@
-package com.github.MudPitBot.botCommand.commandImpl;
+package com.github.MudPitBot.botCommand.commandInterface;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.Set;
 import org.reflections.Reflections;
 
 import com.github.MudPitBot.botCommand.CommandReceiver;
-import com.github.MudPitBot.botCommand.commandInterface.Command;
+
 import java.lang.reflect.*;
 
 public abstract class Commands {
