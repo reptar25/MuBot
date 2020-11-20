@@ -1,9 +1,13 @@
 package com.github.MudPitBot.botCommand;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.Commands;
 import com.github.MudPitBot.botCommand.poll.Poll;
 import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
@@ -153,24 +157,21 @@ public class CommandReceiver {
 	 * Attempts to play the link in the message
 	 */
 	public void play(MessageCreateEvent event, String[] params) {
-		if (event != null) {
-			if (event.getMessage() != null) {
-				if (event.getMessage().getContent() != null) {
-					
-					// unpause
-					if(params[0].isEmpty() && scheduler.isPaused()) {
-						scheduler.pause(false);
-						return;
-					}
-					
-					if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
-						LOGGER.error("Too many or few params for play");
-						return;
-					}
-					PlayerManager.playerManager.loadItem(params[0], scheduler);
-					LOGGER.info("Loaded music item: "+params[0]);
-				}
+
+		if (params != null) {
+
+			// unpause
+			if (params[0].isEmpty() && scheduler.isPaused()) {
+				scheduler.pause(false);
+				return;
 			}
+
+			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
+				LOGGER.error("Too many or few params for play");
+				return;
+			}
+			PlayerManager.playerManager.loadItem(params[0], scheduler);
+			LOGGER.info("Loaded music item: " + params[0]);
 		}
 	}
 
@@ -179,22 +180,22 @@ public class CommandReceiver {
 	 */
 	public void volume(MessageCreateEvent event, String[] params) {
 		if (event != null && event.getMessage() != null) {
-			if(params == null)
-				return;
-			//final String content = event.getMessage().getContent();
-			//final String[] command = content.split(" ");
-			if (params.length <= 0 || params.length > 1) {
-				LOGGER.error("Too many or few params for volume");
-			}
+			if (params != null) {
+				// final String content = event.getMessage().getContent();
+				// final String[] command = content.split(" ");
+				if (params.length <= 0 || params.length > 1) {
+					LOGGER.error("Too many or few params for volume");
+				}
 
-			if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
-				int volume = Integer.parseInt(params[0]);
-				PlayerManager.player.setVolume(volume);
-				StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
-				LOGGER.info(sb.toString());
-				MessageChannel channel = event.getMessage().getChannel().block();
-				if (channel != null)
-					channel.createMessage(sb.toString()).block();
+				if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
+					int volume = Integer.parseInt(params[0]);
+					PlayerManager.player.setVolume(volume);
+					StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
+					LOGGER.info(sb.toString());
+					MessageChannel channel = event.getMessage().getChannel().block();
+					if (channel != null)
+						channel.createMessage(sb.toString()).block();
+				}
 			}
 		}
 	}
@@ -315,7 +316,7 @@ public class CommandReceiver {
 				MessageChannel channel = event.getMessage().getChannel().block();
 				if (channel != null && event.getClient() != null) {
 					// send back message to channel we had received the command in
-					channel.createMessage(sb.toString()).block().addReaction(null);
+					channel.createMessage(sb.toString()).block();
 				}
 			}
 		}
@@ -344,7 +345,8 @@ public class CommandReceiver {
 								.setDescription(poll.getDescription())).block();
 
 						if (message != null) {
-							// add reactions as vote tickers, number of reactions depends on number of answers
+							// add reactions as vote tickers, number of reactions depends on number of
+							// answers
 							poll.addReactions(message);
 							// message.pin().block();
 						}
@@ -354,7 +356,32 @@ public class CommandReceiver {
 		}
 	}
 
+	/*
+	 * Pauses/unpauses the player
+	 */
 	public void pause() {
 		scheduler.pause(!scheduler.isPaused());
+	}
+
+	/*
+	 * Prints a list of all commands in the channel the message was sent.
+	 */
+	public void printCommands(MessageCreateEvent event, String[] params) {
+		if (event != null) {
+			if (event.getClient() != null) {
+				if (event.getMessage() != null) {
+					MessageChannel channel = event.getMessage().getChannel().block();
+					if (channel != null) {
+						StringBuilder sb = new StringBuilder("Available commands:");
+						Set<Entry<String, Command>> entries = Commands.getEntries();
+						for (Entry<String, Command> entry : entries) {
+							sb.append(", ").append(Commands.COMMAND_PREFIX).append(entry.getKey());
+						}
+
+						channel.createMessage(sb.toString()).block();
+					}
+				}
+			}
+		}
 	}
 }
