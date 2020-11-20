@@ -16,9 +16,6 @@ public abstract class Command implements CommandInterface {
 	}
 
 	/*
-	
-	 */
-	/**
 	 * This enforces users to implement what the command trigger should be when
 	 * making a subclass. If we just used a protected variable then there would be
 	 * no way to enforce it being set. Command names should always be in lower-case
