@@ -57,7 +57,7 @@ public final class Poll {
 		private void buildAnswers(String[] params) {
 			//String[] splitCommand = command.split(" \"");
 
-			if (params.length < 3) {
+			if (params == null || params.length < 3) {
 				LOGGER.info("Not enough arguments for poll command");
 				return;
 			}
