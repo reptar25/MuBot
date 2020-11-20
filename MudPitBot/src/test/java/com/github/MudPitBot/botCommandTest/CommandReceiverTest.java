@@ -2,9 +2,12 @@ package com.github.MudPitBot.botCommandTest;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+
+import com.github.MudPitBot.botCommand.CommandReceiver;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
 import com.github.MudPitBot.botCommand.commandInterface.Commands;
 
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
@@ -13,7 +16,10 @@ import reactor.core.publisher.Mono;
 
 import static org.mockito.Mockito.*;
 
-class BotReceiverTest {
+class CommandReceiverTest {
+
+	@Mock
+	static GatewayDiscordClient mockClient = mock(GatewayDiscordClient.class);
 
 	@Mock
 	MessageCreateEvent mockEvent = mock(MessageCreateEvent.class);
@@ -32,8 +38,13 @@ class BotReceiverTest {
 
 	@Mock
 	Mono<Guild> monoGuild = mock(Mono.class);
-	
+
+	@Mock
+	Mono<Message> monoMessage = mock(Mono.class);
+
 	String[] args = null;
+
+	CommandReceiver receiver = CommandReceiver.getInstance();
 
 	@Test
 	void nullEvent() {
@@ -62,7 +73,7 @@ class BotReceiverTest {
 	@Test
 	void nullGuild() {
 		when(mockEvent.getGuild()).thenReturn(monoGuild);
-		when(mockEvent.getGuild().block()).thenReturn(mockGuild);
+		when(monoGuild.block()).thenReturn(null);
 		for (Command c : Commands.values()) {
 			c.execute(mockEvent, args);
 		}
@@ -72,11 +83,20 @@ class BotReceiverTest {
 	void nullChannel() {
 		// when(mockEvent.getMessage()).thenReturn(mockMessage);
 		when(mockEvent.getMessage()).thenReturn(mockMessage);
-		when(mockEvent.getMessage().getChannel()).thenReturn(monoChannel);
-		when(mockEvent.getMessage().getChannel().block()).thenReturn(mockChannel);
+		when(mockMessage.getChannel()).thenReturn(monoChannel);
+		when(monoChannel.block()).thenReturn(null);
 		for (Command c : Commands.values()) {
 			c.execute(mockEvent, args);
 		}
+	}
+
+	@Test
+	void testPlay() {
+		String[] params = { "https://youtu.be/5qap5aO4i9A" };
+		receiver.play(mockEvent, params);
+
+		params[0] = "";
+		receiver.play(mockEvent, params);
 	}
 
 }
