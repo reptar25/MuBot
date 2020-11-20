@@ -3,6 +3,7 @@ package com.github.MudPitBot.botCommand.commandInterface;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -12,7 +13,7 @@ import com.github.MudPitBot.botCommand.CommandReceiver;
 
 import java.lang.reflect.*;
 
-public abstract class Commands {
+public final class Commands {
 
 	public static final char COMMAND_PREFIX = '!';
 
@@ -23,13 +24,6 @@ public abstract class Commands {
 
 	static {
 		buildCommandMap();
-	}
-
-	/**
-	 * @return the entries of the command map
-	 */
-	public static final Set<Entry<String, Command>> getEntries() {
-		return COMMANDS.entrySet();
 	}
 
 	/*
@@ -72,6 +66,17 @@ public abstract class Commands {
 		// make a defensive copy to prevent the actual map from being mutated
 		final Collection<Command> commands = new ArrayList<Command>(COMMANDS.values());
 		return commands;
+	}
+
+	/*
+	 * returns a copy of the set to prevent the COMMANDS hashmap from being mutated
+	 * through this method
+	 * 
+	 * @return the entries of the command map
+	 */
+	public static final Set<Entry<String, Command>> getEntries() {
+		Set<Entry<String, Command>> entries = new HashSet<Entry<String, Command>>(COMMANDS.entrySet());
+		return entries;
 	}
 
 }
