@@ -1,5 +1,6 @@
 package com.github.MudPitBot.botCommand.commandInterface;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -20,10 +21,6 @@ public abstract class Commands {
 	private static final HashMap<String, Command> COMMANDS = new HashMap<>();
 	private static final CommandReceiver RECEIVER = CommandReceiver.getInstance();
 
-	/*
-	 * Command names should always be in lower-case here since we do .toLowerCase()
-	 * when checking the command to make them non case sensitive.
-	 */
 	static {
 		buildCommandMap();
 	}
@@ -66,10 +63,15 @@ public abstract class Commands {
 	}
 
 	/**
-	 * @return the values of the command map
+	 * returns a copy of the collection to prevent the COMMANDS hashmap from being
+	 * mutated through this method
+	 * 
+	 * @return the literal String values of the command map
 	 */
 	public static final Collection<Command> values() {
-		return COMMANDS.values();
+		// make a defensive copy to prevent the actual map from being mutated
+		final Collection<Command> commands = new ArrayList<Command>(COMMANDS.values());
+		return commands;
 	}
 
 }
