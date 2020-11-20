@@ -12,6 +12,9 @@ import com.github.MudPitBot.botCommand.CommandReceiver;
 import java.lang.reflect.*;
 
 public abstract class Commands {
+
+	public static final char COMMAND_PREFIX = '!';
+
 	// Immutable structure that maps string commands to the concrete implementation
 	// of that command.
 	private static final HashMap<String, Command> COMMANDS = new HashMap<>();
@@ -42,7 +45,7 @@ public abstract class Commands {
 	/**
 	 * @return the entries of the command map
 	 */
-	public static final Set<Entry<String, Command>> entries() {
+	public static final Set<Entry<String, Command>> getEntries() {
 		return COMMANDS.entrySet();
 	}
 
