@@ -85,6 +85,7 @@ public class CommandClient {
 	 */
 	private void muteOnJoin(VoiceStateUpdateEvent event) {
 
+		// if mute isnt toggled on just stop
 		if (!CommandReceiver.muteToggle) {
 			return;
 		}
@@ -94,6 +95,7 @@ public class CommandClient {
 			return;
 		}
 
+		// if the newly joined channel is null just stop
 		if (event.getCurrent().getChannelId() == null) {
 			return;
 		}
@@ -115,7 +117,7 @@ public class CommandClient {
 			VoiceState oldVoiceState = event.getOld().orElse(null);
 			if (oldVoiceState != null) {
 
-				if (event.isMoveEvent() || event.isMoveEvent()) {
+				if (event.isMoveEvent() || event.isLeaveEvent()) {
 					long oldChannelId = oldVoiceState.getChannelId().orElse(null).asLong();
 					// if the channel their are leaving is the channel that was muted
 					if (oldChannelId == CommandReceiver.muteChannelId) {
