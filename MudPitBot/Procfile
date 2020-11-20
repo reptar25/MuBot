@@ -1,1 +1,1 @@
-web: java -jar MudPitBot-0.0.1-SNAPSHOT.jar Nzc2NjM5MTYwMTY0OTQxODI0.X63zlQ.nR6EOf5B9UW72QkDwsVs7GtJnwo
+java -jar MudPitBot-0.0.1-SNAPSHOT.jar
