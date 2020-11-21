@@ -9,9 +9,9 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		String token = System.getenv("token");
+		String token = args[0];
 		if (token == null)
-			token = args[0];
+			token = System.getenv("token");
 
 		final GatewayDiscordClient client = DiscordClientBuilder.create(token).build().login().block();
 
