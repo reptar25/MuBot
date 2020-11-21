@@ -325,14 +325,14 @@ public class CommandReceiver {
 	/*
 	 * Creates a poll in the channel
 	 */
-	public void poll(MessageCreateEvent event, String[] params) {
+	public void poll(MessageCreateEvent event) {
 		if (event != null) {
 			if (event.getClient() != null) {
 				if (event.getMessage() != null) {
 					MessageChannel channel = event.getMessage().getChannel().block();
 					if (channel != null) {
 						// create a new poll object
-						Poll poll = new Poll.Builder(event, params).build();
+						Poll poll = new Poll.Builder(event).build();
 
 						// if the poll is invalid just stop
 						if (poll.getAnswers().size() <= 1) {

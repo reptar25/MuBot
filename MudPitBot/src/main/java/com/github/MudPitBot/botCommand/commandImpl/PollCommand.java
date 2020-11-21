@@ -13,7 +13,7 @@ public class PollCommand extends Command {
 
 	@Override
 	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.poll(event, params);
+		receiver.poll(event);
 	}
 
 	@Override

@@ -32,9 +32,8 @@ public final class Poll {
 		private ArrayList<String> answers = new ArrayList<String>();
 		private String description;
 
-		public Builder(MessageCreateEvent event, String[] params) {
+		public Builder(MessageCreateEvent event) {
 			this.event = event;
-			this.params = params;
 			buildPoll();
 		}
 
@@ -43,7 +42,7 @@ public final class Poll {
 			if (event == null || event.getMessage() == null) {
 				return;
 			}
-			
+
 			setParams();
 
 			buildAnswers(params);
@@ -55,14 +54,14 @@ public final class Poll {
 
 			buildDescription();
 		}
-		
+
 		private void setParams() {
 			String command = event.getMessage().getContent().replace("!poll", "");
 			params = command.split(" \"");
 		}
 
 		private void buildAnswers(String[] params) {
-			//String[] splitCommand = command.split(" \"");
+			// String[] splitCommand = command.split(" \"");
 
 			if (params == null || params.length < 3) {
 				LOGGER.info("Not enough arguments for poll command");
@@ -75,7 +74,7 @@ public final class Poll {
 				answers.add(params[i].replaceAll("\"", ""));
 			}
 		}
-		
+
 		private void buildFooter() {
 			Date date = new Date(System.currentTimeMillis());
 			DateFormat df = new SimpleDateFormat("EEEE, MMMM dd");// , 'at' hh:mm a
