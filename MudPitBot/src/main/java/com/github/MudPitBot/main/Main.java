@@ -9,7 +9,6 @@ public class Main {
 
 	public static void main(String[] args) {
 		String token = args[0];
-
 		if (token == null)
 			token = System.getenv("token");
 
