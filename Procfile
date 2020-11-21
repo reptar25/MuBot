@@ -1,1 +1,0 @@
-web: java -jar MudPitBot-0.0.1-SNAPSHOT.jar $token
