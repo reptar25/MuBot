@@ -2,8 +2,6 @@ package com.github.MudPitBot.main;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
-
 import com.github.MudPitBot.botCommand.CommandClient;
 
 import discord4j.core.DiscordClientBuilder;
