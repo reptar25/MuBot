@@ -43,6 +43,8 @@ public final class Poll {
 			if (event == null || event.getMessage() == null) {
 				return;
 			}
+			
+			setParams();
 
 			buildAnswers(params);
 
@@ -52,6 +54,11 @@ public final class Poll {
 			buildFooter();
 
 			buildDescription();
+		}
+		
+		private void setParams() {
+			String command = event.getMessage().getContent().replace("!poll", "");
+			params = command.split(" \"");
 		}
 
 		private void buildAnswers(String[] params) {
