@@ -12,8 +12,16 @@ public class HerokuServer {
 
 	private int port;
 	private HttpServer server;
+	private static HerokuServer instance;
 
-	public HerokuServer(int port) {
+	public static HerokuServer create(int port) {
+		if (instance == null)
+			instance = new HerokuServer(port);
+
+		return instance;
+	}
+
+	private HerokuServer(int port) {
 		this.port = port;
 
 		try {

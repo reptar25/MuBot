@@ -1,8 +1,5 @@
 package com.github.MudPitBot.main;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-
 import com.github.MudPitBot.Heroku.HerokuServer;
 import com.github.MudPitBot.botCommand.CommandClient;
 
@@ -19,7 +16,8 @@ public class Main {
 		final GatewayDiscordClient client = DiscordClientBuilder.create(token).build().login().block();
 
 		// bind PORT for Heroku integration
-		HerokuServer socket = new HerokuServer(Integer.parseInt(System.getenv("PORT")));
+		HerokuServer.create(Integer.parseInt(System.getenv("PORT")));
+
 		CommandClient.create(client);
 
 		client.onDisconnect().block();
