@@ -318,29 +318,28 @@ public class CommandReceiver {
 	 */
 	public String poll(MessageCreateEvent event) {
 		if (event != null) {
-			if (event.getClient() != null) {
-				if (event.getMessage() != null) {
-					MessageChannel channel = event.getMessage().getChannel().block();
-					if (channel != null) {
-						// create a new poll object
-						Poll poll = new Poll.Builder(event).build();
+			if (event.getMessage() != null) {
+				MessageChannel channel = event.getMessage().getChannel().block();
+				if (channel != null) {
+					// create a new poll object
+					Poll poll = new Poll.Builder(event).build();
 
-						// if the poll is invalid just stop
-						if (poll.getAnswers().size() <= 1) {
-							return null;
-						}
+					// if the poll is invalid just stop
+					if (poll.getAnswers().size() <= 1) {
+						return null;
+					}
 
-						// create the embed to put the poll into
-						Message message = channel.createEmbed(spec -> spec.setColor(Color.of(23, 53, 77))
-								.setFooter(poll.getFooter(), poll.getFooterURL()).setTitle(poll.getTitle())
-								.setDescription(poll.getDescription())).block();
+					// create the embed to put the poll into
+					Message message = channel.createEmbed(
+							spec -> spec.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
+									.setTitle(poll.getTitle()).setDescription(poll.getDescription()))
+							.block();
 
-						if (message != null) {
-							// add reactions as vote tickers, number of reactions depends on number of
-							// answers
-							poll.addReactions(message);
-							// message.pin().block();
-						}
+					if (message != null) {
+						// add reactions as vote tickers, number of reactions depends on number of
+						// answers
+						poll.addReactions(message);
+						// message.pin().block();
 					}
 				}
 			}
