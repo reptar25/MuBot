@@ -20,15 +20,12 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 	private static final Logger LOGGER = Loggers.getLogger(TrackScheduler.class);
 
-	public static BlockingQueue<AudioTrack> queue;
+	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
 	private final AudioPlayer player;
 
 	public TrackScheduler(final AudioPlayer player) {
 		this.player = player;
-
-		TrackScheduler.queue = new LinkedBlockingQueue<>();
-
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
 	}
