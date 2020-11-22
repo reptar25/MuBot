@@ -14,6 +14,9 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import reactor.core.publisher.Mono;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class CommandReceiverTest {
@@ -91,12 +94,51 @@ class CommandReceiverTest {
 	}
 
 	@Test
+	void testEcho() {
+		String response = receiver.echo();
+		assertEquals("echo!", response);
+	}
+
+	@Test
 	void testPlay() {
 		String[] params = { "https://youtu.be/5qap5aO4i9A" };
-		receiver.play(mockEvent, params);
+		receiver.play(params);
 
 		params[0] = "";
-		receiver.play(mockEvent, params);
+		receiver.play(params);
+	}
+
+	@Test
+	void testRoll() {
+		String[] params = new String[1];
+
+		params[0] = "1d20";
+		String response = receiver.roll(params);
+		assertTrue(response.startsWith("Rolling 1d20"));
+
+		params[0] = "d20";
+		response = receiver.roll(params);
+		assertNull(response);
+	}
+
+	@Test
+	void testVolume() {
+		String[] params = new String[1];
+
+		params[0] = "50";
+		String response = receiver.volume(params);
+		assertEquals("Set volume to 50", response);
+
+		params[0] = "-1";
+		response = receiver.volume(params);
+		assertNull(response);
+	}
+	
+	@Test
+	void testNowPlaying() {
+		String response = receiver.nowPlaying();
+		
+		assertTrue(response.startsWith("Now playing:"));
 	}
 
 }
