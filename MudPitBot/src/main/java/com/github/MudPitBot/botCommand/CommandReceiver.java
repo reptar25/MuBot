@@ -368,7 +368,7 @@ public class CommandReceiver {
 		for (Entry<String, Command> entry : entries) {
 			sb.append(", ").append(Commands.COMMAND_PREFIX).append(entry.getKey());
 		}
-		return sb.toString();
+		return sb.toString().replaceAll(":,", ":");
 
 	}
 }
