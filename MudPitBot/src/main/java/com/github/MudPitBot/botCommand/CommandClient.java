@@ -1,5 +1,6 @@
 package com.github.MudPitBot.botCommand;
 
+import java.util.Arrays;
 import java.util.Map.Entry;
 
 import com.github.MudPitBot.botCommand.commandInterface.Command;
@@ -161,8 +162,7 @@ public class CommandClient {
 				// We will be using ! as our "prefix" to any command in the system.
 				String[] splitCommand = command.split(" ");
 				if (splitCommand[0].toLowerCase().startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
-					command = command.toLowerCase().replaceAll(Commands.COMMAND_PREFIX + entry.getKey(), "").trim();
-					String[] params = command.split(" ");
+					String[] params = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 
 					// commands will return any string that the bot should send back as a message to
 					// the command
