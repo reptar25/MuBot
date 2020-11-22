@@ -13,7 +13,7 @@ public class NowPlayingCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.nowPlaying(event);
+		return receiver.nowPlaying();
 	}
 
 	@Override

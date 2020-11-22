@@ -13,7 +13,7 @@ public class RollCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.roll(event, params);
+		return receiver.roll(params);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ public class EchoCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.echo(event);
+		return receiver.echo();
 	}
 
 	@Override

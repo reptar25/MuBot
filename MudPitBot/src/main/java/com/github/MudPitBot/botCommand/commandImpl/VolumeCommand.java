@@ -13,7 +13,7 @@ public class VolumeCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.volume(event, params);
+		return receiver.volume(params);
 	}
 
 	@Override

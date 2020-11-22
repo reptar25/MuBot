@@ -92,7 +92,7 @@ public class CommandReceiver {
 	 * Bot leaves any voice channel it has previously joined into using the join
 	 * command
 	 */
-	public String leave(MessageCreateEvent event) {
+	public String leave() {
 		if (currentVoiceConnection != null) {
 			currentVoiceConnection.disconnect().block();
 			LOGGER.info("Discconecting from channel");
@@ -104,21 +104,24 @@ public class CommandReceiver {
 	/*
 	 * Bot replies with a simple echo message
 	 */
-	public String echo(MessageCreateEvent event) {
+	public String echo() {
 		return ("echo!");
 	}
 
 	/*
 	 * Bot rolls dice and displays results
 	 */
-	public String roll(MessageCreateEvent event, String[] params) {
+	public String roll(String[] params) {
 
+		if (params == null) {
+			return null;
+		}
 		// will be the 2nd part of command eg "1d20"
-		if (params.length <= 1) {
+		if (params.length <= 0) {
 			return null;
 		}
 
-		String dice = params[1];
+		String dice = params[0];
 
 		// only roll if 2nd part of command matches the reg ex
 		if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
@@ -152,7 +155,7 @@ public class CommandReceiver {
 	/*
 	 * Attempts to play the link in the message
 	 */
-	public String play(MessageCreateEvent event, String[] params) {
+	public String play(String[] params) {
 
 		if (params != null) {
 
@@ -176,7 +179,7 @@ public class CommandReceiver {
 	/*
 	 * Sets the volume of the LavaPlayer
 	 */
-	public String volume(MessageCreateEvent event, String[] params) {
+	public String volume(String[] params) {
 		if (params != null) {
 			// final String content = event.getMessage().getContent();
 			// final String[] command = content.split(" ");
@@ -201,7 +204,7 @@ public class CommandReceiver {
 	/*
 	 * Stops the LavaPlayer if it is playing anything
 	 */
-	public String stop(MessageCreateEvent event) {
+	public String stop() {
 		if (PlayerManager.player != null) {
 			PlayerManager.player.stopTrack();
 			LOGGER.info("Stopped music");
@@ -213,7 +216,7 @@ public class CommandReceiver {
 	/*
 	 * Stops the current song and plays the next in queue if there is any
 	 */
-	public String skip(MessageCreateEvent event) {
+	public String skip() {
 		if (scheduler != null)
 			scheduler.nextTrack();
 
@@ -258,10 +261,9 @@ public class CommandReceiver {
 	/*
 	 * Clears the current queue of all objects
 	 */
-	public String clearQueue(MessageCreateEvent event) {
-		if (event != null) {
+	public String clearQueue() {
+		if (scheduler != null)
 			scheduler.clearQueue();
-		}
 
 		return null;
 	}
@@ -269,7 +271,7 @@ public class CommandReceiver {
 	/*
 	 * Prints out a list of the currently queued songs
 	 */
-	public String viewQueue(MessageCreateEvent event) {
+	public String viewQueue() {
 		// get list of songs currently in the queue
 		List<AudioTrack> queue = scheduler.getQueue();
 		StringBuilder sb = new StringBuilder();
@@ -299,23 +301,16 @@ public class CommandReceiver {
 	/*
 	 * Print out the info for the currently playing song
 	 */
-	public String nowPlaying(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMessage() != null) {
-				StringBuilder sb = new StringBuilder("Now playing: ");
-				// get the track that's currently playing
-				AudioTrack track = scheduler.getNowPlaying();
-				if (track != null) {
-					// add track title and author
-					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
-							.append(track.getInfo().author);
-				}
-
-				return sb.toString();
-			}
+	public String nowPlaying() {
+		StringBuilder sb = new StringBuilder("Now playing: ");
+		// get the track that's currently playing
+		AudioTrack track = scheduler.getNowPlaying();
+		if (track != null) {
+			// add track title and author
+			sb.append("\"").append(track.getInfo().title).append("\"").append(" by ").append(track.getInfo().author);
 		}
 
-		return null;
+		return sb.toString();
 	}
 
 	/*
