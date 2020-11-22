@@ -16,6 +16,12 @@ public class Main {
 		if (token == null)
 			token = System.getenv("token");
 
+		// no token found
+		if (token == null) {
+			LOGGER.error("No token found. Dicord token needs to be first argument or an env var named \"token\"");
+			return;
+		}
+
 		final GatewayDiscordClient client = DiscordClientBuilder.create(token).build().login().block();
 
 		// we should only find this when running on Heroku
