@@ -161,7 +161,7 @@ public class CommandClient {
 				// We will be using ! as our "prefix" to any command in the system.
 				String[] splitCommand = command.split(" ");
 				if (splitCommand[0].toLowerCase().startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
-					command = command.replaceAll(Commands.COMMAND_PREFIX + entry.getKey(), "").trim();
+					command = command.toLowerCase().replaceAll(Commands.COMMAND_PREFIX + entry.getKey(), "").trim();
 					String[] params = command.split(" ");
 
 					// commands will return any string that the bot should send back as a message to
@@ -173,7 +173,7 @@ public class CommandClient {
 					if (returnMessage != null) {
 						MessageChannel channel = event.getMessage().getChannel().block();
 						if (channel != null) {
-							channel.createMessage(returnMessage);
+							channel.createMessage(returnMessage).block();
 						}
 					}
 
