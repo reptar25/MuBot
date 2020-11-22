@@ -357,10 +357,11 @@ public class CommandReceiver {
 		return null;
 	}
 
-	/*
+	/**
 	 * Prints a list of all commands in the channel the message was sent.
+	 * @return The message to respond with
 	 */
-	public String printCommands(MessageCreateEvent event, String[] params) {
+	public String printCommands() {
 
 		StringBuilder sb = new StringBuilder("Available commands:");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
