@@ -12,8 +12,8 @@ public class SkipCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.skip(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.skip(event);
 	}
 
 	@Override

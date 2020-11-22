@@ -12,8 +12,8 @@ public class JoinVoiceCommand extends Command {
 	};
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.join(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.join(event);
 	}
 
 	@Override

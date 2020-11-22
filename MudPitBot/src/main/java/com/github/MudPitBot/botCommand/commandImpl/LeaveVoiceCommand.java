@@ -12,8 +12,8 @@ public class LeaveVoiceCommand extends Command {
 	};
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.leave(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.leave(event);
 	}
 
 	@Override

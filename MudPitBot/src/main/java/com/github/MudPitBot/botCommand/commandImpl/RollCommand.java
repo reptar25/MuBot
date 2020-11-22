@@ -12,8 +12,8 @@ public class RollCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.roll(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.roll(event, params);
 	}
 
 	@Override

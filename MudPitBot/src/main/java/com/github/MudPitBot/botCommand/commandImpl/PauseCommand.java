@@ -12,8 +12,8 @@ public class PauseCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.pause();
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.pause();
 	}
 
 	@Override

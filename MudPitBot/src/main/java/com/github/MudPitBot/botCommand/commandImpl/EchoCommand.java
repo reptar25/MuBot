@@ -12,8 +12,8 @@ public class EchoCommand extends Command {
 	};
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.echo(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.echo(event);
 	}
 
 	@Override

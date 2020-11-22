@@ -12,8 +12,8 @@ public class StopCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.stop(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.stop(event);
 	}
 
 	@Override

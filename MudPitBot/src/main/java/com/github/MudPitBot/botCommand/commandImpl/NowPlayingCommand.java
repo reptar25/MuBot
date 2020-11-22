@@ -12,8 +12,8 @@ public class NowPlayingCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.nowPlaying(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.nowPlaying(event);
 	}
 
 	@Override

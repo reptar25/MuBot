@@ -12,8 +12,8 @@ public class ClearCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.clearQueue(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.clearQueue(event);
 	}
 
 	@Override

@@ -12,8 +12,8 @@ public class MuteCommand extends Command {
 	}
 
 	@Override
-	public void execute(MessageCreateEvent event, String[] params) {
-		receiver.mute(event);
+	public String execute(MessageCreateEvent event, String[] params) {
+		return receiver.mute(event);
 	}
 
 	@Override
