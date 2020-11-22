@@ -56,8 +56,10 @@ public final class Poll {
 		}
 
 		private void setParams() {
-			String command = event.getMessage().getContent().replace("!poll", "");
-			params = command.split(" \"");
+			if (event != null && event.getMessage() != null && event.getMessage().getContent() != null) {
+				String command = event.getMessage().getContent().replace("!poll", "");
+				params = command.split(" \"");
+			}
 		}
 
 		private void buildAnswers(String[] params) {
