@@ -13,7 +13,7 @@ public class LeaveVoiceCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.leave();
+		return receiver.leave(event);
 	}
 
 	@Override

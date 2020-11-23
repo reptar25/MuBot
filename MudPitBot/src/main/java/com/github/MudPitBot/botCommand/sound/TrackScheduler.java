@@ -22,10 +22,12 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
+	private final PlayerManager playerManager;
 	private final AudioPlayer player;
 
-	public TrackScheduler(final AudioPlayer player) {
-		this.player = player;
+	public TrackScheduler(final PlayerManager playerManager) {
+		this.playerManager = playerManager;
+		this.player = playerManager.getPlayer();
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
 	}
@@ -85,7 +87,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		player.startTrack(queue.poll(), false);
 	}
 
-	/*
+	/**
 	 * Clears the queue of all objects
 	 */
 	public void clearQueue() {
@@ -129,7 +131,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 			player.setPaused(pause);
 	}
 
-	/*
+	/**
 	 * Gets the track that is currently playing.
 	 * 
 	 * @return the AudioTrack that is playing
@@ -138,7 +140,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		return player.getPlayingTrack();
 	}
 
-	/*
+	/**
 	 * Called when the current track ends
 	 */
 	@Override
@@ -149,5 +151,19 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		if (endReason.mayStartNext) {
 			nextTrack();
 		}
+	}
+
+	/**
+	 * @return The {@link AudioPlayer} for this {@link TrackScheduler}
+	 */
+	public AudioPlayer getPlayer() {
+		return player;
+	}
+
+	/**
+	 * @return The {@link PlayerManager} for this {@link TrackScheduler}
+	 */
+	public PlayerManager getPlayerManager() {
+		return playerManager;
 	}
 }

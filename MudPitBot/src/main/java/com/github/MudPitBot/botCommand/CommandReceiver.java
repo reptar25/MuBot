@@ -1,5 +1,7 @@
 package com.github.MudPitBot.botCommand;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -13,33 +15,48 @@ import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.rest.util.Color;
 import discord4j.voice.VoiceConnection;
+import discord4j.voice.VoiceConnection.State;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-/*
-* A receiver class for command pattern. A receiver is an object that performs a set of cohesive actions. 
-* It's the component that performs the actual action when the command's execute() method is called.
-* https://www.baeldung.com/java-command-pattern
-*/
+/**
+ * A receiver class for command pattern. A receiver is an object that performs a
+ * set of cohesive actions. It's the component that performs the actual action
+ * when the command's execute() method is called.
+ * https://www.baeldung.com/java-command-pattern
+ */
 public class CommandReceiver {
 
 	private static final Logger LOGGER = Loggers.getLogger(CommandReceiver.class);
 	private static CommandReceiver instance;
 	private static Random rand = new Random();
-	private static TrackScheduler scheduler;
 
-	public static boolean muteToggle = false;
-	public static long muteChannelId = 0;
+	/**
+	 * Maps a new TrackScheduler for each new voice channel joined. Key is channel
+	 * id snowflake
+	 */
+	private static HashMap<Snowflake, TrackScheduler> schedulerMap = new HashMap<Snowflake, TrackScheduler>();
 
-	private static VoiceConnection currentVoiceConnection;
+	/**
+	 * Maps a VoiceConnection for each new voice channel joined. Key is channel id
+	 * snowflake
+	 */
+	private static HashMap<Snowflake, VoiceConnection> connectedChannels = new HashMap<Snowflake, VoiceConnection>();
+
+	/**
+	 * A list of channel ids of channels that should be muted
+	 */
+	public static ArrayList<Snowflake> mutedChannels = new ArrayList<Snowflake>();
 
 	public static CommandReceiver getInstance() {
 		if (instance == null)
@@ -48,11 +65,14 @@ public class CommandReceiver {
 	}
 
 	private CommandReceiver() {
-		scheduler = new TrackScheduler(PlayerManager.player);
+		// scheduler = new TrackScheduler(PlayerManager.player);
 	}
 
-	/*
+	/**
 	 * Bot joins the same voice channel as the user who uses the command.
+	 * 
+	 * @param event The message event
+	 * @return null
 	 */
 	public String join(MessageCreateEvent event) {
 		if (event != null) {
@@ -75,10 +95,21 @@ public class CommandReceiver {
 									LOGGER.error(e.toString());
 								}
 							}
+							PlayerManager pm = new PlayerManager();
+
 							// join returns a VoiceConnection which would be required if we were
 							// adding disconnection features, but for now we are just ignoring it.
-							currentVoiceConnection = channel.join(spec -> spec.setProvider(PlayerManager.provider))
-									.block();
+							VoiceConnection vc = channel.join(spec -> spec.setProvider(pm.provider)).block();
+
+							vc.onConnectOrDisconnect().subscribe(s -> {
+								if (s.equals(State.DISCONNECTED)) {
+									connectedChannels.remove(vc.getChannelId().block());
+									schedulerMap.remove(vc.getChannelId().block());
+								}
+							});
+
+							connectedChannels.put(vc.getChannelId().block(), vc);
+							schedulerMap.put(vc.getChannelId().block(), new TrackScheduler(pm));
 						}
 					}
 				}
@@ -88,28 +119,66 @@ public class CommandReceiver {
 		return null;
 	}
 
-	/*
-	 * Bot leaves any voice channel it has previously joined into using the join
-	 * command
+	/**
+	 * Bot leaves the voice channel if its the same as the one the user is connected
+	 * to.
+	 * 
+	 * @param event The message event
+	 * @return null
 	 */
-	public String leave() {
-		if (currentVoiceConnection != null) {
-			currentVoiceConnection.disconnect().block();
-			LOGGER.info("Discconecting from channel");
+	public String leave(MessageCreateEvent event) {
+		if (event != null) {
+			if (event.getMessage() != null) {
+				if (event.getMessage().getGuild() != null) {
+					Guild guild = event.getMessage().getGuild().block();
+					if (guild != null) {
+						VoiceConnection botConnection = guild.getVoiceConnection().block();
+						// If the client isn't in a voiceChannel, don't execute any other code
+						if (botConnection == null) {
+							// System.out.println("BOT NOT IN A VOICE CHANNEL");
+							return null;
+						}
+						// get member who used command
+						final Member member = event.getMember().orElse(null);
+						if (member != null) {
+							// get voice channel member is in
+							final VoiceState voiceState = member.getVoiceState().block();
+							if (voiceState != null) {
+//							long botChannelId = botConnection.getChannelId().block().asLong();
+								Snowflake memberChannelId = voiceState.getChannel().block().getId();
+//							// check if user and bot are in the same channel
+//							if (memberChannelId == botChannelId) {
+//								botConnection.disconnect().block();
+//								LOGGER.info("Bot disconnecting from voice channel.");
+//								// System.out.println("DISCONNECTING");
+//							}
+								if (connectedChannels.containsKey(memberChannelId)) {
+									connectedChannels.get(memberChannelId).disconnect().block();
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		return null;
 	}
 
-	/*
+	/**
 	 * Bot replies with a simple echo message
+	 * 
+	 * @return "echo!"
 	 */
 	public String echo() {
 		return ("echo!");
 	}
 
-	/*
-	 * Bot rolls dice and displays results
+	/**
+	 * Bot rolls dice and returns results
+	 * 
+	 * @param params The number and type of dice to roll, eg "1d20"
+	 * @return The results of the dice roll
 	 */
 	public String roll(String[] params) {
 
@@ -152,169 +221,232 @@ public class CommandReceiver {
 		return null;
 	}
 
-	/*
+	/**
 	 * Attempts to play the link in the message
+	 * 
+	 * @param event  The message event
+	 * @param params The link of the audio
+	 * @return null
 	 */
-	public String play(String[] params) {
+	public String play(MessageCreateEvent event, String[] params) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			if (params != null) {
 
-		if (params != null) {
+				// unpause
+				if (params[0].isEmpty() && scheduler.isPaused()) {
+					scheduler.pause(false);
+					return null;
+				}
 
-			// unpause
-			if (params[0].isEmpty() && scheduler.isPaused()) {
-				scheduler.pause(false);
-				return null;
+				if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
+					LOGGER.error("Too many or few params for play");
+					return null;
+				}
+				scheduler.getPlayerManager().playerManager.loadItem(params[0], scheduler);
+				LOGGER.info("Loaded music item: " + params[0]);
 			}
-
-			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
-				LOGGER.error("Too many or few params for play");
-				return null;
-			}
-			PlayerManager.playerManager.loadItem(params[0], scheduler);
-			LOGGER.info("Loaded music item: " + params[0]);
 		}
-
 		return null;
 	}
 
-	/*
-	 * Sets the volume of the LavaPlayer
+	/**
+	 * Sets the volume of the {@link AudioPlayer}
+	 * 
+	 * @param event  The message event
+	 * @param params The new volume setting
+	 * @return Responds with new volume setting
 	 */
-	public String volume(String[] params) {
-		if (params != null) {
-			// final String content = event.getMessage().getContent();
-			// final String[] command = content.split(" ");
-			if (params.length <= 0 || params.length > 1) {
-				LOGGER.error("Too many or few params for volume");
-			}
+	public String volume(MessageCreateEvent event, String[] params) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			if (params != null) {
+				// final String content = event.getMessage().getContent();
+				// final String[] command = content.split(" ");
+				if (params.length <= 0 || params.length > 1) {
+					LOGGER.error("Too many or few params for volume");
+				}
 
-			if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
-				int volume = Integer.parseInt(params[0]);
-				PlayerManager.player.setVolume(volume);
-				StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
-				return sb.toString();
+				if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
+					int volume = Integer.parseInt(params[0]);
+					scheduler.getPlayer().setVolume(volume);
+					StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
+					return sb.toString();
 //					LOGGER.info(sb.toString());
 //					MessageChannel channel = event.getMessage().getChannel().block();
 //					if (channel != null)
 //						channel.createMessage(sb.toString()).block();
+				}
+
 			}
 		}
 		return null;
 	}
 
-	/*
+	/**
 	 * Stops the LavaPlayer if it is playing anything
+	 * 
+	 * @param event The message event
+	 * @return null
 	 */
-	public String stop() {
-		if (PlayerManager.player != null) {
-			PlayerManager.player.stopTrack();
+	public String stop(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			scheduler.getPlayer().stopTrack();
 			LOGGER.info("Stopped music");
 		}
 
 		return null;
 	}
 
-	/*
+	/**
 	 * Stops the current song and plays the next in queue if there is any
+	 * 
+	 * @param event The message event
+	 * @return The message event
 	 */
-	public String skip() {
-		if (scheduler != null)
+	public String skip(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
 			scheduler.nextTrack();
+		}
 
 		return null;
 	}
 
-	/*
-	 * Mutes all {@link Member} in the channel besides bots and itself
+	/**
+	 * Mutes all {@link Member} in the channel besides bots
+	 * 
+	 * @param event
+	 * @return
 	 */
-
 	public String mute(MessageCreateEvent event) {
 		if (event != null && event.getMessage() != null && event.getMember().isPresent()) {
-			muteToggle = !muteToggle;
+			// muteToggle = !muteToggle;
 
 //				if (event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
 //						.asLong() != botChannelId) {
 //					return;
 //				}
+
+			// has to use array to get around non-final variable inside of a lambda below
+			boolean[] muted = { true };
+			VoiceState userVoiceState = event.getMember().orElse(null).getVoiceState().block();
 			// gets the member's channel who sent the message, and then all the VoiceStates
 			// connected to that channel. From there we can get the Member of the VoiceState
-			List<VoiceState> users = event.getMember().orElse(null).getVoiceState().block().getChannel().block()
-					.getVoiceStates().collectList().block();
+			List<VoiceState> users = userVoiceState.getChannel().block().getVoiceStates().collectList().block();
 			if (users != null) {
-				muteChannelId = event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
-						.asLong();
+
+				// channel is muted, so unmute
+				if (mutedChannels.contains(userVoiceState.getChannelId().get())) {
+					muted[0] = false;
+					mutedChannels.remove(userVoiceState.getChannelId().get());
+				} else {
+					// channel should be muted
+					mutedChannels.add(userVoiceState.getChannelId().get());
+				}
 				for (VoiceState user : users) {
 
 					// don't mute itself or other bots
 					if (user.getMember().block().isBot())
 						continue;
 
-					LOGGER.info("Muting user " + user.getUser().block().getUsername());
-					// mute all users
-					user.getMember().block().edit(spec -> spec.setMute(muteToggle)).block();
+					// LOGGER.info("Muting user " + user.getUser().block().getUsername());
+					// mute/unmute all users
+					user.getMember().block().edit(spec -> spec.setMute(muted[0])).block();
 				}
+
 			}
+
 		}
 
 		return null;
 	}
 
-	/*
+	/**
 	 * Clears the current queue of all objects
+	 * 
+	 * @param event The message event
+	 * @return null
 	 */
-	public String clearQueue() {
-		if (scheduler != null)
+	public String clearQueue(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
 			scheduler.clearQueue();
+		}
 
 		return null;
 	}
 
-	/*
-	 * Prints out a list of the currently queued songs
+	/**
+	 * Returns a list of the currently queued songs
+	 * 
+	 * @param event The message event
+	 * @return List of songs in the queue, or "The queue is empty" if empty
 	 */
-	public String viewQueue() {
-		// get list of songs currently in the queue
-		List<AudioTrack> queue = scheduler.getQueue();
-		StringBuilder sb = new StringBuilder();
-		// if the queue is not empty
-		if (queue.size() > 0) {
-			// print total number of songs
-			sb.append("Number of songs in queue: ").append(queue.size()).append("\n");
-			for (AudioTrack track : queue) {
-				// print title and author of song on its own line
-				sb.append("\"").append(track.getInfo().title).append("\"").append(" by ").append(track.getInfo().author)
-						.append("\n");
+	public String viewQueue(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			// get list of songs currently in the queue
+			List<AudioTrack> queue = scheduler.getQueue();
+			StringBuilder sb = new StringBuilder();
+			// if the queue is not empty
+			if (queue.size() > 0) {
+				// print total number of songs
+				sb.append("Number of songs in queue: ").append(queue.size()).append("\n");
+				for (AudioTrack track : queue) {
+					// print title and author of song on its own line
+					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
+							.append(track.getInfo().author).append("\n");
+				}
+			} else {
+				sb.append("The queue is empty.");
 			}
-		} else {
-			sb.append("The queue is empty.");
+
+			String retString = sb.toString();
+
+			// if the message is longer than 2000 character, trim it so that its not over
+			// the max character limit.
+			if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
+				retString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
+
+			return retString;
 		}
-
-		String retString = sb.toString();
-
-		// if the message is longer than 2000 character, trim it so that its not over
-		// the max character limit.
-		if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
-			retString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
-
-		return retString;
+		return null;
 	}
 
-	/*
-	 * Print out the info for the currently playing song
+	/**
+	 * Return the info for the currently playing song
+	 * 
+	 * @param event The message event
+	 * @return Info of song currently playing
 	 */
-	public String nowPlaying() {
-		StringBuilder sb = new StringBuilder("Now playing: ");
-		// get the track that's currently playing
-		AudioTrack track = scheduler.getNowPlaying();
-		if (track != null) {
-			// add track title and author
-			sb.append("\"").append(track.getInfo().title).append("\"").append(" by ").append(track.getInfo().author);
-		}
+	public String nowPlaying(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			StringBuilder sb = new StringBuilder("Now playing: ");
+			// get the track that's currently playing
+			AudioTrack track = scheduler.getNowPlaying();
+			if (track != null) {
+				// add track title and author
+				sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
+						.append(track.getInfo().author);
+			}
 
-		return sb.toString();
+			return sb.toString();
+		}
+		return null;
 	}
 
-	/*
+	/**
 	 * Creates a poll in the channel
+	 * 
+	 * @param event The message event
+	 * @return null
+	 * 
+	 *         TODO: Figure out a way to return embed so this method can return the
+	 *         poll that should be sent instead of sending it itself. Maybe have
+	 *         commands return a {@link Message} instead of a String.
 	 */
 	public String poll(MessageCreateEvent event) {
 		if (event != null) {
@@ -348,18 +480,24 @@ public class CommandReceiver {
 		return null;
 	}
 
-	/*
+	/**
 	 * Pauses/unpauses the player
+	 * 
+	 * @param event The message event
+	 * @return null
 	 */
-	public String pause() {
-		scheduler.pause(!scheduler.isPaused());
+	public String pause(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null)
+			scheduler.pause(!scheduler.isPaused());
 
 		return null;
 	}
 
 	/**
-	 * Prints a list of all commands in the channel the message was sent.
-	 * @return The message to respond with
+	 * Returns a list of all commands in the channel the message was sent.
+	 * 
+	 * @return List of available commands
 	 */
 	public String printCommands() {
 
@@ -370,5 +508,28 @@ public class CommandReceiver {
 		}
 		return sb.toString().replaceAll(":,", ":");
 
+	}
+
+	/**
+	 * Get the track scheduler for the guild of this event
+	 * 
+	 * @param event The message event
+	 * @return The scheduler mapped to this channel
+	 */
+	private TrackScheduler getScheduler(MessageCreateEvent event) {
+		TrackScheduler scheduler = null;
+		if (event != null) {
+			if (event.getClient() != null) {
+				if (event.getMessage() != null) {
+					// MessageChannel messageChannel = event.getMessage().getChannel().block();
+					Snowflake channelId = event.getClient().getSelf().block().asMember(event.getGuildId().get()).block()
+							.getVoiceState().block().getChannelId().orElse(null);
+					if (channelId != null) {
+						scheduler = schedulerMap.get(channelId);
+					}
+				}
+			}
+		}
+		return scheduler;
 	}
 }

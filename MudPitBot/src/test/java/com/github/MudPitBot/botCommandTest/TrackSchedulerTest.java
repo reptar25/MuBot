@@ -2,6 +2,7 @@ package com.github.MudPitBot.botCommandTest;
 
 import org.mockito.Mock;
 
+import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -10,10 +11,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import org.junit.jupiter.api.BeforeAll;
+import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TrackSchedulerTest {
+
+	@Mock
+	static PlayerManager mockPlayerManager = mock(PlayerManager.class);
 
 	@Mock
 	static AudioPlayer mockPlayer = mock(AudioPlayer.class);
@@ -26,9 +31,10 @@ public class TrackSchedulerTest {
 
 	static TrackScheduler scheduler;
 
-	@BeforeAll
-	static void createTrackScheduler() {
-		scheduler = new TrackScheduler(mockPlayer);
+	@BeforeEach
+	void createTrackScheduler() {
+		when(mockPlayerManager.getPlayer()).thenReturn(mockPlayer);
+		scheduler = new TrackScheduler(mockPlayerManager);
 	}
 
 	@Test

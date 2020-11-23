@@ -1,7 +1,8 @@
 package com.github.MudPitBot.main;
 
-import com.github.MudPitBot.Heroku.HerokuServer;
 import com.github.MudPitBot.botCommand.CommandClient;
+import com.github.MudPitBot.heroku.HerokuServer;
+
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import reactor.util.Logger;

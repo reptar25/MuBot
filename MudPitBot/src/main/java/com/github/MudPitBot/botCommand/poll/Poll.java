@@ -12,13 +12,12 @@ import discord4j.core.object.entity.Message;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-/*
+/**
  * Data class for polls.
- *
  */
 public final class Poll {
 
-	/*
+	/**
 	 * Builder for polls. Not really needed now, but can be used to expand polls
 	 * easier later on.
 	 */

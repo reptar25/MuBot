@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
 import com.github.MudPitBot.botCommand.commandInterface.Commands;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -16,10 +17,11 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-/*
- *  A client class for the Command design pattern. A client is an object that controls the command execution process
- *  by specifying what commands to execute and at what stages of the process to execute them.
- *  https://www.baeldung.com/java-command-pattern
+/**
+ * A client class for the Command design pattern. A client is an object that
+ * controls the command execution process by specifying what commands to execute
+ * and at what stages of the process to execute them.
+ * https://www.baeldung.com/java-command-pattern
  */
 public class CommandClient {
 
@@ -89,48 +91,44 @@ public class CommandClient {
 	 */
 	private void muteOnJoin(VoiceStateUpdateEvent event) {
 
-		// if mute isnt toggled on just stop
-		if (!CommandReceiver.muteToggle) {
-			return;
-		}
+		if (event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent()) {
+			// if mute isnt toggled on just stop
+			Snowflake newChannelId = event.getCurrent().getChannelId().orElse(null);
+//			VoiceState oldChannel = event.getOld().orElse(null);
+//			Snowflake outChannelId = null;
+//			if (oldChannel != null)
+//				outChannelId = event.getOld().orElse(null).getChannelId().orElse(null);
 
-		// if its a bot who joined, do not execute any more code
-		if (event.getCurrent().getMember().block().isBot()) {
-			return;
-		}
+//			if (!CommandReceiver.mutedChannels.contains(newChannelId)
+//					&& !CommandReceiver.mutedChannels.contains(outChannelId)) {
+//				return;
+//			}
 
-		// if the newly joined channel is null just stop
-		if (event.getCurrent().getChannelId() == null) {
-			return;
-		}
-		// get channel id of user who joined
-		long userChannelId = event.getCurrent().getChannelId().orElse(null).asLong();
-
-		// if user join same channel as mute channel
-		if (userChannelId == CommandReceiver.muteChannelId) {
-			if (event.isJoinEvent() || event.isMoveEvent()) {
-				// if the mute toggle is enabled
-				if (CommandReceiver.muteToggle)
-					// mute the member that just joined
-					event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
-				LOGGER.info("Muting " + event.getCurrent().getUser().block().getUsername());
+			// if its a bot who joined, do not execute any more code
+			if (event.getCurrent().getMember().block().isBot()) {
+				return;
 			}
-		}
-		// if user joined another channel, make sure they arent muted still
-		else {
-			VoiceState oldVoiceState = event.getOld().orElse(null);
-			if (oldVoiceState != null) {
 
-				if (event.isMoveEvent() || event.isLeaveEvent()) {
-					long oldChannelId = oldVoiceState.getChannelId().orElse(null).asLong();
-					// if the channel their are leaving is the channel that was muted
-					if (oldChannelId == CommandReceiver.muteChannelId) {
-						// if the mute toggle is enabled
-						if (CommandReceiver.muteToggle)
-							// unmute the leaving member
-							event.getCurrent().getMember().block().edit(spec -> spec.setMute(false)).block();
-						LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
-					}
+			// if the newly joined channel is null just stop
+			if (event.getCurrent().getChannelId() == null) {
+				return;
+			}
+
+			// if user join same channel as mute channel
+			if (CommandReceiver.mutedChannels.contains(newChannelId)) {
+				// mute the member that just joined
+				event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
+			}
+			// if user joined another channel, make sure they arent muted still
+			else {
+
+				// if the channel their are leaving is the channel that was muted
+				// unmute the leaving member
+				Member member = event.getCurrent().getMember().block();
+				VoiceState vs = member.getVoiceState().block();
+				if (vs != null) {
+					member.edit(spec -> spec.setMute(false)).block();
+					LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
 				}
 			}
 		}

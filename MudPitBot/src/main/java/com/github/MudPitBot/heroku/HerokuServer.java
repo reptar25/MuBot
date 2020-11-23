@@ -1,4 +1,4 @@
-package com.github.MudPitBot.Heroku;
+package com.github.MudPitBot.heroku;
 
 import java.io.IOException;
 import java.io.InputStream;

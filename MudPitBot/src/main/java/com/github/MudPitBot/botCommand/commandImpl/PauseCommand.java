@@ -13,7 +13,7 @@ public class PauseCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.pause();
+		return receiver.pause(event);
 	}
 
 	@Override

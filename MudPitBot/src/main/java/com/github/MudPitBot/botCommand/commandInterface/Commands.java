@@ -26,7 +26,7 @@ public final class Commands {
 		buildCommandMap();
 	}
 
-	/*
+	/**
 	 * Use Reflections library to scan class path for subclasses of Command and add
 	 * those to the Commands map. This way any new commands that are created that
 	 * extend Command automatically get added to the map without any extra work
@@ -68,7 +68,7 @@ public final class Commands {
 		return commands;
 	}
 
-	/*
+	/**
 	 * returns a copy of the set to prevent the COMMANDS hashmap from being mutated
 	 * through this method
 	 * 
