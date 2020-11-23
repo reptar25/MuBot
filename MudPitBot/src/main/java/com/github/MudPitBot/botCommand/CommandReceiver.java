@@ -251,7 +251,7 @@ public class CommandReceiver {
 	}
 
 	/**
-	 * Sets the volume of the {@link AudioPlayer}
+	 * Sets the volume of the {@link com.sedmelluq.discord.lavaplayer.player.AudioPlayer}
 	 * 
 	 * @param event  The message event
 	 * @param params The new volume setting
@@ -317,8 +317,8 @@ public class CommandReceiver {
 	/**
 	 * Mutes all {@link Member} in the channel besides bots
 	 * 
-	 * @param event
-	 * @return
+	 * @param event The message event
+	 * @return null
 	 */
 	public String mute(MessageCreateEvent event) {
 		if (event != null && event.getMessage() != null && event.getMember().isPresent()) {
