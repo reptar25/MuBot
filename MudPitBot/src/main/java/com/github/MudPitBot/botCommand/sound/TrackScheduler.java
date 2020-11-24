@@ -104,15 +104,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * @return List of queued songs
 	 */
 	public List<AudioTrack> getQueue() {
-		List<AudioTrack> ret = new ArrayList<AudioTrack>();
-		Object[] queueArr = queue.toArray();
-		for (int i = 0; i < queueArr.length; i++) {
-			if (queueArr[i] instanceof AudioTrack) {
-				AudioTrack track = (AudioTrack) queueArr[i];
-				ret.add(track);
-			}
-
-		}
+		List<AudioTrack> ret = new ArrayList<AudioTrack>(queue);
 		return ret;
 	}
 
@@ -120,7 +112,9 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * Shuffles the songs currently in the queue
 	 */
 	public void shuffleQueue() {
-		Collections.shuffle(queue.stream().collect(Collectors.toList()));
+		List<AudioTrack> ret = new ArrayList<AudioTrack>(queue);
+		Collections.shuffle(ret);
+		this.queue = ret.stream().collect(Collectors.toCollection(LinkedBlockingQueue::new));
 	}
 
 	/**
