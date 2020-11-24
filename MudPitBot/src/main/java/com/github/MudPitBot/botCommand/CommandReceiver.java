@@ -290,7 +290,7 @@ public class CommandReceiver {
 	 * Stops the LavaPlayer if it is playing anything
 	 * 
 	 * @param event The message event
-	 * @return null
+	 * @return "Player stopped" if successful, null if not
 	 */
 	public String stop(MessageCreateEvent event) {
 		TrackScheduler scheduler = getScheduler(event);
@@ -371,7 +371,7 @@ public class CommandReceiver {
 	 * Clears the current queue of all objects
 	 * 
 	 * @param event The message event
-	 * @return null
+	 * @return "Queue cleared" if successful, null if not
 	 */
 	public String clearQueue(MessageCreateEvent event) {
 		TrackScheduler scheduler = getScheduler(event);
