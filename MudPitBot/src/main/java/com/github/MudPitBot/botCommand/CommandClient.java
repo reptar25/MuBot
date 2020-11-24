@@ -92,17 +92,7 @@ public class CommandClient {
 	private void muteOnJoin(VoiceStateUpdateEvent event) {
 
 		if (event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent()) {
-			// if mute isnt toggled on just stop
 			Snowflake newChannelId = event.getCurrent().getChannelId().orElse(null);
-//			VoiceState oldChannel = event.getOld().orElse(null);
-//			Snowflake outChannelId = null;
-//			if (oldChannel != null)
-//				outChannelId = event.getOld().orElse(null).getChannelId().orElse(null);
-
-//			if (!CommandReceiver.mutedChannels.contains(newChannelId)
-//					&& !CommandReceiver.mutedChannels.contains(outChannelId)) {
-//				return;
-//			}
 
 			// if its a bot who joined, do not execute any more code
 			if (event.getCurrent().getMember().block().isBot()) {
@@ -118,19 +108,23 @@ public class CommandClient {
 			if (CommandReceiver.mutedChannels.contains(newChannelId)) {
 				// mute the member that just joined
 				event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
+				return;
 			}
 			// if user joined another channel, make sure they arent muted still
 			else {
-
-				// if the channel their are leaving is the channel that was muted
-				// unmute the leaving member
+				// We cant unmute a users when they leave because the Discord api doesnt allow
+				// modifying a user's server mute if that user isn't in a voice channel. So if
+				// that person disconnects from voice then we can't unmute them. For now we just
+				// check if it's a non-muted channel when they join and unmute them then. This
+				// has the side effect of users staying muted if they are muted by the bot and
+				// leave, but rejoin a voice channel when the bot is not running
 				Member member = event.getCurrent().getMember().block();
 				VoiceState vs = member.getVoiceState().block();
 				if (vs != null) {
 					// only unmute if they are already muted
 					if (vs.isMuted()) {
 						if (!vs.getChannelId().get()
-								.equals(event.getCurrent().getGuild().block().getAfkChannelId().get())) {
+								.equals(event.getCurrent().getGuild().block().getAfkChannelId().orElse(null))) {
 							member.edit(spec -> spec.setMute(false)).block();
 							LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
 						}
