@@ -39,12 +39,15 @@ public class HerokuServer {
 }
 
 class RootResponseHandler implements HttpHandler {
+	private static final String homeHtml = "<h1 style='font-family: sans-serif;'>Hey</h1>"
+			+ "<img style=\"-webkit-user-select: none;margin: auto;cursor: zoom-in;\""
+			+ " src=\"https://i.ytimg.com/vi/4Qto049GEkA/maxresdefault.jpg\" width=\"235\" height=\"132\">";
+
 	public void handle(HttpExchange exchange) throws IOException {
 		InputStream is = exchange.getRequestBody();
-		String response = "<h1 style='font-family: sans-serif;'>pong</h1>";
-		exchange.sendResponseHeaders(200, response.length());
+		exchange.sendResponseHeaders(200, homeHtml.length());
 		OutputStream os = exchange.getResponseBody();
-		os.write(response.getBytes());
+		os.write(homeHtml.getBytes());
 		os.flush();
 		os.close();
 		is.close();
