@@ -516,6 +516,28 @@ public class CommandReceiver {
 	}
 
 	/**
+	 * @param event  The message event
+	 * @param params The position to move the current song to in seconds
+	 * @return null
+	 */
+	public String seek(MessageCreateEvent event, String[] params) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			if (params != null) {
+				if (params.length > 0) {
+					try {
+						int positionInSeconds = Integer.parseInt(params[0]);
+						scheduler.seek(positionInSeconds);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Get the track scheduler for the guild of this event
 	 * 
 	 * @param event The message event

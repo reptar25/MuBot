@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -129,6 +130,21 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	public void pause(boolean pause) {
 		if (player != null)
 			player.setPaused(pause);
+	}
+
+	/**
+	 * Sets the position of the currently playing track to the given time.
+	 * 
+	 * @param positionInSeconds Position to set the track to in seconds
+	 */
+	public void seek(int positionInSeconds) {
+		if (player != null) {
+			AudioTrack currentTrack = player.getPlayingTrack();
+			if (currentTrack != null) {
+				long position = TimeUnit.SECONDS.toMillis(positionInSeconds);
+				currentTrack.setPosition(position);
+			}
+		}
 	}
 
 	/**
