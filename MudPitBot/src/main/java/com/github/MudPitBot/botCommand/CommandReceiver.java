@@ -266,7 +266,7 @@ public class CommandReceiver {
 				// final String[] command = content.split(" ");
 				StringBuilder sb = new StringBuilder();
 				if (params.length == 0) {
-					return sb.append("Volume is current " + scheduler.getPlayer().getVolume()).toString();
+					return sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString();
 				}
 
 				if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
