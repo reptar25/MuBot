@@ -538,6 +538,50 @@ public class CommandReceiver {
 	}
 
 	/**
+	 * @param event  The message event
+	 * @param params The amount of time in seconds to rewind
+	 * @return null
+	 */
+	public String rewind(MessageCreateEvent event, String[] params) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			if (params != null) {
+				if (params.length > 0) {
+					try {
+						int amountInSeconds = Integer.parseInt(params[0]);
+						scheduler.rewind(amountInSeconds);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param event  The message event
+	 * @param params The amount of time in seconds to fast forward
+	 * @return null
+	 */
+	public String fastForward(MessageCreateEvent event, String[] params) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			if (params != null) {
+				if (params.length > 0) {
+					try {
+						int amountInSeconds = Integer.parseInt(params[0]);
+						scheduler.fastForward(amountInSeconds);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Get the track scheduler for the guild of this event
 	 * 
 	 * @param event The message event
@@ -562,4 +606,5 @@ public class CommandReceiver {
 		}
 		return scheduler;
 	}
+
 }

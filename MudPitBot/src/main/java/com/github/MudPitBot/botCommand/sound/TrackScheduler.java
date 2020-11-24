@@ -150,6 +150,48 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	}
 
 	/**
+	 * Rewinds the currently playing track by the given amount of seconds
+	 * 
+	 * @param amountInSeconds Amount of time in seconds to rewind
+	 */
+	public void rewind(int amountInSeconds) {
+		if (player != null) {
+			AudioTrack currentTrack = player.getPlayingTrack();
+			if (currentTrack != null) {
+				if (currentTrack.isSeekable()) {
+					long amountToRewind = TimeUnit.SECONDS.toMillis(amountInSeconds);
+					long currentPosition = currentTrack.getPosition();
+
+					long newPosition = currentPosition - amountToRewind;
+
+					currentTrack.setPosition(newPosition);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Fast forwards the currently playing track by the given amount of seconds
+	 * 
+	 * @param amountInSeconds Amount of time in seconds to fast forward
+	 */
+	public void fastForward(int amountInSeconds) {
+		if (player != null) {
+			AudioTrack currentTrack = player.getPlayingTrack();
+			if (currentTrack != null) {
+				if (currentTrack.isSeekable()) {
+					long amountToFastforward = TimeUnit.SECONDS.toMillis(amountInSeconds);
+					long currentPosition = currentTrack.getPosition();
+
+					long newPosition = currentPosition + amountToFastforward;
+
+					currentTrack.setPosition(newPosition);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Gets the track that is currently playing.
 	 * 
 	 * @return the AudioTrack that is playing
