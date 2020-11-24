@@ -272,7 +272,7 @@ public class CommandReceiver {
 					return sb.append("Volume reset to default").toString();
 				}
 
-				if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
+				if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
 					int volume = Integer.parseInt(params[0]);
 					sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
 							.append(volume);
@@ -604,7 +604,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return The scheduler mapped to this channel
 	 */
-	private TrackScheduler getScheduler(MessageCreateEvent event) {
+	public TrackScheduler getScheduler(MessageCreateEvent event) {
 		TrackScheduler scheduler = null;
 		if (event != null) {
 			if (event.getClient() != null) {
