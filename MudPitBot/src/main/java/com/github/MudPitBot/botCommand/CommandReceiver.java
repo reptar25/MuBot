@@ -267,6 +267,9 @@ public class CommandReceiver {
 				StringBuilder sb = new StringBuilder();
 				if (params.length == 0) {
 					return sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString();
+				} else if (params[0].equalsIgnoreCase("reset")) {
+					scheduler.getPlayer().setVolume(PlayerManager.DEFAULT_VOLUME);
+					return sb.append("Volume reset to default").toString();
 				}
 
 				if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {

@@ -14,7 +14,7 @@ public class PlayerManager {
 	public AudioPlayerManager playerManager;
 	private AudioPlayer player;
 
-	private static final int DEFAULT_VOLUME = 10;
+	public static final int DEFAULT_VOLUME = 10;
 
 	public PlayerManager() {
 		// Creates AudioPlayer instances and translates URLs to AudioTrack instances
