@@ -527,10 +527,13 @@ public class CommandReceiver {
 			if (event.getClient() != null) {
 				if (event.getMessage() != null) {
 					// MessageChannel messageChannel = event.getMessage().getChannel().block();
-					Snowflake channelId = event.getClient().getSelf().block().asMember(event.getGuildId().get()).block()
-							.getVoiceState().block().getChannelId().orElse(null);
-					if (channelId != null) {
-						scheduler = schedulerMap.get(channelId);
+					Snowflake guildId = event.getGuildId().orElse(null);
+					if (guildId != null) {
+						Snowflake channelId = event.getClient().getSelf().block().asMember(guildId).block()
+								.getVoiceState().block().getChannelId().orElse(null);
+						if (channelId != null) {
+							scheduler = schedulerMap.get(channelId);
+						}
 					}
 				}
 			}
