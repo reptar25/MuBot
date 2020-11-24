@@ -50,11 +50,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	@Override
 	public void trackLoaded(final AudioTrack track) {
 		// LavaPlayer found an audio source for us to play
-		// if (player.getPlayingTrack() != null)
-		// player.playTrack(track);
-		// else {
 		queue(track);
-		// }
 	}
 
 	@Override
