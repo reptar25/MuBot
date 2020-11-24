@@ -1,10 +1,13 @@
 package com.github.MudPitBot.botCommand.sound;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -111,6 +114,13 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 		}
 		return ret;
+	}
+
+	/**
+	 * Shuffles the songs currently in the queue
+	 */
+	public void shuffleQueue() {
+		Collections.shuffle(queue.stream().collect(Collectors.toList()));
 	}
 
 	/**

@@ -421,6 +421,20 @@ public class CommandReceiver {
 	}
 
 	/**
+	 * Shuffles the songs currently in the queue
+	 * 
+	 * @param event The message event
+	 * @return null
+	 */
+	public String shuffleQueue(MessageCreateEvent event) {
+		TrackScheduler scheduler = getScheduler(event);
+		if (scheduler != null) {
+			scheduler.shuffleQueue();
+		}
+		return null;
+	}
+
+	/**
 	 * Return the info for the currently playing song
 	 * 
 	 * @param event The message event
