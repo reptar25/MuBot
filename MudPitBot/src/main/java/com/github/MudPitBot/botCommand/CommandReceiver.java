@@ -251,7 +251,8 @@ public class CommandReceiver {
 	}
 
 	/**
-	 * Sets the volume of the {@link com.sedmelluq.discord.lavaplayer.player.AudioPlayer}
+	 * Sets the volume of the
+	 * {@link com.sedmelluq.discord.lavaplayer.player.AudioPlayer}
 	 * 
 	 * @param event  The message event
 	 * @param params The new volume setting
@@ -263,14 +264,16 @@ public class CommandReceiver {
 			if (params != null) {
 				// final String content = event.getMessage().getContent();
 				// final String[] command = content.split(" ");
-				if (params.length <= 0 || params.length > 1) {
-					LOGGER.error("Too many or few params for volume");
+				StringBuilder sb = new StringBuilder();
+				if (params.length == 0) {
+					return sb.append("Volume is current " + scheduler.getPlayer().getVolume()).toString();
 				}
 
 				if (Pattern.matches("[1-9]*[0-9]*[0-9]", params[0])) {
 					int volume = Integer.parseInt(params[0]);
+					sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
+							.append(volume);
 					scheduler.getPlayer().setVolume(volume);
-					StringBuilder sb = new StringBuilder("Set volume to ").append(volume);
 					return sb.toString();
 //					LOGGER.info(sb.toString());
 //					MessageChannel channel = event.getMessage().getChannel().block();
@@ -294,6 +297,7 @@ public class CommandReceiver {
 		if (scheduler != null) {
 			scheduler.getPlayer().stopTrack();
 			LOGGER.info("Stopped music");
+			return "Player stopped";
 		}
 
 		return null;
@@ -373,6 +377,7 @@ public class CommandReceiver {
 		TrackScheduler scheduler = getScheduler(event);
 		if (scheduler != null) {
 			scheduler.clearQueue();
+			return "Queue cleared";
 		}
 
 		return null;
