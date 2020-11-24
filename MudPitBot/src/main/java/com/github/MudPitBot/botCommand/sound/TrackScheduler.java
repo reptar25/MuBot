@@ -141,8 +141,10 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		if (player != null) {
 			AudioTrack currentTrack = player.getPlayingTrack();
 			if (currentTrack != null) {
-				long position = TimeUnit.SECONDS.toMillis(positionInSeconds);
-				currentTrack.setPosition(position);
+				if (currentTrack.isSeekable()) {
+					long position = TimeUnit.SECONDS.toMillis(positionInSeconds);
+					currentTrack.setPosition(position);
+				}
 			}
 		}
 	}
