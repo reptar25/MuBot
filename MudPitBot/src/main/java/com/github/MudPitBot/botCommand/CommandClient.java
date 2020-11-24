@@ -127,8 +127,11 @@ public class CommandClient {
 				Member member = event.getCurrent().getMember().block();
 				VoiceState vs = member.getVoiceState().block();
 				if (vs != null) {
-					member.edit(spec -> spec.setMute(false)).block();
-					LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
+					// only unmute if they are already muted
+					if (vs.isMuted()) {
+						member.edit(spec -> spec.setMute(false)).block();
+						LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
+					}
 				}
 			}
 		}
