@@ -1,0 +1,9 @@
+com.github.MudPitBot.botCommand
+com.github.MudPitBot.botCommand.commandImpl
+com.github.MudPitBot.botCommand.commandInterface
+com.github.MudPitBot.botCommand.poll
+com.github.MudPitBot.botCommand.sound
+com.github.MudPitBot.botCommand.util
+com.github.MudPitBot.botCommandTest
+com.github.MudPitBot.heroku
+com.github.MudPitBot.main
