@@ -128,6 +128,9 @@ class CommandReceiverTest {
 		params[0] = "d20";
 		response = receiver.roll(params);
 		assertNull(response);
+
+		response = receiver.roll(null);
+		assertNull(response);
 	}
 
 	@Test
