@@ -631,4 +631,9 @@ public class CommandReceiver {
 		return scheduler;
 	}
 
+	public String cyberpunk() {
+		
+		return "Cyberpunk will relsae in; ";
+	}
+
 }
