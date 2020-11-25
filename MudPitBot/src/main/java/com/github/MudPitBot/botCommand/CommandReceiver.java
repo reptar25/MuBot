@@ -90,7 +90,7 @@ public class CommandReceiver {
 							if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
 								event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
 								try {
-									Thread.sleep(1000);
+									Thread.sleep(250);
 								} catch (InterruptedException e) {
 									LOGGER.error(e.toString());
 								}
@@ -102,14 +102,17 @@ public class CommandReceiver {
 							VoiceConnection vc = channel.join(spec -> spec.setProvider(pm.provider)).block();
 
 							vc.onConnectOrDisconnect().subscribe(s -> {
-								if (s.equals(State.DISCONNECTED)) {
+								if (s.equals(State.CONNECTED)) {
+
+									connectedChannels.put(vc.getChannelId().block(), vc);
+									schedulerMap.put(vc.getChannelId().block(), new TrackScheduler(pm));
+
+								} else if (s.equals(State.DISCONNECTED)) {
 									connectedChannels.remove(vc.getChannelId().block());
 									schedulerMap.remove(vc.getChannelId().block());
 								}
 							});
 
-							connectedChannels.put(vc.getChannelId().block(), vc);
-							schedulerMap.put(vc.getChannelId().block(), new TrackScheduler(pm));
 						}
 					}
 				}
@@ -154,6 +157,9 @@ public class CommandReceiver {
 //							}
 								if (connectedChannels.containsKey(memberChannelId)) {
 									connectedChannels.get(memberChannelId).disconnect().block();
+
+									connectedChannels.remove(memberChannelId);
+									schedulerMap.remove(memberChannelId);
 								}
 							}
 						}
@@ -259,7 +265,7 @@ public class CommandReceiver {
 	 * @return Responds with new volume setting
 	 */
 	public String volume(MessageCreateEvent event, String[] params) {
-		TrackScheduler scheduler = getScheduler(event);
+		TrackScheduler scheduler = CommandReceiver.getScheduler(event);
 		if (scheduler != null) {
 			if (params != null) {
 				// final String content = event.getMessage().getContent();
@@ -608,12 +614,13 @@ public class CommandReceiver {
 		TrackScheduler scheduler = null;
 		if (event != null) {
 			if (event.getClient() != null) {
-				if (event.getMessage() != null) {
+				if (event.getGuildId() != null) {
 					// MessageChannel messageChannel = event.getMessage().getChannel().block();
 					Snowflake guildId = event.getGuildId().orElse(null);
 					if (guildId != null) {
-						Snowflake channelId = event.getClient().getSelf().block().asMember(guildId).block()
-								.getVoiceState().block().getChannelId().orElse(null);
+						Snowflake channelId = null;
+						channelId = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState()
+								.block().getChannelId().orElse(null);
 						if (channelId != null) {
 							scheduler = schedulerMap.get(channelId);
 						}
