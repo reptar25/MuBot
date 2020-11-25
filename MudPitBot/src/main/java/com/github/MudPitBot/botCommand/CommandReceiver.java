@@ -49,12 +49,6 @@ public class CommandReceiver {
 	private static HashMap<Snowflake, TrackScheduler> schedulerMap = new HashMap<Snowflake, TrackScheduler>();
 
 	/**
-	 * Maps a VoiceConnection for each new voice channel joined. Key is channel id
-	 * snowflake
-	 */
-	private static HashMap<Snowflake, VoiceConnection> connectedChannels = new HashMap<Snowflake, VoiceConnection>();
-
-	/**
 	 * A list of channel ids of channels that should be muted
 	 */
 	public static ArrayList<Snowflake> mutedChannels = new ArrayList<Snowflake>();
@@ -118,9 +112,7 @@ public class CommandReceiver {
 								Snowflake channelId = channel.getId();
 								if (s.equals(State.CONNECTED)) {
 									schedulerMap.put(channelId, scheduler);
-									connectedChannels.put(channelId, vc);
 								} else if (s.equals(State.DISCONNECTED)) {
-									connectedChannels.remove(channelId);
 									schedulerMap.remove(channelId);
 								}
 							});
@@ -135,8 +127,8 @@ public class CommandReceiver {
 	}
 
 	/**
-	 * Bot leaves the voice channel if its the same as the one the user is connected
-	 * to.
+	 * Bot leaves any voice channel it is connected to in the same guild. Also
+	 * clears the queue of items.
 	 * 
 	 * @param event The message event
 	 * @return null
@@ -167,10 +159,7 @@ public class CommandReceiver {
 //								LOGGER.info("Bot disconnecting from voice channel.");
 //								// System.out.println("DISCONNECTING");
 //							}
-								if (connectedChannels.containsKey(memberChannelId)) {
-									connectedChannels.get(memberChannelId).disconnect().block();
-
-									connectedChannels.remove(memberChannelId);
+								if (schedulerMap.containsKey(memberChannelId)) {
 									schedulerMap.remove(memberChannelId);
 								}
 							}
