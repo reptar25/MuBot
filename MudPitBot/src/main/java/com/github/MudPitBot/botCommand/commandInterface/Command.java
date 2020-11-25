@@ -21,16 +21,26 @@ public abstract class Command implements CommandInterface {
 	}
 
 	/**
-	 * This enforces users to implement what the command trigger should be when
-	 * making a subclass. If we just used a protected variable then there would be
-	 * no way to enforce it being set. Command names should always be in lower-case
-	 * here since we do .toLowerCase() when checking the command to make them non
-	 * case sensitive.
+	 * The String that would cause this command to trigger if typed in a message to
+	 * a channel the bot can see
 	 * 
 	 * @return the literal String of what triggers this command.
 	 */
+	/*
+	 * This enforces users to implement what the command trigger should be when
+	 * making a subclass. If we just used a protected variable then there would be
+	 * no way to enforce it being set.
+	 */
 	public abstract String getCommandTrigger();
 
+	/**
+	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
+	 * channel of the guild the message was sent in.
+	 * 
+	 * @param event The message event
+	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
+	 *         bot in the guild the message was sent from.
+	 */
 	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
 		TrackScheduler scheduler = null;
 		if (event != null) {
