@@ -48,7 +48,7 @@ class CommandReceiverTest {
 	@Mock
 	Mono<Message> monoMessage = mock(Mono.class);
 
-	TrackScheduler mockScheduler = new TrackScheduler(new PlayerManager());
+	TrackScheduler mockScheduler = new TrackScheduler();
 
 	String[] args = null;
 

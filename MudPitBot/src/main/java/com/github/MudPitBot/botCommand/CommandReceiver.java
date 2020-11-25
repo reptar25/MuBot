@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
 import com.github.MudPitBot.botCommand.commandInterface.Commands;
 import com.github.MudPitBot.botCommand.poll.Poll;
+import com.github.MudPitBot.botCommand.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.botCommand.sound.PlayerManager;
 import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -67,7 +68,6 @@ public class CommandReceiver {
 	private CommandReceiver() {
 		// scheduler = new TrackScheduler(PlayerManager.player);
 	}
-	
 
 	/**
 	 * Get the track scheduler for the guild of this event
@@ -106,21 +106,22 @@ public class CommandReceiver {
 									LOGGER.error(e.toString());
 								}
 							}
-							PlayerManager pm = new PlayerManager();
 
 							// join returns a VoiceConnection which would be required if we were
 							// adding disconnection features, but for now we are just ignoring it.
-							VoiceConnection vc = channel.join(spec -> spec.setProvider(pm.provider)).block();
+							TrackScheduler scheduler = new TrackScheduler();
+							VoiceConnection vc = channel
+									.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+									.block();
 
 							vc.onConnectOrDisconnect().subscribe(s -> {
+								Snowflake channelId = channel.getId();
 								if (s.equals(State.CONNECTED)) {
-
-									connectedChannels.put(vc.getChannelId().block(), vc);
-									schedulerMap.put(vc.getChannelId().block(), new TrackScheduler(pm));
-
+									schedulerMap.put(channelId, scheduler);
+									connectedChannels.put(channelId, vc);
 								} else if (s.equals(State.DISCONNECTED)) {
-									connectedChannels.remove(vc.getChannelId().block());
-									schedulerMap.remove(vc.getChannelId().block());
+									connectedChannels.remove(channelId);
+									schedulerMap.remove(channelId);
 								}
 							});
 
@@ -211,7 +212,7 @@ public class CommandReceiver {
 
 		// only roll if 2nd part of command matches the reg ex
 		if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
-			
+
 			StringBuilder sb = new StringBuilder();
 			sb.append("Rolling " + dice + "\n");
 
@@ -258,7 +259,7 @@ public class CommandReceiver {
 					LOGGER.error("Too many or few params for play");
 					return null;
 				}
-				scheduler.getPlayerManager().playerManager.loadItem(params[0], scheduler);
+				PlayerManager.loadItem(params[0], scheduler);
 				LOGGER.info("Loaded music item: " + params[0]);
 			}
 		}
@@ -282,7 +283,7 @@ public class CommandReceiver {
 				if (params.length == 0) {
 					return sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString();
 				} else if (params[0].equalsIgnoreCase("reset")) {
-					scheduler.getPlayer().setVolume(PlayerManager.DEFAULT_VOLUME);
+					scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
 					return sb.append("Volume reset to default").toString();
 				}
 

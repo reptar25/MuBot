@@ -16,6 +16,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import discord4j.common.util.Snowflake;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -25,12 +26,12 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
-	private final PlayerManager playerManager;
 	private final AudioPlayer player;
+	public static final int DEFAULT_VOLUME = 10;
 
-	public TrackScheduler(final PlayerManager playerManager) {
-		this.playerManager = playerManager;
-		this.player = playerManager.getPlayer();
+	public TrackScheduler() {
+		this.player = PlayerManager.createPlayer();
+		this.player.setVolume(DEFAULT_VOLUME);
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
 	}
@@ -217,12 +218,5 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 */
 	public AudioPlayer getPlayer() {
 		return player;
-	}
-
-	/**
-	 * @return The {@link PlayerManager} for this {@link TrackScheduler}
-	 */
-	public PlayerManager getPlayerManager() {
-		return playerManager;
 	}
 }

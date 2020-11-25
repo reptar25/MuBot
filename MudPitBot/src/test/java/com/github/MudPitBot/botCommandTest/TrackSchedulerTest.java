@@ -33,8 +33,8 @@ public class TrackSchedulerTest {
 
 	@BeforeEach
 	void createTrackScheduler() {
-		when(mockPlayerManager.getPlayer()).thenReturn(mockPlayer);
-		scheduler = new TrackScheduler(mockPlayerManager);
+		// when(mockPlayerManager.getPlayer()).thenReturn(mockPlayer);
+		scheduler = new TrackScheduler();
 	}
 
 	@Test
