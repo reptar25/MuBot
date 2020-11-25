@@ -5,6 +5,7 @@ import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.VoiceState;
 
 /**
  * Implementation of the Command design pattern.
@@ -29,8 +30,8 @@ public abstract class Command implements CommandInterface {
 	 * @return the literal String of what triggers this command.
 	 */
 	public abstract String getCommandTrigger();
-	
-	protected TrackScheduler getScheduler(MessageCreateEvent event) {
+
+	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
 		TrackScheduler scheduler = null;
 		if (event != null) {
 			if (event.getClient() != null) {
@@ -38,11 +39,14 @@ public abstract class Command implements CommandInterface {
 					// MessageChannel messageChannel = event.getMessage().getChannel().block();
 					Snowflake guildId = event.getGuildId().orElse(null);
 					if (guildId != null) {
-						Snowflake channelId = null;
-						channelId = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState()
-								.block().getChannelId().orElse(null);
-						if (channelId != null) {
-							scheduler = CommandReceiver.getScheduler(channelId);
+						VoiceState vs = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState()
+								.block();
+						if (vs != null) {
+							Snowflake channelId = null;
+							channelId = vs.getChannelId().orElse(null);
+							if (channelId != null) {
+								scheduler = CommandReceiver.getScheduler(channelId);
+							}
 						}
 					}
 				}
