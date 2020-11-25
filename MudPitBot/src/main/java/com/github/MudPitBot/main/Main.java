@@ -13,7 +13,14 @@ public class Main {
 	private static final Logger LOGGER = Loggers.getLogger(Main.class);
 
 	public static void main(String[] args) {
-		String token = args[0];
+		String token = null;
+
+		try {
+			token = args[0];
+		} catch (Exception e) {
+
+		}
+
 		if (token == null)
 			token = System.getenv("token");
 
