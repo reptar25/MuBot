@@ -13,7 +13,7 @@ public class ClearCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.clearQueue(event);
+		return receiver.clearQueue(getScheduler(event));
 	}
 
 	@Override

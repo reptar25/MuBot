@@ -13,7 +13,7 @@ public class PlayCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.play(event, params);
+		return receiver.play(getScheduler(event), params);
 	}
 
 	@Override

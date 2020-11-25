@@ -13,7 +13,7 @@ public class FastForwardCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.fastForward(event, params);
+		return receiver.fastForward(getScheduler(event), params);
 	}
 
 	@Override

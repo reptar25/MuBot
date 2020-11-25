@@ -13,7 +13,7 @@ public class RewindCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.rewind(event, params);
+		return receiver.rewind(getScheduler(event), params);
 	}
 
 	@Override

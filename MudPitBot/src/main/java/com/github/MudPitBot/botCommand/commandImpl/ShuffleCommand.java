@@ -13,7 +13,7 @@ public class ShuffleCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.shuffleQueue(event);
+		return receiver.shuffleQueue(getScheduler(event));
 	}
 
 	@Override

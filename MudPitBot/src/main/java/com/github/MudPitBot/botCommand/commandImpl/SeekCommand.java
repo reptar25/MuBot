@@ -13,7 +13,7 @@ public class SeekCommand extends Command {
 
 	@Override
 	public String execute(MessageCreateEvent event, String[] params) {
-		return receiver.seek(event, params);
+		return receiver.seek(getScheduler(event), params);
 	}
 
 	@Override

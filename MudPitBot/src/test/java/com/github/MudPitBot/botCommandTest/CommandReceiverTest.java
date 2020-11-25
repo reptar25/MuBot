@@ -1,11 +1,14 @@
 package com.github.MudPitBot.botCommandTest;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import com.github.MudPitBot.botCommand.CommandReceiver;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
 import com.github.MudPitBot.botCommand.commandInterface.Commands;
+import com.github.MudPitBot.botCommand.sound.PlayerManager;
+import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -44,6 +47,8 @@ class CommandReceiverTest {
 
 	@Mock
 	Mono<Message> monoMessage = mock(Mono.class);
+
+	TrackScheduler mockScheduler = new TrackScheduler(new PlayerManager());
 
 	String[] args = null;
 
@@ -102,10 +107,10 @@ class CommandReceiverTest {
 	@Test
 	void testPlay() {
 		String[] params = { "https://youtu.be/5qap5aO4i9A" };
-		receiver.play(mockEvent, params);
+		receiver.play(mockScheduler, params);
 
 		params[0] = "";
-		receiver.play(mockEvent, params);
+		receiver.play(mockScheduler, params);
 	}
 
 	@Test
@@ -116,32 +121,137 @@ class CommandReceiverTest {
 		String response = receiver.roll(params);
 		assertTrue(response.startsWith("Rolling 1d20"));
 
+		params[0] = "0d20";
+		response = receiver.roll(params);
+		assertNull(response);
+
 		params[0] = "d20";
 		response = receiver.roll(params);
 		assertNull(response);
 	}
 
-	// TODO: Needs to fix these tests to work with mockEvent and return the correct
-	// String. The issue is getting the scheduler for this channel since the bot
-	// didn't join a channel
-//	@Test
-//	void testVolume() {
-//		String[] params = new String[1];
-//
-//		params[0] = "50";
-//		String response = receiver.volume(mockEvent, params);
-//		assertEquals("Set volume to 50", response);
-//
-//		params[0] = "-1";
-//		response = receiver.volume(mockEvent, params);
-//		assertNull(response);
-//	}
-//	
-//	@Test
-//	void testNowPlaying() {
-//		String response = receiver.nowPlaying(mockEvent);
-//		
-//		assertNull(response.startsWith("Now playing:"));
-//	}
+	@Test
+	void testVolume() {
+		String[] params = new String[1];
+
+		params[0] = "50";
+		String response = receiver.volume(mockScheduler, params);
+		assertEquals("Changing volume from 10 to 50", response);
+
+		params[0] = "-1";
+		response = receiver.volume(mockScheduler, params);
+		assertNull(response);
+
+		params[0] = "100";
+		response = receiver.volume(mockScheduler, params);
+		assertEquals("Changing volume from 50 to 100", response);
+
+		params[0] = "101";
+		response = receiver.volume(mockScheduler, params);
+		assertNull(response);
+
+		params[0] = "reset";
+		response = receiver.volume(mockScheduler, params);
+		assertEquals("Volume reset to default", response);
+	}
+
+	@Test
+	void testNowPlaying() {
+		String response = receiver.nowPlaying(mockScheduler);
+		assertTrue(response.startsWith("Now playing:"));
+	}
+
+	@Test
+	void testStop() {
+		String response = receiver.stop(mockScheduler);
+		assertEquals(response, "Player stopped");
+
+		response = receiver.stop(null);
+		assertNull(response);
+	}
+
+	@Test
+	void testSkip() {
+		String response = receiver.skip(mockScheduler);
+		assertNull(response);
+		
+		response = receiver.skip(null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testClearQueue() {
+		String response = receiver.clearQueue(mockScheduler);
+		assertEquals(response, "Queue cleared");
+		
+		response = receiver.clearQueue(null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testViewQueue() {
+		String response = receiver.viewQueue(mockScheduler);
+		assertEquals(response, "The queue is empty");
+		
+		response = receiver.viewQueue(null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testShuffle() {
+		String response = receiver.shuffleQueue(mockScheduler);
+		assertNull(response);
+		
+		response = receiver.shuffleQueue(null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testPause() {
+		String response = receiver.pause(mockScheduler);
+		assertNull(response);
+		
+		response = receiver.pause(null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testSeek() {
+		String[] params = new String[1];
+
+		params[0] = "50";
+		
+		String response = receiver.seek(mockScheduler, params);
+		assertNull(response);
+		
+		response = receiver.seek(null, null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testRewind() {
+		String[] params = new String[1];
+
+		params[0] = "50";
+		
+		String response = receiver.rewind(mockScheduler, params);
+		assertNull(response);
+		
+		response = receiver.rewind(null, null);
+		assertNull(response);
+	}
+	
+	@Test
+	void testFastForward() {
+		String[] params = new String[1];
+
+		params[0] = "50";
+		
+		String response = receiver.fastForward(mockScheduler, params);
+		assertNull(response);
+		
+		response = receiver.fastForward(null, null);
+		assertNull(response);
+	}
 
 }

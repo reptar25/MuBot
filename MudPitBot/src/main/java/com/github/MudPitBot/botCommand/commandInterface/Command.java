@@ -1,6 +1,10 @@
 package com.github.MudPitBot.botCommand.commandInterface;
 
 import com.github.MudPitBot.botCommand.CommandReceiver;
+import com.github.MudPitBot.botCommand.sound.TrackScheduler;
+
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 
 /**
  * Implementation of the Command design pattern.
@@ -25,4 +29,25 @@ public abstract class Command implements CommandInterface {
 	 * @return the literal String of what triggers this command.
 	 */
 	public abstract String getCommandTrigger();
+	
+	protected TrackScheduler getScheduler(MessageCreateEvent event) {
+		TrackScheduler scheduler = null;
+		if (event != null) {
+			if (event.getClient() != null) {
+				if (event.getGuildId() != null) {
+					// MessageChannel messageChannel = event.getMessage().getChannel().block();
+					Snowflake guildId = event.getGuildId().orElse(null);
+					if (guildId != null) {
+						Snowflake channelId = null;
+						channelId = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState()
+								.block().getChannelId().orElse(null);
+						if (channelId != null) {
+							scheduler = CommandReceiver.getScheduler(channelId);
+						}
+					}
+				}
+			}
+		}
+		return scheduler;
+	}
 }

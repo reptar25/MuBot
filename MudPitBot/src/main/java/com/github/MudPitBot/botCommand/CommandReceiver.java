@@ -67,6 +67,17 @@ public class CommandReceiver {
 	private CommandReceiver() {
 		// scheduler = new TrackScheduler(PlayerManager.player);
 	}
+	
+
+	/**
+	 * Get the track scheduler for the guild of this event
+	 * 
+	 * @param event The message event
+	 * @return The scheduler mapped to this channel
+	 */
+	public static TrackScheduler getScheduler(Snowflake channelId) {
+		return schedulerMap.get(channelId);
+	}
 
 	/**
 	 * Bot joins the same voice channel as the user who uses the command.
@@ -200,8 +211,7 @@ public class CommandReceiver {
 
 		// only roll if 2nd part of command matches the reg ex
 		if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
-			LOGGER.info(("Regex matches"));
-
+			
 			StringBuilder sb = new StringBuilder();
 			sb.append("Rolling " + dice + "\n");
 
@@ -234,8 +244,7 @@ public class CommandReceiver {
 	 * @param params The link of the audio
 	 * @return null
 	 */
-	public String play(MessageCreateEvent event, String[] params) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String play(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 
@@ -264,8 +273,7 @@ public class CommandReceiver {
 	 * @param params The new volume setting
 	 * @return Responds with new volume setting
 	 */
-	public String volume(MessageCreateEvent event, String[] params) {
-		TrackScheduler scheduler = CommandReceiver.getScheduler(event);
+	public String volume(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				// final String content = event.getMessage().getContent();
@@ -301,8 +309,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return "Player stopped" if successful, null if not
 	 */
-	public String stop(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String stop(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.getPlayer().stopTrack();
 			LOGGER.info("Stopped music");
@@ -318,8 +325,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return The message event
 	 */
-	public String skip(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.nextTrack();
 		}
@@ -382,8 +388,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return "Queue cleared" if successful, null if not
 	 */
-	public String clearQueue(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String clearQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.clearQueue();
 			return "Queue cleared";
@@ -398,8 +403,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return List of songs in the queue, or "The queue is empty" if empty
 	 */
-	public String viewQueue(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String viewQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			// get list of songs currently in the queue
 			List<AudioTrack> queue = scheduler.getQueue();
@@ -414,7 +418,7 @@ public class CommandReceiver {
 							.append(track.getInfo().author).append("\n");
 				}
 			} else {
-				sb.append("The queue is empty.");
+				sb.append("The queue is empty");
 			}
 
 			String retString = sb.toString();
@@ -435,8 +439,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String shuffleQueue(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.shuffleQueue();
 		}
@@ -449,8 +452,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return Info of song currently playing
 	 */
-	public String nowPlaying(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String nowPlaying(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			StringBuilder sb = new StringBuilder("Now playing: ");
 			// get the track that's currently playing
@@ -514,8 +516,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String pause(MessageCreateEvent event) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String pause(TrackScheduler scheduler) {
 		if (scheduler != null)
 			scheduler.pause(!scheduler.isPaused());
 
@@ -543,8 +544,7 @@ public class CommandReceiver {
 	 * @param params The position to move the current song to in seconds
 	 * @return null
 	 */
-	public String seek(MessageCreateEvent event, String[] params) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String seek(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				if (params.length > 0) {
@@ -565,8 +565,7 @@ public class CommandReceiver {
 	 * @param params The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public String rewind(MessageCreateEvent event, String[] params) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String rewind(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				if (params.length > 0) {
@@ -587,8 +586,7 @@ public class CommandReceiver {
 	 * @param params The amount of time in seconds to fast forward
 	 * @return null
 	 */
-	public String fastForward(MessageCreateEvent event, String[] params) {
-		TrackScheduler scheduler = getScheduler(event);
+	public String fastForward(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				if (params.length > 0) {
@@ -604,35 +602,8 @@ public class CommandReceiver {
 		return null;
 	}
 
-	/**
-	 * Get the track scheduler for the guild of this event
-	 * 
-	 * @param event The message event
-	 * @return The scheduler mapped to this channel
-	 */
-	private static TrackScheduler getScheduler(MessageCreateEvent event) {
-		TrackScheduler scheduler = null;
-		if (event != null) {
-			if (event.getClient() != null) {
-				if (event.getGuildId() != null) {
-					// MessageChannel messageChannel = event.getMessage().getChannel().block();
-					Snowflake guildId = event.getGuildId().orElse(null);
-					if (guildId != null) {
-						Snowflake channelId = null;
-						channelId = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState()
-								.block().getChannelId().orElse(null);
-						if (channelId != null) {
-							scheduler = schedulerMap.get(channelId);
-						}
-					}
-				}
-			}
-		}
-		return scheduler;
-	}
-
 	public String cyberpunk() {
-		
+
 		return "Cyberpunk will relsae in; ";
 	}
 
