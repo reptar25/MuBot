@@ -604,7 +604,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return The scheduler mapped to this channel
 	 */
-	public TrackScheduler getScheduler(MessageCreateEvent event) {
+	private static TrackScheduler getScheduler(MessageCreateEvent event) {
 		TrackScheduler scheduler = null;
 		if (event != null) {
 			if (event.getClient() != null) {
