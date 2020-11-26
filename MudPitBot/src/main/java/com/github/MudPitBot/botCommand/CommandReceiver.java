@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.CommandResponse;
 import com.github.MudPitBot.botCommand.commandInterface.Commands;
 import com.github.MudPitBot.botCommand.poll.Poll;
 import com.github.MudPitBot.botCommand.sound.LavaPlayerAudioProvider;
@@ -18,12 +20,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.Embed;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Color;
 import discord4j.voice.VoiceConnection;
 import discord4j.voice.VoiceConnection.State;
@@ -79,7 +83,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String join(MessageCreateEvent event) {
+	public CommandResponse join(MessageCreateEvent event) {
 		if (event != null) {
 			if (event.getMember() != null) {
 				// get member who used command
@@ -133,7 +137,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String leave(MessageCreateEvent event) {
+	public CommandResponse leave(MessageCreateEvent event) {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				if (event.getMessage().getGuild() != null) {
@@ -177,8 +181,8 @@ public class CommandReceiver {
 	 * 
 	 * @return "echo!"
 	 */
-	public String echo() {
-		return ("echo!");
+	public CommandResponse echo() {
+		return new CommandResponse("echo!");
 	}
 
 	/**
@@ -187,7 +191,7 @@ public class CommandReceiver {
 	 * @param params The number and type of dice to roll, eg "1d20"
 	 * @return The results of the dice roll
 	 */
-	public String roll(String[] params) {
+	public CommandResponse roll(String[] params) {
 
 		if (params == null) {
 			return null;
@@ -217,7 +221,7 @@ public class CommandReceiver {
 			}
 
 			sb.append("Rolled a " + diceSum + "\n");
-			return sb.toString();
+			return new CommandResponse(sb.toString());
 			// channel to display the results in
 //						MessageChannel channel = event.getMessage().getChannel().block();
 //						if (channel != null)
@@ -234,7 +238,7 @@ public class CommandReceiver {
 	 * @param params The link of the audio
 	 * @return null
 	 */
-	public String play(TrackScheduler scheduler, String[] params) {
+	public CommandResponse play(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 
@@ -263,17 +267,18 @@ public class CommandReceiver {
 	 * @param params The new volume setting
 	 * @return Responds with new volume setting
 	 */
-	public String volume(TrackScheduler scheduler, String[] params) {
+	public CommandResponse volume(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				// final String content = event.getMessage().getContent();
 				// final String[] command = content.split(" ");
 				StringBuilder sb = new StringBuilder();
 				if (params.length == 0) {
-					return sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString();
+					return new CommandResponse(
+							sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
 				} else if (params[0].equalsIgnoreCase("reset")) {
 					scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
-					return sb.append("Volume reset to default").toString();
+					return new CommandResponse(sb.append("Volume reset to default").toString());
 				}
 
 				if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
@@ -281,7 +286,7 @@ public class CommandReceiver {
 					sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
 							.append(volume);
 					scheduler.getPlayer().setVolume(volume);
-					return sb.toString();
+					return new CommandResponse(sb.toString());
 //					LOGGER.info(sb.toString());
 //					MessageChannel channel = event.getMessage().getChannel().block();
 //					if (channel != null)
@@ -299,11 +304,11 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return "Player stopped" if successful, null if not
 	 */
-	public String stop(TrackScheduler scheduler) {
+	public CommandResponse stop(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.getPlayer().stopTrack();
 			LOGGER.info("Stopped music");
-			return "Player stopped";
+			return new CommandResponse("Player stopped");
 		}
 
 		return null;
@@ -315,7 +320,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return The message event
 	 */
-	public String skip(TrackScheduler scheduler) {
+	public CommandResponse skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.nextTrack();
 		}
@@ -329,7 +334,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String mute(MessageCreateEvent event) {
+	public CommandResponse mute(MessageCreateEvent event) {
 		if (event != null && event.getMessage() != null && event.getMember().isPresent()) {
 			// muteToggle = !muteToggle;
 
@@ -378,10 +383,10 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return "Queue cleared" if successful, null if not
 	 */
-	public String clearQueue(TrackScheduler scheduler) {
+	public CommandResponse clearQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.clearQueue();
-			return "Queue cleared";
+			return new CommandResponse("Queue cleared");
 		}
 
 		return null;
@@ -393,7 +398,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return List of songs in the queue, or "The queue is empty" if empty
 	 */
-	public String viewQueue(TrackScheduler scheduler) {
+	public CommandResponse viewQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			// get list of songs currently in the queue
 			List<AudioTrack> queue = scheduler.getQueue();
@@ -418,7 +423,7 @@ public class CommandReceiver {
 			if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
 				retString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
 
-			return retString;
+			return new CommandResponse(retString);
 		}
 		return null;
 	}
@@ -429,7 +434,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String shuffleQueue(TrackScheduler scheduler) {
+	public CommandResponse shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.shuffleQueue();
 		}
@@ -442,7 +447,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return Info of song currently playing
 	 */
-	public String nowPlaying(TrackScheduler scheduler) {
+	public CommandResponse nowPlaying(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			StringBuilder sb = new StringBuilder("Now playing: ");
 			// get the track that's currently playing
@@ -453,7 +458,7 @@ public class CommandReceiver {
 						.append(track.getInfo().author);
 			}
 
-			return sb.toString();
+			return new CommandResponse(sb.toString());
 		}
 		return null;
 	}
@@ -465,10 +470,11 @@ public class CommandReceiver {
 	 * @return null
 	 * 
 	 *         TODO: Figure out a way to return embed so this method can return the
-	 *         poll that should be sent instead of sending it itself. Maybe have
-	 *         commands return a {@link Message} instead of a String.
+	 *         poll that should be sent instead of sending it itself. Also have to
+	 *         figure out how to add the reactions after the message is sent.message
+	 * 
 	 */
-	public String poll(MessageCreateEvent event) {
+	public CommandResponse poll(MessageCreateEvent event) {
 		if (event != null) {
 			if (event.getMessage() != null) {
 				MessageChannel channel = event.getMessage().getChannel().block();
@@ -482,17 +488,12 @@ public class CommandReceiver {
 					}
 
 					// create the embed to put the poll into
-					Message message = channel.createEmbed(
-							spec -> spec.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
-									.setTitle(poll.getTitle()).setDescription(poll.getDescription()))
-							.block();
+					Consumer<? super MessageCreateSpec> spec = s1 -> s1.setEmbed(
+							s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
+									.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
 
-					if (message != null) {
-						// add reactions as vote tickers, number of reactions depends on number of
-						// answers
-						poll.addReactions(message);
-						// message.pin().block();
-					}
+					return new CommandResponse.Builder().spec(spec).poll(poll).build();
+
 				}
 			}
 		}
@@ -506,7 +507,7 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	public String pause(TrackScheduler scheduler) {
+	public CommandResponse pause(TrackScheduler scheduler) {
 		if (scheduler != null)
 			scheduler.pause(!scheduler.isPaused());
 
@@ -518,14 +519,14 @@ public class CommandReceiver {
 	 * 
 	 * @return List of available commands
 	 */
-	public String printCommands() {
+	public CommandResponse printCommands() {
 
 		StringBuilder sb = new StringBuilder("Available commands:");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
 		for (Entry<String, Command> entry : entries) {
 			sb.append(", ").append(Commands.COMMAND_PREFIX).append(entry.getKey());
 		}
-		return sb.toString().replaceAll(":,", ":");
+		return new CommandResponse((sb.toString().replaceAll(":,", ":")));
 
 	}
 
@@ -534,7 +535,7 @@ public class CommandReceiver {
 	 * @param params The position to move the current song to in seconds
 	 * @return null
 	 */
-	public String seek(TrackScheduler scheduler, String[] params) {
+	public CommandResponse seek(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				if (params.length > 0) {
@@ -555,7 +556,7 @@ public class CommandReceiver {
 	 * @param params The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public String rewind(TrackScheduler scheduler, String[] params) {
+	public CommandResponse rewind(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				if (params.length > 0) {
@@ -576,7 +577,7 @@ public class CommandReceiver {
 	 * @param params The amount of time in seconds to fast forward
 	 * @return null
 	 */
-	public String fastForward(TrackScheduler scheduler, String[] params) {
+	public CommandResponse fastForward(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null) {
 			if (params != null) {
 				if (params.length > 0) {
@@ -592,9 +593,9 @@ public class CommandReceiver {
 		return null;
 	}
 
-	public String cyberpunk() {
+	public CommandResponse cyberpunk() {
 
-		return "Cyberpunk will relsae in; ";
+		return new CommandResponse("Cyberpunk will relsae in; ");
 	}
 
 }

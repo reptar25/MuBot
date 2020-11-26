@@ -7,5 +7,5 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
  */
 public interface CommandInterface {
 
-	public String execute(MessageCreateEvent event, String[] params);
+	public CommandResponse execute(MessageCreateEvent event, String[] params);
 }

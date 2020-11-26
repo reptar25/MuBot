@@ -2,6 +2,7 @@ package com.github.MudPitBot.botCommand.commandImpl;
 
 import com.github.MudPitBot.botCommand.CommandReceiver;
 import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.CommandResponse;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
@@ -13,7 +14,7 @@ public class CyberpunkCountdownCommand extends Command {
 	}
 
 	@Override
-	public String execute(MessageCreateEvent event, String[] params) {
+	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.cyberpunk();
 	}
 

@@ -2,8 +2,10 @@ package com.github.MudPitBot.botCommand;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.CommandResponse;
 import com.github.MudPitBot.botCommand.commandInterface.Commands;
 
 import discord4j.common.util.Snowflake;
@@ -12,8 +14,10 @@ import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.spec.MessageCreateSpec;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -164,14 +168,23 @@ public class CommandClient {
 
 					// commands will return any string that the bot should send back as a message to
 					// the command
-					String returnMessage = executor.executeCommand(event, entry.getValue(), params);
+					CommandResponse response = executor.executeCommand(event, entry.getValue(), params);
 
 					// if there is a message to send back send it to the channel the original
 					// message was sent from
-					if (returnMessage != null) {
+					if (response != null) {
 						MessageChannel channel = event.getMessage().getChannel().block();
 						if (channel != null) {
-							channel.createMessage(returnMessage).block();
+							Message message = null;
+							if (response.getSpec() != null) {
+								message = channel.createMessage(response.getSpec()).block();
+							}
+
+							if (response.getPoll() != null && message != null) {
+								// add reactions as vote tickers, number of reactions depends on number of
+								// answers
+								response.getPoll().addReactions(message);
+							}
 						}
 					}
 

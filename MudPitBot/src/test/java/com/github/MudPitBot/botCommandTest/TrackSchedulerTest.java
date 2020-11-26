@@ -7,6 +7,7 @@ import com.github.MudPitBot.botCommand.sound.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,12 +25,12 @@ public class TrackSchedulerTest {
 	static AudioPlayer mockPlayer = mock(AudioPlayer.class);
 
 	@Mock
-	AudioTrack mockTrack = mock(AudioTrack.class);
+	InternalAudioTrack mockTrack = mock(InternalAudioTrack.class);
 
 	@Mock
 	AudioPlaylist mockPlaylist = mock(AudioPlaylist.class);
 
-	static TrackScheduler scheduler;
+	TrackScheduler scheduler;
 
 	@BeforeEach
 	void createTrackScheduler() {
@@ -71,6 +72,9 @@ public class TrackSchedulerTest {
 	@Test
 	void testPause() {
 		scheduler.pause(true);
+		assertTrue(scheduler.isPaused());
+		
+		scheduler.pause(false);
 		assertFalse(scheduler.isPaused());
 	}
 

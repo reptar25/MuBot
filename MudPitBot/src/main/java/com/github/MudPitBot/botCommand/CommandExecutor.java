@@ -1,6 +1,7 @@
 package com.github.MudPitBot.botCommand;
 
 import com.github.MudPitBot.botCommand.commandInterface.Command;
+import com.github.MudPitBot.botCommand.commandInterface.CommandResponse;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
@@ -12,7 +13,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
  */
 public class CommandExecutor {
 
-	public String executeCommand(MessageCreateEvent event, Command command, String[] params) {
+	public CommandResponse executeCommand(MessageCreateEvent event, Command command, String[] params) {
 		return command.execute(event, params);
 	}
 
