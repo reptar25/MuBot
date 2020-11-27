@@ -165,7 +165,7 @@ public class CommandReceiver {
 						if (schedulerMap.containsKey(memberChannelId)) {
 							schedulerMap.remove(memberChannelId);
 							// disconnect from the channel
-							botConnection.disconnect();
+							botConnection.disconnect().block();
 						}
 					}
 				}
