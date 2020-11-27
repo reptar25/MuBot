@@ -1,4 +1,4 @@
-package com.github.MudPitBot.botCommandTest;
+package com.github.MudPitBot.test;
 
 import org.mockito.Mock;
 
