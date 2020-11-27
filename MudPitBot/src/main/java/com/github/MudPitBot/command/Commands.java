@@ -35,7 +35,7 @@ public final class Commands {
 		// scan urls that contain 'com.github.MudPitBot.botCommand.commandImpl', include
 		// inputs starting with'com.github.MudPitBot.botCommand.commandImpl', use the
 		// default scanners
-		Reflections reflections = new Reflections("com.github.MudPitBot.botCommand.commandImpl");
+		Reflections reflections = new Reflections("com.github.MudPitBot.command.impl");
 		// get a set of all the subclasses of Command
 		Set<Class<? extends Command>> subTypes = reflections.getSubTypesOf(Command.class);
 
