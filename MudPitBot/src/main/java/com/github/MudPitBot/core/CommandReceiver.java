@@ -84,44 +84,45 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse join(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMember() != null) {
-				// get member who used command
-				final Member member = event.getMember().orElse(null);
-				if (member != null) {
-					// get voice channel member is in
-					final VoiceState voiceState = member.getVoiceState().block();
-					if (voiceState != null) {
-						final VoiceChannel channel = voiceState.getChannel().block();
-						if (channel != null) {
-							// check if bot is currently connected to another voice channel and disconnect
-							// from it before trying to join a new one.
-							if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
-								event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
-								try {
-									Thread.sleep(250);
-								} catch (InterruptedException e) {
-									LOGGER.error(e.toString());
-								}
+		if (event != null && event.getMember() != null) {
+			// get member who used command
+			final Member member = event.getMember().orElse(null);
+			if (member != null) {
+				// get voice channel member is in
+				final VoiceState voiceState = member.getVoiceState().block();
+				if (voiceState != null) {
+					final VoiceChannel channel = voiceState.getChannel().block();
+					if (channel != null) {
+						// check if bot is currently connected to another voice channel and disconnect
+						// from it before trying to join a new one.
+						if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
+							event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
+							try {
+								Thread.sleep(250);
+							} catch (InterruptedException e) {
+								LOGGER.error(e.toString());
 							}
-
-							// join returns a VoiceConnection which would be required if we were
-							// adding disconnection features, but for now we are just ignoring it.
-							TrackScheduler scheduler = new TrackScheduler();
-							VoiceConnection vc = channel
-									.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
-									.block();
-
-							vc.onConnectOrDisconnect().subscribe(s -> {
-								Snowflake channelId = channel.getId();
-								if (s.equals(State.CONNECTED)) {
-									schedulerMap.put(channelId, scheduler);
-								} else if (s.equals(State.DISCONNECTED)) {
-									schedulerMap.remove(channelId);
-								}
-							});
-
 						}
+
+						// Create a new TrackScheduler to play sound when joining a voice channel
+						TrackScheduler scheduler = new TrackScheduler();
+						VoiceConnection vc = channel
+								.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+								.block();
+
+						vc.onConnectOrDisconnect().subscribe(s -> {
+							Snowflake channelId = channel.getId();
+							if (s.equals(State.CONNECTED)) {
+								// once we are connected put the scheduler in the map with the channelId as the
+								// key
+								schedulerMap.put(channelId, scheduler);
+							} else if (s.equals(State.DISCONNECTED)) {
+								// remove the scheduler from the map. This doesn't ever seem to happen when the
+								// bot disconects though so also removes it from map during leave command
+								schedulerMap.remove(channelId);
+							}
+						});
+
 					}
 				}
 			}
@@ -138,35 +139,33 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse leave(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMessage() != null) {
-				if (event.getMessage().getGuild() != null) {
-					Guild guild = event.getMessage().getGuild().block();
-					if (guild != null) {
-						VoiceConnection botConnection = guild.getVoiceConnection().block();
-						// If the client isn't in a voiceChannel, don't execute any other code
-						if (botConnection == null) {
-							// System.out.println("BOT NOT IN A VOICE CHANNEL");
-							return null;
-						}
-						// get member who used command
-						final Member member = event.getMember().orElse(null);
-						if (member != null) {
-							// get voice channel member is in
-							final VoiceState voiceState = member.getVoiceState().block();
-							if (voiceState != null) {
-//							long botChannelId = botConnection.getChannelId().block().asLong();
-								Snowflake memberChannelId = voiceState.getChannel().block().getId();
+		if (event != null && event.getMessage() != null && event.getMessage().getGuild() != null) {
+			Guild guild = event.getMessage().getGuild().block();
+			if (guild != null) {
+				VoiceConnection botConnection = guild.getVoiceConnection().block();
+				// If the client isn't in a voiceChannel, don't execute any other code
+				if (botConnection == null) {
+					return null;
+				}
+				// get member who used command
+				final Member member = event.getMember().orElse(null);
+				if (member != null) {
+					// get voice channel member is in
+					final VoiceState voiceState = member.getVoiceState().block();
+					if (voiceState != null) {
+						// the channel id the user is in
+						Snowflake memberChannelId = voiceState.getChannel().block().getId();
 //							// check if user and bot are in the same channel
 //							if (memberChannelId == botChannelId) {
 //								botConnection.disconnect().block();
 //								LOGGER.info("Bot disconnecting from voice channel.");
 //								// System.out.println("DISCONNECTING");
 //							}
-								if (schedulerMap.containsKey(memberChannelId)) {
-									schedulerMap.remove(memberChannelId);
-								}
-							}
+						// if the channel is in the map of channels with schedulers then remove it
+						if (schedulerMap.containsKey(memberChannelId)) {
+							schedulerMap.remove(memberChannelId);
+							// disconnect from the channel
+							botConnection.disconnect();
 						}
 					}
 				}
@@ -193,11 +192,7 @@ public class CommandReceiver {
 	 */
 	public CommandResponse roll(String[] params) {
 
-		if (params == null) {
-			return null;
-		}
-		// will be the 2nd part of command eg "1d20"
-		if (params.length <= 0) {
+		if (params == null || params.length <= 0) {
 			return null;
 		}
 
@@ -222,10 +217,6 @@ public class CommandReceiver {
 
 			sb.append("Rolled a " + diceSum + "\n");
 			return new CommandResponse(sb.toString());
-			// channel to display the results in
-//						MessageChannel channel = event.getMessage().getChannel().block();
-//						if (channel != null)
-//							channel.createMessage(sb.toString()).block();
 		}
 
 		return null;
@@ -239,22 +230,20 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse play(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null) {
-			if (params != null) {
+		if (scheduler != null && params != null) {
 
-				// unpause
-				if (params[0].isEmpty() && scheduler.isPaused()) {
-					scheduler.pause(false);
-					return null;
-				}
-
-				if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
-					LOGGER.error("Too many or few params for play");
-					return null;
-				}
-				PlayerManager.loadItem(params[0], scheduler);
-				LOGGER.info("Loaded music item: " + params[0]);
+			// unpause
+			if (params[0].isEmpty() && scheduler.isPaused()) {
+				scheduler.pause(false);
+				return null;
 			}
+
+			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
+				LOGGER.error("Too many or few params for play");
+				return null;
+			}
+			PlayerManager.loadItem(params[0], scheduler);
+			LOGGER.info("Loaded music item: " + params[0]);
 		}
 		return null;
 	}
@@ -268,30 +257,23 @@ public class CommandReceiver {
 	 * @return Responds with new volume setting
 	 */
 	public CommandResponse volume(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null) {
-			if (params != null) {
-				// final String content = event.getMessage().getContent();
-				// final String[] command = content.split(" ");
-				StringBuilder sb = new StringBuilder();
-				if (params.length == 0) {
-					return new CommandResponse(
-							sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
-				} else if (params[0].equalsIgnoreCase("reset")) {
-					scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
-					return new CommandResponse(sb.append("Volume reset to default").toString());
-				}
+		if (scheduler != null && params != null) {
 
-				if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
-					int volume = Integer.parseInt(params[0]);
-					sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
-							.append(volume);
-					scheduler.getPlayer().setVolume(volume);
-					return new CommandResponse(sb.toString());
-//					LOGGER.info(sb.toString());
-//					MessageChannel channel = event.getMessage().getChannel().block();
-//					if (channel != null)
-//						channel.createMessage(sb.toString()).block();
-				}
+			StringBuilder sb = new StringBuilder();
+			if (params.length == 0) {
+				return new CommandResponse(
+						sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
+			} else if (params[0].equalsIgnoreCase("reset")) {
+				scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
+				return new CommandResponse(sb.append("Volume reset to default").toString());
+			}
+
+			if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
+				int volume = Integer.parseInt(params[0]);
+				sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
+						.append(volume);
+				scheduler.getPlayer().setVolume(volume);
+				return new CommandResponse(sb.toString());
 
 			}
 		}
@@ -475,26 +457,24 @@ public class CommandReceiver {
 	 * 
 	 */
 	public CommandResponse poll(MessageCreateEvent event) {
-		if (event != null) {
-			if (event.getMessage() != null) {
-				MessageChannel channel = event.getMessage().getChannel().block();
-				if (channel != null) {
-					// create a new poll object
-					Poll poll = new Poll.Builder(event).build();
+		if (event != null && event.getMessage() != null) {
+			MessageChannel channel = event.getMessage().getChannel().block();
+			if (channel != null) {
+				// create a new poll object
+				Poll poll = new Poll.Builder(event).build();
 
-					// if the poll is invalid just stop
-					if (poll.getAnswers().size() <= 1) {
-						return null;
-					}
-
-					// create the embed to put the poll into
-					Consumer<? super MessageCreateSpec> spec = s1 -> s1.setEmbed(
-							s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
-									.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
-
-					return new CommandResponse.Builder().spec(spec).poll(poll).build();
-
+				// if the poll is invalid just stop
+				if (poll.getAnswers().size() <= 1) {
+					return null;
 				}
+
+				// create the embed to put the poll into
+				Consumer<? super MessageCreateSpec> spec = s1 -> s1.setEmbed(
+						s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
+								.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
+
+				return new CommandResponse.Builder().spec(spec).poll(poll).build();
+
 			}
 		}
 
@@ -520,14 +500,12 @@ public class CommandReceiver {
 	 * @return List of available commands
 	 */
 	public CommandResponse printCommands() {
-
 		StringBuilder sb = new StringBuilder("Available commands:");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
 		for (Entry<String, Command> entry : entries) {
 			sb.append(", ").append(Commands.COMMAND_PREFIX).append(entry.getKey());
 		}
 		return new CommandResponse((sb.toString().replaceAll(":,", ":")));
-
 	}
 
 	/**
@@ -536,15 +514,13 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse seek(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null) {
-			if (params != null) {
-				if (params.length > 0) {
-					try {
-						int positionInSeconds = Integer.parseInt(params[0]);
-						scheduler.seek(positionInSeconds);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		if (scheduler != null && params != null) {
+			if (params.length > 0) {
+				try {
+					int positionInSeconds = Integer.parseInt(params[0]);
+					scheduler.seek(positionInSeconds);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -557,15 +533,13 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse rewind(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null) {
-			if (params != null) {
-				if (params.length > 0) {
-					try {
-						int amountInSeconds = Integer.parseInt(params[0]);
-						scheduler.rewind(amountInSeconds);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		if (scheduler != null && params != null) {
+			if (params.length > 0) {
+				try {
+					int amountInSeconds = Integer.parseInt(params[0]);
+					scheduler.rewind(amountInSeconds);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -578,15 +552,13 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse fastForward(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null) {
-			if (params != null) {
-				if (params.length > 0) {
-					try {
-						int amountInSeconds = Integer.parseInt(params[0]);
-						scheduler.fastForward(amountInSeconds);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		if (scheduler != null && params != null) {
+			if (params.length > 0) {
+				try {
+					int amountInSeconds = Integer.parseInt(params[0]);
+					scheduler.fastForward(amountInSeconds);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
