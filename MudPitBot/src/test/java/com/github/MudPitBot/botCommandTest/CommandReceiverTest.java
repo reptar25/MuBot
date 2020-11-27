@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import com.github.MudPitBot.botCommand.CommandReceiver;
-import com.github.MudPitBot.botCommand.commandInterface.Command;
-import com.github.MudPitBot.botCommand.commandInterface.CommandResponse;
-import com.github.MudPitBot.botCommand.commandInterface.Commands;
-import com.github.MudPitBot.botCommand.sound.PlayerManager;
-import com.github.MudPitBot.botCommand.sound.TrackScheduler;
+import com.github.MudPitBot.command.Command;
+import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.Commands;
+import com.github.MudPitBot.core.CommandReceiver;
+import com.github.MudPitBot.sound.PlayerManager;
+import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
