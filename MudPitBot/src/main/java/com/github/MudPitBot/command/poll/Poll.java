@@ -70,9 +70,9 @@ public final class Poll {
 				return;
 			}
 
-			title = params[0].replaceAll("\"", "");
+			title = params[1].replaceAll("\"", "");
 
-			for (int i = 1; i < params.length; i++) {
+			for (int i = 2; i < params.length; i++) {
 				answers.add(params[i].replaceAll("\"", ""));
 			}
 		}
