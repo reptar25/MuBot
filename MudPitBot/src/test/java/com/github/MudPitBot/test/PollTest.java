@@ -27,10 +27,10 @@ public class PollTest {
 	@Test
 	void createPoll() {
 		when(mockEvent.getMessage()).thenReturn(mockMessage);
-		when(mockMessage.getContent()).thenReturn("\"Title\" \"Answer1\" \"Answer2\"");
+		when(mockMessage.getContent()).thenReturn("!poll \"Title\" \"Answer1\" \"Answer2\"");
 		when(mockMessage.getUserData()).thenReturn(mockUserData);
 		when(mockUserData.username()).thenReturn("Username");
-		Poll p = new Poll.Builder(mockEvent).build();
+		Poll p = new Poll(mockEvent);
 
 		assertEquals(p.getAnswers().get(0), "Answer1");
 	}
@@ -38,7 +38,7 @@ public class PollTest {
 	@Test
 	void nullParams() {
 		when(mockEvent.getMessage()).thenReturn(mockMessage);
-		Poll p = new Poll.Builder(mockEvent).build();
+		Poll p = new Poll(mockEvent);
 
 		assertTrue(p.getAnswers().isEmpty());
 	}
@@ -46,7 +46,7 @@ public class PollTest {
 	@Test
 	void nullEvent() {
 		when(mockMessage.getContent()).thenReturn("\"Title\" \"Answer1\" \"Answer2\"");
-		Poll p = new Poll.Builder(null).build();
+		Poll p = new Poll(mockEvent);
 
 		assertTrue(p.getAnswers().isEmpty());
 	}
