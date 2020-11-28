@@ -21,19 +21,6 @@ public abstract class Command implements CommandInterface {
 	}
 
 	/**
-	 * The String that would cause this command to trigger if typed in a message to
-	 * a channel the bot can see
-	 * 
-	 * @return the literal String of what triggers this command.
-	 */
-	/*
-	 * This enforces users to implement what the command trigger should be when
-	 * making a subclass. If we just used a protected variable then there would be
-	 * no way to enforce it being set.
-	 */
-	public abstract String getCommandTrigger();
-
-	/**
 	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
 	 * channel of the guild the message was sent in.
 	 * 
@@ -43,25 +30,17 @@ public abstract class Command implements CommandInterface {
 	 */
 	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
 		TrackScheduler scheduler = null;
-		if (event != null) {
-			if (event.getClient() != null) {
-				if (event.getGuildId() != null) {
-					// MessageChannel messageChannel = event.getMessage().getChannel().block();
-					Snowflake guildId = event.getGuildId().orElse(null);
-					if (guildId != null) {
-						VoiceState vs = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState()
-								.block();
-						if (vs != null) {
-							Snowflake channelId = null;
-							channelId = vs.getChannelId().orElse(null);
-							if (channelId != null) {
-								scheduler = CommandReceiver.getScheduler(channelId);
-							}
-						}
-					}
+		// MessageChannel messageChannel = event.getMessage().getChannel().block();
+		if (event.getGuildId().isPresent()) {
+			Snowflake guildId = event.getGuildId().get();
+			VoiceState vs = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState().block();
+			if (vs != null) {
+				if (vs.getChannelId().isPresent()) {
+						scheduler = CommandReceiver.getScheduler(vs.getChannelId().get());
 				}
 			}
 		}
+
 		return scheduler;
 	}
 }
