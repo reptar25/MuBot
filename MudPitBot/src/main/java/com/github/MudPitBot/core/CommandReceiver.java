@@ -3,10 +3,12 @@ package com.github.MudPitBot.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import com.github.MudPitBot.command.Command;
@@ -20,17 +22,16 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.Embed;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Color;
 import discord4j.voice.VoiceConnection;
 import discord4j.voice.VoiceConnection.State;
+import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -64,6 +65,7 @@ public class CommandReceiver {
 	}
 
 	private CommandReceiver() {
+
 		// scheduler = new TrackScheduler(PlayerManager.player);
 	}
 
@@ -84,49 +86,64 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse join(MessageCreateEvent event) {
-		if (event != null && event.getMember() != null) {
-			// get member who used command
-			final Member member = event.getMember().orElse(null);
-			if (member != null) {
-				// get voice channel member is in
-				final VoiceState voiceState = member.getVoiceState().block();
-				if (voiceState != null) {
-					final VoiceChannel channel = voiceState.getChannel().block();
-					if (channel != null) {
+
+		// get the voice channel of the member who sent the message
+		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
+				.blockOptional()
+				// if the member is in a voice channel
+				.ifPresent(channel -> {
+					// get the voice connection of the bot if any
+					final VoiceConnection botVoiceConnection = Mono.just(event.getMessage()).flatMap(Message::getGuild)
+							.flatMap(Guild::getVoiceConnection).block();
+
+					// if the bot is already connected to a voice channel
+					if (botVoiceConnection != null) {
+						Snowflake botVoiceChannelId = botVoiceConnection.getChannelId().block();
 						// check if bot is currently connected to another voice channel and disconnect
 						// from it before trying to join a new one.
-						if (event.getMessage().getGuild().block().getVoiceConnection().block() != null) {
-							event.getMessage().getGuild().block().getVoiceConnection().block().disconnect().block();
+						// only disconnect if we aren't trying to join the same channel we are in
+						if (botVoiceChannelId.asLong() != channel.getId().asLong()) {
+							Optional.of(schedulerMap.get(botVoiceChannelId)).map(TrackScheduler::getPlayer)
+									.ifPresent(player -> player.destroy());
+							schedulerMap.remove(botVoiceChannelId);
+							botVoiceConnection.disconnect().block();
 							try {
+								// short sleep to allow bot to fully disconnect before trying to connect to new
+								// channel
 								Thread.sleep(250);
 							} catch (InterruptedException e) {
 								LOGGER.error(e.toString());
 							}
+						} else {
+							// we are trying to join the same channel we are already connected to
+							return;
 						}
+					}
 
-						// Create a new TrackScheduler to play sound when joining a voice channel
-						TrackScheduler scheduler = new TrackScheduler();
-						VoiceConnection vc = channel
-								.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
-								.block();
+					// Create a new TrackScheduler to play sound when joining a voice channel
+					TrackScheduler scheduler = new TrackScheduler();
 
-						vc.onConnectOrDisconnect().subscribe(s -> {
-							Snowflake channelId = channel.getId();
-							if (s.equals(State.CONNECTED)) {
-								// once we are connected put the scheduler in the map with the channelId as the
-								// key
-								schedulerMap.put(channelId, scheduler);
-							} else if (s.equals(State.DISCONNECTED)) {
-								// remove the scheduler from the map. This doesn't ever seem to happen when the
-								// bot disconects though so also removes it from map during leave command
+					// the voice channel the bot is joining
+					VoiceConnection vc = channel
+							.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer()))).block();
+
+					// subscribe to connected/disconnected events
+					vc.onConnectOrDisconnect().subscribe(newState -> {
+						Snowflake channelId = channel.getId();
+						if (newState.equals(State.CONNECTED)) {
+							// once we are connected put the scheduler in the map with the channelId as the
+							// key
+							schedulerMap.put(channelId, scheduler);
+						} else if (newState.equals(State.DISCONNECTED)) {
+							// remove the scheduler from the map. This doesn't ever seem to happen when the
+							// bot disconects though so also removes it from map during leave command
+							if (schedulerMap.containsKey(channelId)) {
+								schedulerMap.get(channelId).getPlayer().destroy();
 								schedulerMap.remove(channelId);
 							}
-						});
-
-					}
-				}
-			}
-		}
+						}
+					});
+				});
 
 		return null;
 	}
@@ -139,38 +156,26 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse leave(MessageCreateEvent event) {
-		if (event != null && event.getMessage() != null && event.getMessage().getGuild() != null) {
-			Guild guild = event.getMessage().getGuild().block();
-			if (guild != null) {
-				VoiceConnection botConnection = guild.getVoiceConnection().block();
+
+		// get the voice channel the bot is connected to
+		Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection).blockOptional()
 				// If the client isn't in a voiceChannel, don't execute any other code
-				if (botConnection == null) {
-					return null;
-				}
-				// get member who used command
-				final Member member = event.getMember().orElse(null);
-				if (member != null) {
-					// get voice channel member is in
-					final VoiceState voiceState = member.getVoiceState().block();
-					if (voiceState != null) {
-						// the channel id the user is in
-						Snowflake memberChannelId = voiceState.getChannel().block().getId();
-//							// check if user and bot are in the same channel
-//							if (memberChannelId == botChannelId) {
-//								botConnection.disconnect().block();
-//								LOGGER.info("Bot disconnecting from voice channel.");
-//								// System.out.println("DISCONNECTING");
-//							}
-						// if the channel is in the map of channels with schedulers then remove it
-						if (schedulerMap.containsKey(memberChannelId)) {
-							schedulerMap.remove(memberChannelId);
-							// disconnect from the channel
-							botConnection.disconnect().block();
-						}
-					}
-				}
-			}
-		}
+				.ifPresent(botConnection -> {
+					// get member who sent the command voice channel
+					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
+							.map(VoiceChannel::getId).blockOptional()
+							// if the member is in a voice channel
+							.ifPresent(memberChannelId -> {
+								// if the members voice channel is one the bot is in
+								if (schedulerMap.containsKey(memberChannelId)) {
+									Optional.of(schedulerMap.get(memberChannelId)).map(TrackScheduler::getPlayer)
+											.ifPresent(player -> player.destroy());
+									schedulerMap.remove(memberChannelId);
+									// disconnect from the channel
+									botConnection.disconnect().block();
+								}
+							});
+				});
 
 		return null;
 	}
@@ -199,12 +204,12 @@ public class CommandReceiver {
 		String dice = params[0];
 
 		// only roll if 2nd part of command matches the reg ex
-		if (Pattern.matches("[1-9][0-9]*d[1-9][0-9]*", dice)) {
+		if (Pattern.matches("[1-9][0-9]*[Dd][1-9][0-9]*", dice)) {
 
 			StringBuilder sb = new StringBuilder();
 			sb.append("Rolling " + dice + "\n");
 
-			String[] splitDiceString = dice.split("d");
+			String[] splitDiceString = dice.split("[Dd]");
 			int numOfDice = Integer.parseInt(splitDiceString[0]);
 			int numOfSides = Integer.parseInt(splitDiceString[1]);
 			int diceSum = 0;
@@ -317,44 +322,33 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse mute(MessageCreateEvent event) {
-		if (event != null && event.getMessage() != null && event.getMember().isPresent()) {
-			// muteToggle = !muteToggle;
 
-//				if (event.getMember().orElse(null).getVoiceState().block().getChannel().block().getId()
-//						.asLong() != botChannelId) {
-//					return;
-//				}
+		// gets the member's channel who sent the message, and then all the VoiceStates
+		// connected to that channel. From there we can get the Member of the VoiceState
+		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
+				.map(VoiceChannel::getVoiceStates).subscribe(users -> {
+					// had to use array to get around non-final variable inside of a lambda below
+					boolean[] muted = { true };
+					// gets the channel id of the member if present
+					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+							.block().ifPresent(id -> {
+								// channel is muted, so unmute
+								if (mutedChannels.contains(id)) {
+									muted[0] = false;
+									mutedChannels.remove(id);
+								} else {
+									// channel should be muted
+									muted[0] = true;
+									mutedChannels.add(id);
+								}
 
-			// has to use array to get around non-final variable inside of a lambda below
-			boolean[] muted = { true };
-			VoiceState userVoiceState = event.getMember().orElse(null).getVoiceState().block();
-			// gets the member's channel who sent the message, and then all the VoiceStates
-			// connected to that channel. From there we can get the Member of the VoiceState
-			List<VoiceState> users = userVoiceState.getChannel().block().getVoiceStates().collectList().block();
-			if (users != null) {
-
-				// channel is muted, so unmute
-				if (mutedChannels.contains(userVoiceState.getChannelId().get())) {
-					muted[0] = false;
-					mutedChannels.remove(userVoiceState.getChannelId().get());
-				} else {
-					// channel should be muted
-					mutedChannels.add(userVoiceState.getChannelId().get());
-				}
-				for (VoiceState user : users) {
-
-					// don't mute itself or other bots
-					if (user.getMember().block().isBot())
-						continue;
-
-					// LOGGER.info("Muting user " + user.getUser().block().getUsername());
-					// mute/unmute all users
-					user.getMember().block().edit(spec -> spec.setMute(muted[0])).block();
-				}
-
-			}
-
-		}
+								users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
+										.subscribe(member -> {
+											LOGGER.info("Muting/unmuting " + member.getUsername());
+											member.edit(spec -> spec.setMute(muted[0])).block();
+										});
+							});
+				});
 
 		return null;
 	}
@@ -451,34 +445,23 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 * 
-	 *         TODO: Figure out a way to return embed so this method can return the
-	 *         poll that should be sent instead of sending it itself. Also have to
-	 *         figure out how to add the reactions after the message is sent.message
-	 * 
 	 */
 	public CommandResponse poll(MessageCreateEvent event) {
-		if (event != null && event.getMessage() != null) {
-			MessageChannel channel = event.getMessage().getChannel().block();
-			if (channel != null) {
-				// create a new poll object
-				Poll poll = new Poll.Builder(event).build();
+		// create a new poll object
+		Poll poll = new Poll(event);
 
-				// if the poll is invalid just stop
-				if (poll.getAnswers().size() <= 1) {
-					return null;
-				}
-
-				// create the embed to put the poll into
-				Consumer<? super MessageCreateSpec> spec = s1 -> s1.setEmbed(
-						s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
-								.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
-
-				return new CommandResponse.Builder().spec(spec).poll(poll).build();
-
-			}
+		// if the poll is invalid just stop
+		if (poll.getAnswers().size() <= 1) {
+			return null;
 		}
 
-		return null;
+		// create the embed to put the poll into
+		Consumer<? super MessageCreateSpec> spec = s1 -> s1
+				.setEmbed(s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
+						.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
+
+		return new CommandResponse.Builder().spec(spec).poll(poll).build();
+
 	}
 
 	/**
