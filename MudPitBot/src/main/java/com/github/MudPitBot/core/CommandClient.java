@@ -2,8 +2,7 @@ package com.github.MudPitBot.core;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
-
+import java.util.Optional;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
@@ -17,7 +16,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.core.spec.MessageCreateSpec;
+import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -63,16 +62,14 @@ public class CommandClient {
 					// to be done, but instead of blocking the thread, waiting for it
 					// to finish, it will just execute the results asynchronously.
 					.subscribe(event -> {
-						if (event.getMessage() != null && event.getMessage().getContent() != null) {
-							// 3.1 Message.getContent() is a String
-							final String content = event.getMessage().getContent();
+						// 3.1 Message.getContent() is a String
+						final String content = event.getMessage().getContent();
 
-							// print out new message to logs
-							logMessage(event, content);
+						// print out new message to logs
+						logMessage(event, content);
 
-							// process new message to check for commands
-							processMessage(event, content);
-						}
+						// process new message to check for commands
+						processMessage(event, content);
 					});
 
 			/*
@@ -147,11 +144,8 @@ public class CommandClient {
 	public void processMessage(MessageCreateEvent event, String content) {
 
 		// ignore any messages sent from a bot
-		User sender = event.getMessage().getAuthor().orElse(null);
-		if (sender != null) {
-			if (sender.isBot()) {
-				return;
-			}
+		if (event.getMessage().getAuthor().map(User::isBot).orElse(false)) {
+			return;
 		}
 
 		// split content at ! to allow for compound commands (more than 1 command in 1
@@ -174,17 +168,15 @@ public class CommandClient {
 					// message was sent from
 					if (response != null) {
 						MessageChannel channel = event.getMessage().getChannel().block();
-						if (channel != null) {
-							Message message = null;
-							if (response.getSpec() != null) {
-								message = channel.createMessage(response.getSpec()).block();
-							}
+						Message message = null;
+						if (response.getSpec() != null) {
+							message = channel.createMessage(response.getSpec()).block();
+						}
 
-							if (response.getPoll() != null && message != null) {
-								// add reactions as vote tickers, number of reactions depends on number of
-								// answers
-								response.getPoll().addReactions(message);
-							}
+						if (response.getPoll() != null && message != null) {
+							// add reactions as vote tickers, number of reactions depends on number of
+							// answers
+							response.getPoll().addReactions(message);
 						}
 					}
 
@@ -203,13 +195,13 @@ public class CommandClient {
 	public void logMessage(MessageCreateEvent event, String content) {
 		StringBuilder sb = new StringBuilder("New message created: ");
 
-		Member member = event.getMember().orElse(null);
+		Optional<Member> member = event.getMember();
 
 		// add the user name and put the message in quotes
-		if (member != null) {
-			sb.append(member.getUsername());
+		if (member.isPresent()) {
+			sb.append(member.get().getUsername());
 		} else {
-			sb.append(event.getMessage().getAuthor().orElse(null).getUsername());
+			event.getMessage().getAuthor().ifPresent(a -> sb.append(a.getUsername()));
 		}
 		sb.append(" - \"").append(content).append("\"");
 		LOGGER.info(sb.toString());

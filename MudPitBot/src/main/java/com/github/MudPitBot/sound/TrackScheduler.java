@@ -16,7 +16,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
-import discord4j.common.util.Snowflake;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
