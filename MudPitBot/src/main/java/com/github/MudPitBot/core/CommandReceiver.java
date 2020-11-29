@@ -574,7 +574,7 @@ public class CommandReceiver {
 			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
 
 		return new CommandResponse("Cyberpunk will release in: " + days + " days " + hours + " hours " + minutes
-				+ "minutes " + seconds + " seconds ");
+				+ " minutes " + seconds + " seconds ");
 	}
 
 }
