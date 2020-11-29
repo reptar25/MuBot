@@ -3,6 +3,8 @@ package com.github.MudPitBot.core;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -555,8 +557,10 @@ public class CommandReceiver {
 
 	public CommandResponse cyberpunk() {
 
-		LocalDateTime now = LocalDateTime.now();
+		// gets current time in EST
+		LocalDateTime now = ZonedDateTime.now(ZoneId.of("America/New_York")).toLocalDateTime();
 
+		// release date in EST
 		LocalDateTime cprelease = LocalDateTime.of(2020, 12, 10, 0, 0);
 
 		long days = ChronoUnit.DAYS.between(now, cprelease);
