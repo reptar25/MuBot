@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -556,14 +557,20 @@ public class CommandReceiver {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		LocalDateTime cprelease = LocalDateTime.of(2020, 12, 9, 21, 0);
+		LocalDateTime cprelease = LocalDateTime.of(2020, 12, 10, 0, 0);
 
 		long days = ChronoUnit.DAYS.between(now, cprelease);
+		long hours = ChronoUnit.HOURS.between(now, cprelease) - TimeUnit.DAYS.toHours(days);
+		long minutes = ChronoUnit.MINUTES.between(now, cprelease) - TimeUnit.HOURS.toMinutes(hours)
+				- TimeUnit.DAYS.toMinutes(days);
+		long seconds = ChronoUnit.SECONDS.between(now, cprelease) - TimeUnit.MINUTES.toSeconds(minutes)
+				- TimeUnit.HOURS.toSeconds(hours) - TimeUnit.DAYS.toSeconds(days);
 
-		if (days < 0)
+		if (days < 0 && hours < 0 && minutes < 0 && seconds < 0)
 			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
 
-		return new CommandResponse("Cyberpunk will release in: " + days + " days");
+		return new CommandResponse(
+				"Cyberpunk will release in: " + days + " days " + hours + " hours " + seconds + " seconds ");
 	}
 
 }
