@@ -573,8 +573,10 @@ public class CommandReceiver {
 		if (days < 0 && hours < 0 && minutes < 0 && seconds < 0)
 			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
 
-		return new CommandResponse("Cyberpunk will release in: " + days + " days " + hours + " hours " + minutes
-				+ " minutes " + seconds + " seconds ");
+		StringBuilder sb = new StringBuilder("Cyberpunk will release in: ").append(days).append(" days ").append(hours)
+				.append(" hours ").append(minutes).append(" minutes ").append(seconds).append(" seconds");
+
+		return new CommandResponse(sb.toString());
 	}
 
 }
