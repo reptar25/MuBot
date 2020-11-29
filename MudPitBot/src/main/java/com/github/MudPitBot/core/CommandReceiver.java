@@ -573,8 +573,8 @@ public class CommandReceiver {
 		if (days < 0 && hours < 0 && minutes < 0 && seconds < 0)
 			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
 
-		return new CommandResponse(
-				"Cyberpunk will release in: " + days + " days " + hours + " hours " + seconds + " seconds ");
+		return new CommandResponse("Cyberpunk will release in: " + days + " days " + hours + " hours " + minutes
+				+ "minutes " + seconds + " seconds ");
 	}
 
 }
