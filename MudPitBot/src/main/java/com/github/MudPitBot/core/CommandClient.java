@@ -53,7 +53,7 @@ public class CommandClient {
 	 */
 	private void setupListener() {
 		/*
-		 * Add listener for new messages being sentWhenever a messaged is typed in chat
+		 * Add listener for new messages being sent. Whenever a messaged is typed in chat
 		 * that the bot is able to see it should filter through this method.
 		 */
 		if (client.getEventDispatcher() != null) {
@@ -91,7 +91,6 @@ public class CommandClient {
 	 * @param event event of the channel change
 	 */
 	private void muteOnJoin(VoiceStateUpdateEvent event) {
-
 		if (event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent()) {
 			Snowflake newChannelId = event.getCurrent().getChannelId().orElse(null);
 
