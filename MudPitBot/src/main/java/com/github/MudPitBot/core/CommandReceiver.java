@@ -1,5 +1,9 @@
 package com.github.MudPitBot.core;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -550,7 +554,16 @@ public class CommandReceiver {
 
 	public CommandResponse cyberpunk() {
 
-		return new CommandResponse("Cyberpunk will relsae in; ");
+		LocalDateTime now = LocalDateTime.now();
+
+		LocalDateTime cprelease = LocalDateTime.of(2020, 12, 9, 21, 0);
+
+		long days = ChronoUnit.DAYS.between(now, cprelease);
+
+		if (days < 0)
+			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
+
+		return new CommandResponse("Cyberpunk will release in: " + days + " days");
 	}
 
 }
