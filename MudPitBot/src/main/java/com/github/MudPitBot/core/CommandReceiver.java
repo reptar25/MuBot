@@ -106,6 +106,9 @@ public class CommandReceiver {
 					// check if bot is currently connected to another voice channel and disconnect
 					// from it before trying to join a new one.
 					// only disconnect if we aren't trying to join the same channel we are in
+
+					// have to block here so that the bot disconnects before trying to connect to a
+					// new channel
 					Snowflake botChannelId = Mono.just(event.getMessage()).flatMap(Message::getGuild)
 							.flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId).block();
 
@@ -131,9 +134,6 @@ public class CommandReceiver {
 						}
 					}
 
-					// event.getGuild().block().getVoiceConnection().block().disconnect();
-
-					// botVoiceConnection.disconnect().block();
 					// Create a new TrackScheduler to play sound when joining a voice channel
 					TrackScheduler scheduler = new TrackScheduler();
 
