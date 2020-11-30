@@ -103,28 +103,33 @@ public class CommandReceiver {
 //					final VoiceConnection botVoiceConnection = Mono.just(event.getMessage()).flatMap(Message::getGuild)
 //							.flatMap(Guild::getVoiceConnection).block();
 
-					Snowflake botChannelId = Mono.just(event.getMessage()).flatMap(Message::getGuild)
-							.flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId)
-							.filter(channelId -> channelId.asLong() != channel.getId().asLong()).block();
-
-					if (botChannelId != null) {
-						Mono.justOrEmpty(schedulerMap.get(botChannelId)).map(TrackScheduler::getPlayer)
-								.subscribe(AudioPlayer::destroy);
-						schedulerMap.remove(botChannelId);
-						event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::disconnect)
-								.block();
-
-						try {
-							Thread.sleep(1);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					// if the bot is already connected to a voice channel
 					// check if bot is currently connected to another voice channel and disconnect
 					// from it before trying to join a new one.
 					// only disconnect if we aren't trying to join the same channel we are in
+					Snowflake botChannelId = Mono.just(event.getMessage()).flatMap(Message::getGuild)
+							.flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId).block();
+
+					if (botChannelId != null) {
+						if (botChannelId.asLong() != channel.getId().asLong()) {
+							Mono.justOrEmpty(schedulerMap.get(botChannelId)).map(TrackScheduler::getPlayer)
+									.subscribe(AudioPlayer::destroy);
+							schedulerMap.remove(botChannelId);
+							event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::disconnect)
+									.block();
+
+							try {
+								// short sleep to allow to the bot to disconnect before joining the new channel
+								Thread.sleep(1);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						// bot is trying to connect to the same channel it's already in
+						else {
+							return;
+						}
+					}
 
 					// event.getGuild().block().getVoiceConnection().block().disconnect();
 
@@ -133,26 +138,27 @@ public class CommandReceiver {
 					TrackScheduler scheduler = new TrackScheduler();
 
 					// the voice channel the bot is joining
-					VoiceConnection vc = channel
-							.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer()))).block();
-
-					// subscribe to connected/disconnected events
-					vc.onConnectOrDisconnect().subscribe(newState -> {
-						Snowflake channelId = channel.getId();
-						if (newState.equals(State.CONNECTED)) {
-							// once we are connected put the scheduler in the map with the channelId as the
-							// key
-							schedulerMap.put(channelId, scheduler);
-						} else if (newState.equals(State.DISCONNECTED)) {
-							// remove the scheduler from the map. This doesn't ever seem to happen when the
-							// bot disconects though so also removes it from map during leave command
-							if (schedulerMap.containsKey(channelId)) {
-								schedulerMap.get(channelId).getPlayer().destroy();
-								schedulerMap.remove(channelId);
-							}
-						}
-					});
-
+					channel.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+							.subscribe(vc -> {
+								// subscribe to connected/disconnected events
+								vc.onConnectOrDisconnect().subscribe(newState -> {
+									Snowflake channelId = channel.getId();
+									if (newState.equals(State.CONNECTED)) {
+										// once we are connected put the scheduler in the map with the channelId as the
+										// key
+										schedulerMap.put(channelId, scheduler);
+										LOGGER.info("Bot connected to channel");
+									} else if (newState.equals(State.DISCONNECTED)) {
+										// remove the scheduler from the map. This doesn't ever seem to happen when the
+										// bot disconects though so also removes it from map during leave command
+										if (schedulerMap.containsKey(channelId)) {
+											schedulerMap.get(channelId).getPlayer().destroy();
+											schedulerMap.remove(channelId);
+											LOGGER.info("Bot disconnected to channel");
+										}
+									}
+								});
+							});
 				});
 
 		return null;
