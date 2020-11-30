@@ -25,6 +25,7 @@ import com.github.MudPitBot.command.poll.Poll;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.PlayerManager;
 import com.github.MudPitBot.sound.TrackScheduler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
@@ -33,6 +34,7 @@ import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Color;
@@ -96,37 +98,37 @@ public class CommandReceiver {
 
 		// get the voice channel of the member who sent the message
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
-				.blockOptional()
-				// if the member is in a voice channel
-				.ifPresent(channel -> {
+				.subscribe(channel -> {
 					// get the voice connection of the bot if any
-					final VoiceConnection botVoiceConnection = Mono.just(event.getMessage()).flatMap(Message::getGuild)
-							.flatMap(Guild::getVoiceConnection).block();
+//					final VoiceConnection botVoiceConnection = Mono.just(event.getMessage()).flatMap(Message::getGuild)
+//							.flatMap(Guild::getVoiceConnection).block();
 
-					// if the bot is already connected to a voice channel
-					if (botVoiceConnection != null) {
-						Snowflake botVoiceChannelId = botVoiceConnection.getChannelId().block();
-						// check if bot is currently connected to another voice channel and disconnect
-						// from it before trying to join a new one.
-						// only disconnect if we aren't trying to join the same channel we are in
-						if (botVoiceChannelId.asLong() != channel.getId().asLong()) {
-							Optional.of(schedulerMap.get(botVoiceChannelId)).map(TrackScheduler::getPlayer)
-									.ifPresent(player -> player.destroy());
-							schedulerMap.remove(botVoiceChannelId);
-							botVoiceConnection.disconnect().block();
-							try {
-								// short sleep to allow bot to fully disconnect before trying to connect to new
-								// channel
-								Thread.sleep(250);
-							} catch (InterruptedException e) {
-								LOGGER.error(e.toString());
-							}
-						} else {
-							// we are trying to join the same channel we are already connected to
-							return;
+					Snowflake botChannelId = Mono.just(event.getMessage()).flatMap(Message::getGuild)
+							.flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId)
+							.filter(channelId -> channelId.asLong() != channel.getId().asLong()).block();
+
+					if (botChannelId != null) {
+						Mono.justOrEmpty(schedulerMap.get(botChannelId)).map(TrackScheduler::getPlayer)
+								.subscribe(AudioPlayer::destroy);
+						schedulerMap.remove(botChannelId);
+						event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::disconnect)
+								.block();
+
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 					}
+					// if the bot is already connected to a voice channel
+					// check if bot is currently connected to another voice channel and disconnect
+					// from it before trying to join a new one.
+					// only disconnect if we aren't trying to join the same channel we are in
 
+					// event.getGuild().block().getVoiceConnection().block().disconnect();
+
+					// botVoiceConnection.disconnect().block();
 					// Create a new TrackScheduler to play sound when joining a voice channel
 					TrackScheduler scheduler = new TrackScheduler();
 
@@ -150,9 +152,11 @@ public class CommandReceiver {
 							}
 						}
 					});
+
 				});
 
 		return null;
+
 	}
 
 	/**
@@ -165,18 +169,16 @@ public class CommandReceiver {
 	public CommandResponse leave(MessageCreateEvent event) {
 
 		// get the voice channel the bot is connected to
-		Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection).blockOptional()
-				// If the client isn't in a voiceChannel, don't execute any other code
-				.ifPresent(botConnection -> {
+		Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
+				.subscribe(botConnection -> {
+
 					// get member who sent the command voice channel
 					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
-							.map(VoiceChannel::getId).blockOptional()
-							// if the member is in a voice channel
-							.ifPresent(memberChannelId -> {
+							.map(VoiceChannel::getId).subscribe(memberChannelId -> {
 								// if the members voice channel is one the bot is in
 								if (schedulerMap.containsKey(memberChannelId)) {
 									Optional.of(schedulerMap.get(memberChannelId)).map(TrackScheduler::getPlayer)
-											.ifPresent(player -> player.destroy());
+											.ifPresent(AudioPlayer::destroy);
 									schedulerMap.remove(memberChannelId);
 									// disconnect from the channel
 									botConnection.disconnect().block();
@@ -338,7 +340,12 @@ public class CommandReceiver {
 					boolean[] muted = { true };
 					// gets the channel id of the member if present
 					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
-							.block().ifPresent(id -> {
+							.subscribe(idOpt -> {
+								Snowflake id = null;
+								if (idOpt.isEmpty())
+									return;
+								else
+									id = idOpt.get();
 								// channel is muted, so unmute
 								if (mutedChannels.contains(id)) {
 									muted[0] = false;
@@ -570,7 +577,7 @@ public class CommandReceiver {
 		long seconds = ChronoUnit.SECONDS.between(now, cprelease) - TimeUnit.MINUTES.toSeconds(minutes)
 				- TimeUnit.HOURS.toSeconds(hours) - TimeUnit.DAYS.toSeconds(days);
 
-		if (days < 0 && hours < 0 && minutes < 0 && seconds < 0)
+		if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0)
 			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
 
 		StringBuilder sb = new StringBuilder("Cyberpunk will release in: ").append(days).append(" days ").append(hours)
