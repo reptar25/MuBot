@@ -43,8 +43,10 @@ public abstract class Command implements CommandInterface {
 				Optional<Snowflake> channelIdSnowflake = event.getClient().getSelf()
 						.flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
 						.map(VoiceState::getChannelId).block();
-				if (channelIdSnowflake.isPresent()) {
-					scheduler = CommandReceiver.getScheduler(channelIdSnowflake.get());
+				if (channelIdSnowflake != null) {
+					if (channelIdSnowflake.isPresent()) {
+						scheduler = CommandReceiver.getScheduler(channelIdSnowflake.get());
+					}
 				}
 				if (scheduler == null) {
 					try {
