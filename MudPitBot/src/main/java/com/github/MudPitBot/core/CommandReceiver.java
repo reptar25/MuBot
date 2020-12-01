@@ -103,8 +103,8 @@ public class CommandReceiver {
 					 * to join the same channel we are in
 					 */
 					// have to use an array here to get around using non-final var in lambda
-					boolean[] sameChannel = new boolean[1];
-					boolean[] disconnected = new boolean[1];
+					boolean[] sameChannel = {false};
+					boolean[] disconnected = {false};
 					Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
 							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
 								// bot is in a voice channel, check if it's different from member's
@@ -128,9 +128,10 @@ public class CommandReceiver {
 								}
 
 								if (disconnected[0]) {
+									// TODO: this is bad but only happens if the bot is switching channels
 									while (event.getGuild().flatMap(Guild::getVoiceConnection).block() != null) {
 										try {
-											Thread.sleep(250);
+											Thread.sleep(1);
 										} catch (InterruptedException e) {
 											e.printStackTrace();
 										}
@@ -167,7 +168,7 @@ public class CommandReceiver {
 												}
 											});
 										});
-							}).subscribe().dispose();
+							}).subscribe();
 				});
 
 		return null;

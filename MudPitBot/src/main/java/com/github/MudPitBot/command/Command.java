@@ -20,7 +20,7 @@ public abstract class Command implements CommandInterface {
 		this.receiver = receiver;
 	}
 
-	private final static int maxRetries = 5;
+	private final static int maxRetries = 12;
 
 	/**
 	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
@@ -45,7 +45,7 @@ public abstract class Command implements CommandInterface {
 				}
 				if (scheduler == null) {
 					try {
-						Thread.sleep(250);
+						Thread.sleep(100);
 						System.out.println("scheduler is null, retrying");
 						retries++;
 					} catch (InterruptedException e) {
