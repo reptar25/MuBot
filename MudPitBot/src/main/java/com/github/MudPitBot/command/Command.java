@@ -45,7 +45,7 @@ public abstract class Command implements CommandInterface {
 				}
 				if (scheduler == null) {
 					try {
-						Thread.sleep(200);
+						Thread.sleep(250);
 						System.out.println("scheduler is null, retrying");
 						retries++;
 					} catch (InterruptedException e) {

@@ -128,10 +128,12 @@ public class CommandReceiver {
 								}
 
 								if (disconnected[0]) {
-									try {
-										Thread.sleep(100);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
+									while (event.getGuild().flatMap(Guild::getVoiceConnection).block() != null) {
+										try {
+											Thread.sleep(250);
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}
 									}
 								}
 
