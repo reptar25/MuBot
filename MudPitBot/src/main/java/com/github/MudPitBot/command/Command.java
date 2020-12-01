@@ -1,5 +1,7 @@
 package com.github.MudPitBot.command;
 
+import java.util.Optional;
+
 import com.github.MudPitBot.core.CommandReceiver;
 import com.github.MudPitBot.sound.TrackScheduler;
 
@@ -31,33 +33,29 @@ public abstract class Command implements CommandInterface {
 	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
 	 *         bot in the guild the message was sent from.
 	 */
-	private volatile static TrackScheduler scheduler;
-	private volatile static int retries;
-
 	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
-		retries = 0;
-		scheduler = null;
+		int retries = 0;
+		TrackScheduler scheduler = null;
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
-		while (scheduler == null && retries <= maxRetries) {
+		while (scheduler == null && retries <= maxRetries)
 			if (event.getGuildId().isPresent()) {
 				Snowflake guildId = event.getGuildId().get();
-				event.getClient().getSelf().flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
-						.subscribe(vs -> {
-							if (vs.getChannelId().isPresent()) {
-								scheduler = CommandReceiver.getScheduler(vs.getChannelId().get());
-							}
-							if (scheduler == null) {
-								try {
-									Thread.sleep(100);
-									System.out.println("scheduler is null, retrying");
-									retries++;
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-							}
-						});
+				Optional<Snowflake> channelIdSnowflake = event.getClient().getSelf()
+						.flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
+						.map(VoiceState::getChannelId).block();
+				if (channelIdSnowflake.isPresent()) {
+					scheduler = CommandReceiver.getScheduler(channelIdSnowflake.get());
+				}
+				if (scheduler == null) {
+					try {
+						Thread.sleep(100);
+						System.out.println("scheduler is null, retrying");
+						retries++;
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 			}
-		}
 		return scheduler;
 	}
 }
