@@ -99,66 +99,66 @@ public class CommandReceiver {
 		// get the voice channel of the member who sent the message
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 				.subscribe(channel -> {
-					// get the voice connection of the bot if any
-//					final VoiceConnection botVoiceConnection = Mono.just(event.getMessage()).flatMap(Message::getGuild)
-//							.flatMap(Guild::getVoiceConnection).block();
-
-					// check if bot is currently connected to another voice channel and disconnect
-					// from it before trying to join a new one.
-					// only disconnect if we aren't trying to join the same channel we are in
-
-					// have to block here so that the bot disconnects before trying to connect to a
-					// new channel
-					Snowflake botChannelId = Mono.just(event.getMessage()).flatMap(Message::getGuild)
-							.flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId).block();
-
-					if (botChannelId != null) {
-						if (botChannelId.asLong() != channel.getId().asLong()) {
-							Mono.justOrEmpty(schedulerMap.get(botChannelId)).map(TrackScheduler::getPlayer)
-									.subscribe(AudioPlayer::destroy);
-							schedulerMap.remove(botChannelId);
-							event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::disconnect)
-									.block();
-
-							try {
-								// short sleep to allow to the bot to disconnect before joining the new channel
-								Thread.sleep(1);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						// bot is trying to connect to the same channel it's already in
-						else {
-							return;
-						}
-					}
 
 					// Create a new TrackScheduler to play sound when joining a voice channel
-					TrackScheduler scheduler = new TrackScheduler();
 
-					// the voice channel the bot is joining
-					channel.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
-							.subscribe(vc -> {
-								// subscribe to connected/disconnected events
-								vc.onConnectOrDisconnect().subscribe(newState -> {
-									Snowflake channelId = channel.getId();
-									if (newState.equals(State.CONNECTED)) {
-										// once we are connected put the scheduler in the map with the channelId as the
-										// key
-										schedulerMap.put(channelId, scheduler);
-										LOGGER.info("Bot connected to channel");
-									} else if (newState.equals(State.DISCONNECTED)) {
-										// remove the scheduler from the map. This doesn't ever seem to happen when the
-										// bot disconects though so also removes it from map during leave command
-										if (schedulerMap.containsKey(channelId)) {
-											schedulerMap.get(channelId).getPlayer().destroy();
-											schedulerMap.remove(channelId);
-											LOGGER.info("Bot disconnected to channel");
-										}
-									}
-								});
-							});
+					/*
+					 * check if bot is currently connected to another voice channel and disconnect
+					 * from it before trying to join a new one. only disconnect if we aren't trying
+					 * to join the same channel we are in
+					 */
+					// have to use an array here to get around using non-final var in lambda
+					boolean[] sameChannel = new boolean[1];
+					Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
+							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
+								// bot is in a voice channel, check if it's different from member's
+								if (botChannelId.asLong() != channel.getId().asLong()) {
+									Mono.justOrEmpty(schedulerMap.get(botChannelId)).map(TrackScheduler::getPlayer)
+											.subscribe(AudioPlayer::destroy);
+									schedulerMap.remove(botChannelId);
+									event.getGuild().flatMap(Guild::getVoiceConnection)
+											.flatMap(VoiceConnection::disconnect).subscribe();
+								}
+								// bot is trying to connect to the same channel it's already in
+								else {
+									sameChannel[0] = true;
+									return;
+								}
+							}).doOnTerminate(() -> {
+								// if we are trying to connect to the channel we are already in, just return
+								if (sameChannel[0]) {
+									return;
+								}
+								TrackScheduler scheduler;
+								(Mono.just(scheduler = new TrackScheduler()).then(Mono.delay(Duration.ofMillis(100)))
+										.then(channel.join(spec -> spec
+												.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer()))))
+										.doOnNext(vc -> {
+											// subscribe to connected/disconnected events
+											vc.onConnectOrDisconnect().subscribe(newState -> {
+												Snowflake channelId = channel.getId();
+												if (newState.equals(State.CONNECTED)) {
+													// once we are connected put the scheduler in the map with the
+													// channelId
+													// as the
+													// key
+													schedulerMap.put(channelId, scheduler);
+													LOGGER.info("Bot connected to channel");
+												} else if (newState.equals(State.DISCONNECTED)) {
+													// remove the scheduler from the map. This doesn't ever seem to
+													// happen
+													// when the
+													// bot disconects though so also removes it from map during leave
+													// command
+													if (schedulerMap.containsKey(channelId)) {
+														schedulerMap.get(channelId).getPlayer().destroy();
+														schedulerMap.remove(channelId);
+														LOGGER.info("Bot disconnected to channel");
+													}
+												}
+											});
+										})).block();
+							}).block();
 				});
 
 		return null;
@@ -252,17 +252,30 @@ public class CommandReceiver {
 	public CommandResponse play(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 
+			// reactive version of unpause below
+//			Mono.just(params.length == 0).subscribe(empty -> {
+//				if (empty) {
+//					(Mono.just(scheduler.isPaused())).subscribe(pause -> {
+//						scheduler.pause(!pause);
+//						return;
+//					});
+//				}
+//			});
+
 			// unpause
-			if (params[0].isEmpty() && scheduler.isPaused()) {
-				scheduler.pause(false);
+			if ((params.length == 0 || params[0].isEmpty())) {
+				scheduler.pause(!scheduler.isPaused());
 				return null;
 			}
 
 			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
-				LOGGER.error("Too many or few params for play");
+				// LOGGER.error("Too many or few params for play");
 				return null;
 			}
 			PlayerManager.loadItem(params[0], scheduler);
+			if (!scheduler.getQueue().isEmpty()) {
+				return new CommandResponse("New track added to the queue (#" + scheduler.getQueue().size() + ")");
+			}
 			LOGGER.info("Loaded music item: " + params[0]);
 		}
 		return null;
@@ -309,6 +322,7 @@ public class CommandReceiver {
 	public CommandResponse stop(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.getPlayer().stopTrack();
+			scheduler.clearQueue();
 			LOGGER.info("Stopped music");
 			return new CommandResponse("Player stopped");
 		}

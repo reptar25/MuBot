@@ -53,8 +53,8 @@ public class CommandClient {
 	 */
 	private void setupListener() {
 		/*
-		 * Add listener for new messages being sent. Whenever a messaged is typed in chat
-		 * that the bot is able to see it should filter through this method.
+		 * Add listener for new messages being sent. Whenever a messaged is typed in
+		 * chat that the bot is able to see it should filter through this method.
 		 */
 		if (client.getEventDispatcher() != null) {
 			client.getEventDispatcher().on(MessageCreateEvent.class)
@@ -107,8 +107,10 @@ public class CommandClient {
 			// if user join same channel as mute channel
 			if (CommandReceiver.mutedChannels.contains(newChannelId)) {
 				// mute the member that just joined
-				event.getCurrent().getMember().block().edit(spec -> spec.setMute(true)).block();
-				return;
+				Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).subscribe(member -> {
+					member.edit(spec -> spec.setMute(true)).block();
+					LOGGER.info("Muting " + member.getUsername());
+				});
 			}
 			// if user joined another channel, make sure they arent muted still
 			else {
@@ -118,18 +120,17 @@ public class CommandClient {
 				// check if it's a non-muted channel when they join and unmute them then. This
 				// has the side effect of users staying muted if they are muted by the bot and
 				// leave, but rejoin a voice channel when the bot is not running
-				Member member = event.getCurrent().getMember().block();
-				VoiceState vs = member.getVoiceState().block();
-				if (vs != null) {
-					// only unmute if they are already muted
-					if (vs.isMuted()) {
-						if (!vs.getChannelId().get()
-								.equals(event.getCurrent().getGuild().block().getAfkChannelId().orElse(null))) {
-							member.edit(spec -> spec.setMute(false)).block();
-							LOGGER.info("Unmuting " + event.getCurrent().getUser().block().getUsername());
+				Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).subscribe(member -> {
+					Mono.just(member).flatMap(Member::getVoiceState).subscribe(vs -> {
+						if (vs.isMuted()) {
+							if (!vs.getChannelId().get()
+									.equals(event.getCurrent().getGuild().block().getAfkChannelId().orElse(null))) {
+								member.edit(spec -> spec.setMute(false)).block();
+								LOGGER.info("Unmuting " + member.getUsername());
+							}
 						}
-					}
-				}
+					});
+				});
 			}
 		}
 	}
@@ -143,46 +144,50 @@ public class CommandClient {
 	public void processMessage(MessageCreateEvent event, String content) {
 
 		// ignore any messages sent from a bot
-		if (event.getMessage().getAuthor().map(User::isBot).orElse(false)) {
-			return;
-		}
+		(Mono.justOrEmpty(event.getMessage().getAuthor()).map(User::isBot)).subscribe(isBot -> {
+			if (isBot)
+				return;
 
-		// split content at ! to allow for compound commands (more than 1 command in 1
-		// message)
-		// this regex splits at !, but doesn't remove it from the resulting string
-		String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
-		for (String command : commands) {
-			command = command.trim();
-			for (final Entry<String, Command> entry : Commands.getEntries()) {
-				// We will be using ! as our "prefix" to any command in the system.
-				String[] splitCommand = command.split(" ");
-				if (splitCommand[0].toLowerCase().startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
-					String[] params = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
+			// split content at ! to allow for compound commands (more than 1 command in 1
+			// message)
+			// this regex splits at !, but doesn't remove it from the resulting string
+			String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
+			for (String command : commands) {
+				command = command.trim();
+				for (final Entry<String, Command> entry : Commands.getEntries()) {
+					// We will be using ! as our "prefix" to any command in the system.
+					String[] splitCommand = command.split(" ");
+					if (splitCommand[0].toLowerCase()
+							.startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
+						String[] params = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 
-					// commands will return any string that the bot should send back as a message to
-					// the command
-					CommandResponse response = executor.executeCommand(event, entry.getValue(), params);
+						// commands will return any string that the bot should send back as a message to
+						// the command
+						CommandResponse response = executor.executeCommand(event, entry.getValue(), params);
 
-					// if there is a message to send back send it to the channel the original
-					// message was sent from
-					if (response != null) {
-						MessageChannel channel = event.getMessage().getChannel().block();
-						Message message = null;
-						if (response.getSpec() != null) {
-							message = channel.createMessage(response.getSpec()).block();
+						// if there is a message to send back send it to the channel the original
+						// message was sent from
+						if (response != null) {
+							event.getMessage().getChannel().subscribe(channel -> {
+								Message message = null;
+								if (response.getSpec() != null) {
+									message = channel.createMessage(response.getSpec()).block();
+								}
+
+								if (response.getPoll() != null && message != null) {
+									// add reactions as vote tickers, number of reactions depends on number of
+									// answers
+									response.getPoll().addReactions(message);
+								}
+							});
 						}
 
-						if (response.getPoll() != null && message != null) {
-							// add reactions as vote tickers, number of reactions depends on number of
-							// answers
-							response.getPoll().addReactions(message);
-						}
+						break;
 					}
-
-					break;
 				}
 			}
-		}
+		});
+
 	}
 
 	/**
