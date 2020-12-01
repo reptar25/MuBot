@@ -1,7 +1,5 @@
 package com.github.MudPitBot.core;
 
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -34,7 +32,6 @@ import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.Channel.Type;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Color;
@@ -100,8 +97,6 @@ public class CommandReceiver {
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 				.subscribe(channel -> {
 
-					// Create a new TrackScheduler to play sound when joining a voice channel
-
 					/*
 					 * check if bot is currently connected to another voice channel and disconnect
 					 * from it before trying to join a new one. only disconnect if we aren't trying
@@ -109,6 +104,7 @@ public class CommandReceiver {
 					 */
 					// have to use an array here to get around using non-final var in lambda
 					boolean[] sameChannel = new boolean[1];
+					boolean[] disconnected = new boolean[1];
 					Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
 							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
 								// bot is in a voice channel, check if it's different from member's
@@ -118,6 +114,7 @@ public class CommandReceiver {
 									schedulerMap.remove(botChannelId);
 									event.getGuild().flatMap(Guild::getVoiceConnection)
 											.flatMap(VoiceConnection::disconnect).subscribe();
+									disconnected[0] = true;
 								}
 								// bot is trying to connect to the same channel it's already in
 								else {
@@ -129,14 +126,24 @@ public class CommandReceiver {
 								if (sameChannel[0]) {
 									return;
 								}
-								TrackScheduler scheduler;
-								(Mono.just(scheduler = new TrackScheduler()).then(Mono.delay(Duration.ofMillis(100)))
-										.then(channel.join(spec -> spec
-												.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer()))))
-										.doOnNext(vc -> {
+
+								if (disconnected[0]) {
+									try {
+										Thread.sleep(100);
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+								}
+
+								// Create a new TrackScheduler to play sound when joining a voice channel
+								TrackScheduler scheduler = new TrackScheduler();
+								Snowflake channelId = channel.getId();
+								channel.join(
+										spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+										.subscribe(vc -> {
 											// subscribe to connected/disconnected events
 											vc.onConnectOrDisconnect().subscribe(newState -> {
-												Snowflake channelId = channel.getId();
+
 												if (newState.equals(State.CONNECTED)) {
 													// once we are connected put the scheduler in the map with the
 													// channelId
@@ -157,8 +164,8 @@ public class CommandReceiver {
 													}
 												}
 											});
-										})).block();
-							}).block();
+										});
+							}).subscribe().dispose();
 				});
 
 		return null;
