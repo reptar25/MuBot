@@ -91,6 +91,10 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
+
+	private volatile boolean sameChannel = false;
+	private volatile boolean disconnected = false;
+
 	public CommandResponse join(MessageCreateEvent event) {
 
 		// get the voice channel of the member who sent the message
@@ -103,8 +107,7 @@ public class CommandReceiver {
 					 * to join the same channel we are in
 					 */
 					// have to use an array here to get around using non-final var in lambda
-					boolean[] sameChannel = {false};
-					boolean[] disconnected = {false};
+
 					Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
 							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
 								// bot is in a voice channel, check if it's different from member's
@@ -114,20 +117,20 @@ public class CommandReceiver {
 									schedulerMap.remove(botChannelId);
 									event.getGuild().flatMap(Guild::getVoiceConnection)
 											.flatMap(VoiceConnection::disconnect).subscribe();
-									disconnected[0] = true;
+									disconnected = true;
 								}
 								// bot is trying to connect to the same channel it's already in
 								else {
-									sameChannel[0] = true;
+									sameChannel = true;
 									return;
 								}
 							}).doOnTerminate(() -> {
 								// if we are trying to connect to the channel we are already in, just return
-								if (sameChannel[0]) {
+								if (sameChannel) {
 									return;
 								}
 
-								if (disconnected[0]) {
+								if (disconnected) {
 									// TODO: this is bad but only happens if the bot is switching channels
 									while (event.getGuild().flatMap(Guild::getVoiceConnection).block() != null) {
 										try {
@@ -149,17 +152,13 @@ public class CommandReceiver {
 
 												if (newState.equals(State.CONNECTED)) {
 													// once we are connected put the scheduler in the map with the
-													// channelId
-													// as the
-													// key
+													// channelId as the key
 													schedulerMap.put(channelId, scheduler);
 													LOGGER.info("Bot connected to channel");
 												} else if (newState.equals(State.DISCONNECTED)) {
 													// remove the scheduler from the map. This doesn't ever seem to
-													// happen
-													// when the
-													// bot disconects though so also removes it from map during leave
-													// command
+													// happen when the bot disconects though so also removes it from map
+													// during leave command
 													if (schedulerMap.containsKey(channelId)) {
 														schedulerMap.get(channelId).getPlayer().destroy();
 														schedulerMap.remove(channelId);
@@ -360,6 +359,8 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
+	private volatile boolean muted;
+
 	public CommandResponse mute(MessageCreateEvent event) {
 
 		// gets the member's channel who sent the message, and then all the VoiceStates
@@ -367,7 +368,7 @@ public class CommandReceiver {
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 				.map(VoiceChannel::getVoiceStates).subscribe(users -> {
 					// had to use array to get around non-final variable inside of a lambda below
-					boolean[] muted = { true };
+					muted = true;
 					// gets the channel id of the member if present
 					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
 							.subscribe(idOpt -> {
@@ -378,18 +379,18 @@ public class CommandReceiver {
 									id = idOpt.get();
 								// channel is muted, so unmute
 								if (mutedChannels.contains(id)) {
-									muted[0] = false;
+									muted = false;
 									mutedChannels.remove(id);
 								} else {
 									// channel should be muted
-									muted[0] = true;
+									muted = true;
 									mutedChannels.add(id);
 								}
 
 								users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
 										.subscribe(member -> {
 											LOGGER.info("Muting/unmuting " + member.getUsername());
-											member.edit(spec -> spec.setMute(muted[0])).block();
+											member.edit(spec -> spec.setMute(muted)).block();
 										});
 							});
 				});
