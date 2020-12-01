@@ -20,6 +20,8 @@ public abstract class Command implements CommandInterface {
 		this.receiver = receiver;
 	}
 
+	private final static int maxRetries = 5;
+
 	/**
 	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
 	 * channel of the guild the message was sent in.
@@ -29,18 +31,28 @@ public abstract class Command implements CommandInterface {
 	 *         bot in the guild the message was sent from.
 	 */
 	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
+		int retries = 0;
 		TrackScheduler scheduler = null;
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
-		if (event.getGuildId().isPresent()) {
-			Snowflake guildId = event.getGuildId().get();
-			VoiceState vs = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState().block();
-			if (vs != null) {
-				if (vs.getChannelId().isPresent()) {
+		while (scheduler == null && retries <= maxRetries)
+			if (event.getGuildId().isPresent()) {
+				Snowflake guildId = event.getGuildId().get();
+				VoiceState vs = event.getClient().getSelf().block().asMember(guildId).block().getVoiceState().block();
+				if (vs != null) {
+					if (vs.getChannelId().isPresent()) {
 						scheduler = CommandReceiver.getScheduler(vs.getChannelId().get());
+					}
+				}
+				if (scheduler == null) {
+					try {
+						Thread.sleep(200);
+						System.out.println("scheduler is null, retrying");
+						retries++;
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
-		}
-
 		return scheduler;
 	}
 }
