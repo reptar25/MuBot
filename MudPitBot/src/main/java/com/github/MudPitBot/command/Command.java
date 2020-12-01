@@ -23,7 +23,7 @@ public abstract class Command implements CommandInterface {
 		this.receiver = receiver;
 	}
 
-	private final static int maxRetries = 12;
+	private final static int MAX_RETRIES = 15;
 
 	/**
 	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
@@ -33,11 +33,14 @@ public abstract class Command implements CommandInterface {
 	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
 	 *         bot in the guild the message was sent from.
 	 */
+
+	// retries allow commands to still work while bot is joining channel and setting
+	// up scheduler eg "!join !play"
 	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
 		int retries = 0;
 		TrackScheduler scheduler = null;
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
-		while (scheduler == null && retries <= maxRetries)
+		while (scheduler == null && retries <= MAX_RETRIES)
 			if (event.getGuildId().isPresent()) {
 				Snowflake guildId = event.getGuildId().get();
 				Optional<Snowflake> channelIdSnowflake = event.getClient().getSelf()
@@ -51,7 +54,6 @@ public abstract class Command implements CommandInterface {
 				if (scheduler == null) {
 					try {
 						Thread.sleep(100);
-						System.out.println("scheduler is null, retrying");
 						retries++;
 					} catch (InterruptedException e) {
 						e.printStackTrace();
