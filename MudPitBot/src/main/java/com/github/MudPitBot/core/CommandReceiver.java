@@ -166,9 +166,9 @@ public class CommandReceiver {
 													}
 												}
 											});
-										});
-							}).subscribe();
-				});
+										}, error -> LOGGER.error(error.getMessage()));
+							}).subscribe(null, error -> LOGGER.error(error.getMessage()));
+				}, error -> LOGGER.error(error.getMessage()));
 
 		return null;
 
@@ -182,10 +182,14 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse leave(MessageCreateEvent event) {
+//		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(vs -> event.getClient().getVoiceConnectionRegistry()
+//                .getVoiceConnection(vs.getGuildId()).doOnSuccess(vc -> {if(vc == null) LOGGER.info("");}).flatMap(VoiceConnection::disconnect));
 
 		// get the voice channel the bot is connected to
 		Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
-				.subscribe(botConnection -> {
+				.subscribe(botConnection ->
+
+				{
 
 					// get member who sent the command voice channel
 					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
@@ -199,7 +203,7 @@ public class CommandReceiver {
 									botConnection.disconnect().block();
 								}
 							});
-				});
+				}, error -> LOGGER.error(error.getMessage()));
 
 		return null;
 	}
@@ -599,7 +603,7 @@ public class CommandReceiver {
 		LocalDateTime now = ZonedDateTime.now(ZoneId.of("America/New_York")).toLocalDateTime();
 
 		// release date in EST
-		LocalDateTime cprelease = LocalDateTime.of(2020, 12, 10, 0, 0);
+		LocalDateTime cprelease = LocalDateTime.of(2020, 12, 9, 19, 0);
 
 		long days = ChronoUnit.DAYS.between(now, cprelease);
 		long hours = ChronoUnit.HOURS.between(now, cprelease) - TimeUnit.DAYS.toHours(days);
