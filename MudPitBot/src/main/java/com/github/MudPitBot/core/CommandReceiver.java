@@ -597,6 +597,12 @@ public class CommandReceiver {
 		return null;
 	}
 
+	/**
+	 * Calculate and responds with the time left until release of Cyberpunk
+	 * 
+	 * @return the time left in days, hours, minutes, seconds left until Cyberpunk
+	 *         releases or that it's already out if its past.
+	 */
 	public CommandResponse cyberpunk() {
 
 		// gets current time in EST
@@ -613,7 +619,7 @@ public class CommandReceiver {
 				- TimeUnit.HOURS.toSeconds(hours) - TimeUnit.DAYS.toSeconds(days);
 
 		if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0)
-			return new CommandResponse("Cyberpunk is out dumb ass, the wait is over");
+			return new CommandResponse("Cyberpunk is out dumbass, the wait is over!");
 
 		StringBuilder sb = new StringBuilder("Cyberpunk will release in: ").append(days).append(" days ").append(hours)
 				.append(" hours ").append(minutes).append(" minutes ").append(seconds).append(" seconds");
