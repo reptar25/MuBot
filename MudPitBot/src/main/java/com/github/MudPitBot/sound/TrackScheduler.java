@@ -38,21 +38,45 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * @return The scheduler mapped to this channel
 	 */
 	public static TrackScheduler getScheduler(Snowflake channelId) {
-		return getSchedulerMap().get(channelId);
+		return schedulerMap.get(channelId);
 	}
 
+	/**
+	 * Removes channel and destroys audio player if present in the map
+	 * 
+	 * @param channelId channel id of the channel to remove
+	 */
+	public static void remove(Snowflake channelId) {
+		if (schedulerMap.containsKey(channelId)) {
+			schedulerMap.get(channelId).getPlayer().destroy();
+			schedulerMap.remove(channelId);
+		}
+	}
+
+	// Queue of songs for this scheduler
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
 	private final AudioPlayer player;
 	public static final int DEFAULT_VOLUME = 10;
 
-	public TrackScheduler() {
+	/**
+	 * Creates a track scheduler for the given channel
+	 * 
+	 * @param channelId the channel to create a track scheduler for
+	 */
+	public TrackScheduler(Snowflake channelId) {
 		this.player = PlayerManager.createPlayer();
 		this.player.setVolume(DEFAULT_VOLUME);
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
+		schedulerMap.put(channelId, this);
 	}
 
+	/**
+	 * Adds a track to the queue to be played
+	 * 
+	 * @param track the track to queue
+	 */
 	public void queue(AudioTrack track) {
 		// Calling startTrack with the noInterrupt set to true will start the track only
 		// if nothing is currently playing. If
@@ -237,7 +261,4 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		return player;
 	}
 
-	public static HashMap<Snowflake, TrackScheduler> getSchedulerMap() {
-		return schedulerMap;
-	}
 }

@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +22,6 @@ import com.github.MudPitBot.command.misc.Poll;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.PlayerManager;
 import com.github.MudPitBot.sound.TrackScheduler;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
@@ -81,27 +79,22 @@ public class CommandReceiver {
 									.flatMap(VoiceConnection::getChannelId).block()))
 							.subscribe(channelId -> {
 								// joining a new channel
-								TrackScheduler scheduler = new TrackScheduler();
+								// once we are connected put the scheduler in the map with the
+								// channelId as the key
+								TrackScheduler scheduler = new TrackScheduler(channelId);
 								channel.join(
 										spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
 										.subscribe(vc -> {
 											// subscribe to connected/disconnected events
 											vc.onConnectOrDisconnect().subscribe(newState -> {
 												if (newState.equals(State.CONNECTED)) {
-													// once we are connected put the scheduler in the map with the
-													// channelId as the key
-													TrackScheduler.getSchedulerMap().put(channelId, scheduler);
 													LOGGER.info("Bot connected to channel");
 												} else if (newState.equals(State.DISCONNECTED)) {
 													// remove the scheduler from the map. This doesn't ever seem to
 													// happen when the bot disconnects, though, so also remove it from
 													// map during leave command
-													if (TrackScheduler.getSchedulerMap().containsKey(channelId)) {
-														TrackScheduler.getSchedulerMap().get(channelId).getPlayer()
-																.destroy();
-														TrackScheduler.getSchedulerMap().remove(channelId);
-														LOGGER.info("Bot disconnected to channel");
-													}
+													TrackScheduler.remove(channelId);
+													LOGGER.info("Bot disconnected to channel");
 												}
 											});
 										});
@@ -121,21 +114,19 @@ public class CommandReceiver {
 		// get the voice channel the bot is connected to
 		Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
 				.subscribe(botConnection -> {
-					// get member who sent the command voice channel
-					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
-							.map(VoiceChannel::getId).subscribe(memberChannelId -> {
-								// if the members voice channel is one the bot is in
-								if (TrackScheduler.getSchedulerMap().containsKey(memberChannelId)) {
-									Optional.of(TrackScheduler.getSchedulerMap().get(memberChannelId))
-											.map(TrackScheduler::getPlayer).ifPresent(AudioPlayer::destroy);
-									TrackScheduler.getSchedulerMap().remove(memberChannelId);
-									// disconnect from the channel
-									botConnection.disconnect().subscribe(null,
-											error -> LOGGER.error(error.getMessage()));
-								}
-							});
+					Mono.just(botConnection.getChannelId().subscribe(botChannelId -> {
+						// get member who sent the command voice channel
+						Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
+								.flatMap(VoiceState::getChannel).map(VoiceChannel::getId).subscribe(memberChannelId -> {
+									// if the members voice channel is one the bot is in
+									if (memberChannelId.equals(botChannelId)) {
+										botConnection.disconnect().subscribe(null,
+												error -> LOGGER.error(error.getMessage()));
+										TrackScheduler.remove(memberChannelId);
+									}
+								});
+					}));
 				}, error -> LOGGER.error(error.getMessage()));
-
 		return null;
 	}
 
