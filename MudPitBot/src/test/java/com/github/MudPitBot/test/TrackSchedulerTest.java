@@ -9,6 +9,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
 
+import discord4j.common.util.Snowflake;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -29,13 +31,16 @@ public class TrackSchedulerTest {
 
 	@Mock
 	AudioPlaylist mockPlaylist = mock(AudioPlaylist.class);
+	
+	@Mock
+	Snowflake mockSnowflake = mock(Snowflake.class);
 
 	TrackScheduler scheduler;
 
 	@BeforeEach
 	void createTrackScheduler() {
 		// when(mockPlayerManager.getPlayer()).thenReturn(mockPlayer);
-		scheduler = new TrackScheduler();
+		scheduler = new TrackScheduler(mockSnowflake);
 	}
 
 	@Test

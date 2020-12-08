@@ -7,6 +7,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.core.CommandReceiver;
 import com.github.MudPitBot.sound.TrackScheduler;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
@@ -44,8 +45,11 @@ class CommandReceiverTest {
 
 	@Mock
 	Mono<Message> monoMessage = mock(Mono.class);
+	
+	@Mock
+	Snowflake mockSnowflake = mock(Snowflake.class);
 
-	TrackScheduler mockScheduler = new TrackScheduler();
+	TrackScheduler mockScheduler = new TrackScheduler(mockSnowflake);
 
 	String[] args = null;
 
