@@ -46,8 +46,8 @@ class RootResponseHandler implements HttpHandler {
 			+ " src=\"https://i.ytimg.com/vi/4Qto049GEkA/maxresdefault.jpg\" width=\"235\" height=\"132\">";
 
 	public void handle(HttpExchange exchange) throws IOException {
-		Headers h = exchange.getRequestHeaders();
-		h.add("Content-Type", "text/html");
+//		Headers h = exchange.getRequestHeaders();
+//		h.add("Content-Type", "text/html");
 
 		InputStream is = exchange.getRequestBody();
 		exchange.sendResponseHeaders(200, homeHtml.length());
