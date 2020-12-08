@@ -2,6 +2,7 @@ package com.github.MudPitBot.sound;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,12 +17,29 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import discord4j.common.util.Snowflake;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 public final class TrackScheduler extends AudioEventAdapter implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(TrackScheduler.class);
+
+	/**
+	 * Maps a new TrackScheduler for each new voice channel joined. Key is channel
+	 * id snowflake
+	 */
+	private static HashMap<Snowflake, TrackScheduler> schedulerMap = new HashMap<Snowflake, TrackScheduler>();
+
+	/**
+	 * Get the track scheduler for the guild of this event
+	 * 
+	 * @param event The message event
+	 * @return The scheduler mapped to this channel
+	 */
+	public static TrackScheduler getScheduler(Snowflake channelId) {
+		return getSchedulerMap().get(channelId);
+	}
 
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 
@@ -217,5 +235,9 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 */
 	public AudioPlayer getPlayer() {
 		return player;
+	}
+
+	public static HashMap<Snowflake, TrackScheduler> getSchedulerMap() {
+		return schedulerMap;
 	}
 }

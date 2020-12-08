@@ -48,7 +48,7 @@ public abstract class Command implements CommandInterface {
 						.map(VoiceState::getChannelId).block();
 				if (channelIdSnowflake != null) {
 					if (channelIdSnowflake.isPresent()) {
-						scheduler = CommandReceiver.getScheduler(channelIdSnowflake.get());
+						scheduler = TrackScheduler.getScheduler(channelIdSnowflake.get());
 					}
 				}
 				if (scheduler == null) {

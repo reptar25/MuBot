@@ -54,11 +54,7 @@ public class CommandReceiver {
 	private static CommandReceiver instance;
 	private static Random rand = new Random();
 
-	/**
-	 * Maps a new TrackScheduler for each new voice channel joined. Key is channel
-	 * id snowflake
-	 */
-	private static HashMap<Snowflake, TrackScheduler> schedulerMap = new HashMap<Snowflake, TrackScheduler>();
+
 
 	public static CommandReceiver getInstance() {
 		if (instance == null)
@@ -69,16 +65,6 @@ public class CommandReceiver {
 	private CommandReceiver() {
 
 		// scheduler = new TrackScheduler(PlayerManager.player);
-	}
-
-	/**
-	 * Get the track scheduler for the guild of this event
-	 * 
-	 * @param event The message event
-	 * @return The scheduler mapped to this channel
-	 */
-	public static TrackScheduler getScheduler(Snowflake channelId) {
-		return schedulerMap.get(channelId);
 	}
 
 	/**
@@ -108,9 +94,9 @@ public class CommandReceiver {
 							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
 								// bot is in a voice channel, check if it's different from member's
 								if (botChannelId.asLong() != channel.getId().asLong()) {
-									Mono.justOrEmpty(schedulerMap.get(botChannelId)).map(TrackScheduler::getPlayer)
+									Mono.justOrEmpty(TrackScheduler.getSchedulerMap().get(botChannelId)).map(TrackScheduler::getPlayer)
 											.subscribe(AudioPlayer::destroy);
-									schedulerMap.remove(botChannelId);
+									TrackScheduler.getSchedulerMap().remove(botChannelId);
 									event.getGuild().flatMap(Guild::getVoiceConnection)
 											.flatMap(VoiceConnection::disconnect).subscribe();
 									disconnected = true;
@@ -149,15 +135,15 @@ public class CommandReceiver {
 												if (newState.equals(State.CONNECTED)) {
 													// once we are connected put the scheduler in the map with the
 													// channelId as the key
-													schedulerMap.put(channelId, scheduler);
+													TrackScheduler.getSchedulerMap().put(channelId, scheduler);
 													LOGGER.info("Bot connected to channel");
 												} else if (newState.equals(State.DISCONNECTED)) {
 													// remove the scheduler from the map. This doesn't ever seem to
 													// happen when the bot disconects though so also removes it from map
 													// during leave command
-													if (schedulerMap.containsKey(channelId)) {
-														schedulerMap.get(channelId).getPlayer().destroy();
-														schedulerMap.remove(channelId);
+													if (TrackScheduler.getSchedulerMap().containsKey(channelId)) {
+														TrackScheduler.getSchedulerMap().get(channelId).getPlayer().destroy();
+														TrackScheduler.getSchedulerMap().remove(channelId);
 														LOGGER.info("Bot disconnected to channel");
 													}
 												}
@@ -191,10 +177,10 @@ public class CommandReceiver {
 					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 							.map(VoiceChannel::getId).subscribe(memberChannelId -> {
 								// if the members voice channel is one the bot is in
-								if (schedulerMap.containsKey(memberChannelId)) {
-									Optional.of(schedulerMap.get(memberChannelId)).map(TrackScheduler::getPlayer)
+								if (TrackScheduler.getSchedulerMap().containsKey(memberChannelId)) {
+									Optional.of(TrackScheduler.getSchedulerMap().get(memberChannelId)).map(TrackScheduler::getPlayer)
 											.ifPresent(AudioPlayer::destroy);
-									schedulerMap.remove(memberChannelId);
+									TrackScheduler.getSchedulerMap().remove(memberChannelId);
 									// disconnect from the channel
 									botConnection.disconnect().block();
 								}
