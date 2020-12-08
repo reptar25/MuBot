@@ -50,17 +50,18 @@ public abstract class Command implements CommandInterface {
 		int retries = 0;
 		TrackScheduler scheduler = null;
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
-		while (scheduler == null && retries <= MAX_RETRIES)
-			if (event.getGuildId().isPresent()) {
+		if (event.getGuildId().isPresent()) {
+			while (scheduler == null && retries <= MAX_RETRIES) {
 				Snowflake guildId = event.getGuildId().get();
-				Optional<Snowflake> channelIdSnowflake = event.getClient().getSelf()
+				Optional<Snowflake> channelIdSnowflakeOpt = event.getClient().getSelf()
 						.flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
-						.map(VoiceState::getChannelId).block();
-				if (channelIdSnowflake != null) {
-					if (channelIdSnowflake.isPresent()) {
-						scheduler = TrackScheduler.getScheduler(channelIdSnowflake.get());
-					}
-				}
+						.map(VoiceState::getChannelId).filter(id -> id.isPresent()).block();
+
+				if (channelIdSnowflakeOpt == null)
+					return null;
+
+				scheduler = TrackScheduler.getScheduler(channelIdSnowflakeOpt.get());
+
 				if (scheduler == null) {
 					try {
 						Thread.sleep(100);
@@ -70,6 +71,7 @@ public abstract class Command implements CommandInterface {
 					}
 				}
 			}
+		}
 		return scheduler;
 	}
 }
