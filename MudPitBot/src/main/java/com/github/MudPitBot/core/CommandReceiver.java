@@ -19,7 +19,8 @@ import java.util.regex.Pattern;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
-import com.github.MudPitBot.command.poll.Poll;
+import com.github.MudPitBot.command.misc.MuteHelper;
+import com.github.MudPitBot.command.misc.Poll;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.PlayerManager;
 import com.github.MudPitBot.sound.TrackScheduler;
@@ -58,11 +59,6 @@ public class CommandReceiver {
 	 * id snowflake
 	 */
 	private static HashMap<Snowflake, TrackScheduler> schedulerMap = new HashMap<Snowflake, TrackScheduler>();
-
-	/**
-	 * A list of channel ids of channels that should be muted
-	 */
-	public static ArrayList<Snowflake> mutedChannels = new ArrayList<Snowflake>();
 
 	public static CommandReceiver getInstance() {
 		if (instance == null)
@@ -363,41 +359,50 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-	private volatile boolean muted;
 
 	public CommandResponse mute(MessageCreateEvent event) {
-
 		// gets the member's channel who sent the message, and then all the VoiceStates
 		// connected to that channel. From there we can get the Member of the VoiceState
-		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
-				.map(VoiceChannel::getVoiceStates).subscribe(users -> {
-					// had to use array to get around non-final variable inside of a lambda below
-					muted = true;
-					// gets the channel id of the member if present
-					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
-							.subscribe(idOpt -> {
-								Snowflake id = null;
-								if (idOpt.isEmpty())
-									return;
-								else
-									id = idOpt.get();
-								// channel is muted, so unmute
-								if (mutedChannels.contains(id)) {
-									muted = false;
-									mutedChannels.remove(id);
-								} else {
-									// channel should be muted
-									muted = true;
-									mutedChannels.add(id);
-								}
+		Mono.justOrEmpty(event.getMember()).map(Member::getGuildId).subscribe(guildId -> {
+			Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
+					.map(VoiceChannel::getVoiceStates).subscribe(users -> {
+						// boolean muted = true;
+						// gets the channel id of the member if present
+						Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+								.filter(id -> id.isPresent()).subscribe(idOpt -> {
+									boolean mute = true;
+									Snowflake id = idOpt.get();
+									ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(guildId);
+									if (channelIds != null) {
+										// channel is muted, so unmute
+										if (channelIds.contains(id)) {
+											mute = false;
+											channelIds.remove(id);
+										} else {
+											channelIds.add(id);
+										}
+									} else {
+										// channel should be muted
+										ArrayList<Snowflake> ids = new ArrayList<Snowflake>();
+										ids.add(id);
+										MuteHelper.mutedChannels.put(guildId, ids);
+									}
 
-								users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
-										.subscribe(member -> {
-											LOGGER.info("Muting/unmuting " + member.getUsername());
-											member.edit(spec -> spec.setMute(muted)).block();
-										});
-							});
-				});
+									if (mute)
+										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
+												.subscribe(member -> {
+													LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
+													member.edit(spec -> spec.setMute(true)).block();
+												});
+									else
+										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
+												.subscribe(member -> {
+													LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
+													member.edit(spec -> spec.setMute(false)).block();
+												});
+								});
+					});
+		});
 
 		return null;
 	}
