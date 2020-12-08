@@ -6,12 +6,10 @@ import java.util.Optional;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
+import com.github.MudPitBot.command.misc.MuteHelper;
 
-import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
@@ -44,6 +42,7 @@ public class CommandClient {
 		this.client = client;
 
 		setupListener();
+		MuteHelper.create(client);
 		LOGGER.info(("Client created."));
 	}
 
@@ -71,68 +70,9 @@ public class CommandClient {
 						processMessage(event, content);
 					});
 
-			/*
-			 * Add listener for members joining/changing voice channels.
-			 */
-			client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
 
-				// Checks whether a member should be muted on joining a voice channel and mutes
-				// them if so
-				muteOnJoin(event);
-			});
 		}
 	};
-
-	/**
-	 * Checks if the new voice channel is the channel the bot currently has muted,
-	 * and mutes the member if it is
-	 * 
-	 * @param event event of the channel change
-	 */
-	private void muteOnJoin(VoiceStateUpdateEvent event) {
-		if (event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent()) {
-			Snowflake newChannelId = event.getCurrent().getChannelId().orElse(null);
-
-			// if its a bot who joined, do not execute any more code
-			if (event.getCurrent().getMember().block().isBot()) {
-				return;
-			}
-
-			// if the newly joined channel is null just stop
-			if (event.getCurrent().getChannelId() == null) {
-				return;
-			}
-
-			// if user join same channel as mute channel
-			if (CommandReceiver.mutedChannels.contains(newChannelId)) {
-				// mute the member that just joined
-				Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).subscribe(member -> {
-					member.edit(spec -> spec.setMute(true)).block();
-					LOGGER.info("Muting " + member.getUsername());
-				});
-			}
-			// if user joined another channel, make sure they arent muted still
-			else {
-				// We cant unmute a users when they leave because the Discord api doesnt allow
-				// modifying a user's server mute if that user isn't in a voice channel. So if
-				// that person disconnects from voice then we can't unmute them. For now we just
-				// check if it's a non-muted channel when they join and unmute them then. This
-				// has the side effect of users staying muted if they are muted by the bot and
-				// leave, but rejoin a voice channel when the bot is not running
-				Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).subscribe(member -> {
-					Mono.just(member).flatMap(Member::getVoiceState).subscribe(vs -> {
-						if (vs.isMuted()) {
-							if (!vs.getChannelId().get()
-									.equals(event.getCurrent().getGuild().block().getAfkChannelId().orElse(null))) {
-								member.edit(spec -> spec.setMute(false)).block();
-								LOGGER.info("Unmuting " + member.getUsername());
-							}
-						}
-					});
-				});
-			}
-		}
-	}
 
 	/**
 	 * Processes the message to check for commands and execute those commands
