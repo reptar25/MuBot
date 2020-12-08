@@ -29,6 +29,7 @@ public class HerokuServer {
 //		try {
 		server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
 		server.createContext("/", new RootResponseHandler());
+		server.createContext("/hello", new HelloResponseHandler());
 		server.setExecutor(null);
 		server.start();
 		System.out.println("Server started on port " + port);
@@ -48,6 +49,23 @@ class RootResponseHandler implements HttpHandler {
 	public void handle(HttpExchange exchange) throws IOException {
 //		Headers h = exchange.getRequestHeaders();
 //		h.add("Content-Type", "text/html");
+
+		InputStream is = exchange.getRequestBody();
+		exchange.sendResponseHeaders(200, homeHtml.length());
+		OutputStream os = exchange.getResponseBody();
+		os.write(homeHtml.getBytes());
+		os.flush();
+		os.close();
+		is.close();
+	}
+}
+
+class HelloResponseHandler implements HttpHandler {
+	private static final String homeHtml = "<h1 style='font-family: sans-serif;'>HELLO</h1>";
+
+	public void handle(HttpExchange exchange) throws IOException {
+//			Headers h = exchange.getRequestHeaders();
+//			h.add("Content-Type", "text/html");
 
 		InputStream is = exchange.getRequestBody();
 		exchange.sendResponseHeaders(200, homeHtml.length());
