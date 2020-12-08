@@ -9,17 +9,12 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class CommandsCommand extends Command {
 
 	public CommandsCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "commands");
 	}
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.printCommands();
-	}
-
-	@Override
-	public String getCommandTrigger() {
-		return "commands";
 	}
 
 }

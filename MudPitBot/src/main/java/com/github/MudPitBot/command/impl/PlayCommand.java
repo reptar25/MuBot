@@ -9,17 +9,12 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class PlayCommand extends Command {
 
 	public PlayCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "play");
 	}
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.play(getScheduler(event), params);
-	}
-
-	@Override
-	public String getCommandTrigger() {
-		return "play";
 	}
 
 }

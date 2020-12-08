@@ -9,17 +9,12 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class LeaveVoiceCommand extends Command {
 
 	public LeaveVoiceCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "leave");
 	};
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.leave(event);
-	}
-
-	@Override
-	public String getCommandTrigger() {
-		return "leave";
 	}
 
 }

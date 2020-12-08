@@ -19,11 +19,20 @@ public abstract class Command implements CommandInterface {
 	protected CommandReceiver receiver;
 	protected String commandTrigger;
 
-	public Command(CommandReceiver receiver) {
+	public Command(CommandReceiver receiver, String commandTrigger) {
 		this.receiver = receiver;
+		this.commandTrigger = commandTrigger;
 	}
 
-	private final static int MAX_RETRIES = 15;
+	/**
+	 * The String that would cause this command to trigger if typed in a message to
+	 * a channel the bot can see
+	 * 
+	 * @return the literal String of what triggers this command.
+	 */
+	public String getCommandTrigger() {
+		return commandTrigger;
+	}
 
 	/**
 	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
@@ -33,6 +42,7 @@ public abstract class Command implements CommandInterface {
 	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
 	 *         bot in the guild the message was sent from.
 	 */
+	private final static int MAX_RETRIES = 15;
 
 	// retries allow commands to still work while bot is joining channel and setting
 	// up scheduler eg "!join !play"

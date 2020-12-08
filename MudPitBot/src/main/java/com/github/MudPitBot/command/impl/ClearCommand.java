@@ -9,17 +9,12 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class ClearCommand extends Command {
 
 	public ClearCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "clear");
 	}
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.clearQueue(getScheduler(event));
-	}
-
-	@Override
-	public String getCommandTrigger() {
-		return "clear";
 	}
 
 }

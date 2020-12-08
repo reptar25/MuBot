@@ -9,17 +9,12 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class FastForwardCommand extends Command {
 
 	public FastForwardCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "fastforward");
 	}
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.fastForward(getScheduler(event), params);
-	}
-
-	@Override
-	public String getCommandTrigger() {
-		return "fastforward";
 	}
 
 }

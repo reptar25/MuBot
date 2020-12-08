@@ -9,17 +9,11 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class ViewQueueCommand extends Command {
 
 	public ViewQueueCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "viewqueue");
 	}
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.viewQueue(getScheduler(event));
 	}
-
-	@Override
-	public String getCommandTrigger() {
-		return "viewqueue";
-	}
-
 }

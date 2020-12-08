@@ -9,19 +9,13 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 public class CyberpunkCountdownCommand extends Command {
 
 	public CyberpunkCountdownCommand(CommandReceiver receiver) {
-		super(receiver);
+		super(receiver, "Cyberpunk");
 
 	}
 
 	@Override
 	public CommandResponse execute(MessageCreateEvent event, String[] params) {
 		return receiver.cyberpunk();
-	}
-
-	@Override
-	public String getCommandTrigger() {
-
-		return "Cyberpunk";
 	}
 
 }
