@@ -3,7 +3,7 @@ package com.github.MudPitBot.test;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import com.github.MudPitBot.command.poll.Poll;
+import com.github.MudPitBot.command.misc.Poll;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;

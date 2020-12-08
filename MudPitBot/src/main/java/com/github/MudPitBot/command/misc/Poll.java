@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.poll;
+package com.github.MudPitBot.command.misc;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

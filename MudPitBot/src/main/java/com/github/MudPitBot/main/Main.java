@@ -1,5 +1,7 @@
 package com.github.MudPitBot.main;
 
+import java.io.IOException;
+
 import com.github.MudPitBot.core.CommandClient;
 import com.github.MudPitBot.heroku.HerokuServer;
 
@@ -36,7 +38,11 @@ public class Main {
 		String port = System.getenv("PORT");
 		if (port != null) {
 			// bind PORT for Heroku integration
-			HerokuServer.create(Integer.parseInt(port));
+			try {
+				HerokuServer.create(Integer.parseInt(port));
+			} catch (NumberFormatException | IOException e) {
+				LOGGER.error(e.getMessage(), e);
+			}
 		} else {
 			LOGGER.info("Not running on Heroku");
 		}

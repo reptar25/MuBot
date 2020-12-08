@@ -2,7 +2,7 @@ package com.github.MudPitBot.command;
 
 import java.util.function.Consumer;
 
-import com.github.MudPitBot.command.poll.Poll;
+import com.github.MudPitBot.command.misc.Poll;
 
 import discord4j.core.spec.MessageCreateSpec;
 
