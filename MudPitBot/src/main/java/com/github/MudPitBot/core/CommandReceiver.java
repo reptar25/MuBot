@@ -70,63 +70,23 @@ public class CommandReceiver {
 	 * @param event The message event
 	 * @return null
 	 */
-
-	private volatile boolean sameChannel = false;
-	private volatile boolean disconnected = false;
-
 	public CommandResponse join(MessageCreateEvent event) {
-
 		// get the voice channel of the member who sent the message
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 				.subscribe(channel -> {
-
-					/*
-					 * Check if bot is currently connected to another voice channel and disconnect
-					 * from it before trying to join a new one. Only disconnect if we aren't trying
-					 * to join the same channel we are already in
-					 */
-					Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
-							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
-								// bot is in a voice channel, check if it's different from member's
-								if (botChannelId.asLong() != channel.getId().asLong()) {
-									Mono.justOrEmpty(TrackScheduler.getSchedulerMap().get(botChannelId))
-											.map(TrackScheduler::getPlayer).subscribe(AudioPlayer::destroy);
-									TrackScheduler.getSchedulerMap().remove(botChannelId);
-									event.getGuild().flatMap(Guild::getVoiceConnection)
-											.flatMap(VoiceConnection::disconnect).subscribe();
-									disconnected = true;
-								}
-								// bot is trying to connect to the same channel it's already in
-								else {
-									sameChannel = true;
-									return;
-								}
-							}).doOnTerminate(() -> {
-								// if we are trying to connect to the channel we are already in, just return
-								if (sameChannel) {
-									return;
-								}
-
-								if (disconnected) {
-									// TODO: this is bad but only happens if the bot is switching channels
-									while (event.getGuild().flatMap(Guild::getVoiceConnection).block() != null) {
-										try {
-											Thread.sleep(1);
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-										}
-									}
-								}
-
-								// Create a new TrackScheduler to play sound when joining a voice channel
+					Mono.just(channel.getId())
+							// dont join the channel if the bot is already connect to that channel
+							.filter(channelId -> !channelId.equals(Mono.just(event.getMessage())
+									.flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
+									.flatMap(VoiceConnection::getChannelId).block()))
+							.subscribe(channelId -> {
+								// joining a new channel
 								TrackScheduler scheduler = new TrackScheduler();
-								Snowflake channelId = channel.getId();
 								channel.join(
 										spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
 										.subscribe(vc -> {
 											// subscribe to connected/disconnected events
 											vc.onConnectOrDisconnect().subscribe(newState -> {
-
 												if (newState.equals(State.CONNECTED)) {
 													// once we are connected put the scheduler in the map with the
 													// channelId as the key
@@ -134,8 +94,8 @@ public class CommandReceiver {
 													LOGGER.info("Bot connected to channel");
 												} else if (newState.equals(State.DISCONNECTED)) {
 													// remove the scheduler from the map. This doesn't ever seem to
-													// happen when the bot disconects though so also removes it from map
-													// during leave command
+													// happen when the bot disconnects, though, so also remove it from
+													// map during leave command
 													if (TrackScheduler.getSchedulerMap().containsKey(channelId)) {
 														TrackScheduler.getSchedulerMap().get(channelId).getPlayer()
 																.destroy();
@@ -144,12 +104,10 @@ public class CommandReceiver {
 													}
 												}
 											});
-										}, error -> LOGGER.error(error.getMessage()));
-							}).subscribe(null, error -> LOGGER.error(error.getMessage()));
+										});
+							}, error -> LOGGER.error(error.getMessage()));
 				}, error -> LOGGER.error(error.getMessage()));
-
 		return null;
-
 	}
 
 	/**
@@ -172,7 +130,8 @@ public class CommandReceiver {
 											.map(TrackScheduler::getPlayer).ifPresent(AudioPlayer::destroy);
 									TrackScheduler.getSchedulerMap().remove(memberChannelId);
 									// disconnect from the channel
-									botConnection.disconnect().block();
+									botConnection.disconnect().subscribe(null,
+											error -> LOGGER.error(error.getMessage()));
 								}
 							});
 				}, error -> LOGGER.error(error.getMessage()));
