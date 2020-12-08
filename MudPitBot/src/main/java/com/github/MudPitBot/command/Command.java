@@ -2,7 +2,7 @@ package com.github.MudPitBot.command;
 
 import java.util.Optional;
 
-import com.github.MudPitBot.core.CommandReceiver;
+import com.github.MudPitBot.CommandCore.CommandReceiver;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.common.util.Snowflake;

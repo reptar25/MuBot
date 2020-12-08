@@ -2,7 +2,7 @@ package com.github.MudPitBot.main;
 
 import java.io.IOException;
 
-import com.github.MudPitBot.core.CommandClient;
+import com.github.MudPitBot.CommandCore.CommandClient;
 import com.github.MudPitBot.heroku.HerokuServer;
 
 import discord4j.core.DiscordClientBuilder;

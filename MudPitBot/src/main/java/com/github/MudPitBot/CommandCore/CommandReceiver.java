@@ -1,4 +1,4 @@
-package com.github.MudPitBot.core;
+package com.github.MudPitBot.CommandCore;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

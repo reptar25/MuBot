@@ -1,8 +1,8 @@
 package com.github.MudPitBot.command.impl;
 
+import com.github.MudPitBot.CommandCore.CommandReceiver;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.core.CommandReceiver;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 
