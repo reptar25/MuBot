@@ -1,4 +1,4 @@
-package com.github.MudPitBot.CommandCore;
+package com.github.MudPitBot.command.core;
 
 import java.util.Arrays;
 import java.util.Map.Entry;

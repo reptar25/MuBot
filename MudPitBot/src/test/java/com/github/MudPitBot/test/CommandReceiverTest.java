@@ -3,8 +3,8 @@ package com.github.MudPitBot.test;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import com.github.MudPitBot.CommandCore.CommandReceiver;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.core.CommandReceiver;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.common.util.Snowflake;

@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import com.github.MudPitBot.CommandCore.CommandReceiver;
+import com.github.MudPitBot.command.core.CommandReceiver;
 
 import java.lang.reflect.*;
 
