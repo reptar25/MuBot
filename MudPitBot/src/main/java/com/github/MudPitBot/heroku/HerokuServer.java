@@ -11,7 +11,6 @@ import com.sun.net.httpserver.HttpServer;
 
 public class HerokuServer {
 
-	private int port;
 	private HttpServer server;
 	private static HerokuServer instance;
 
@@ -23,8 +22,6 @@ public class HerokuServer {
 	}
 
 	private HerokuServer(int port) throws IOException {
-		this.port = port;
-
 //		try {
 		server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
 		server.createContext("/", new RootResponseHandler());
