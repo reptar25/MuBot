@@ -3,6 +3,8 @@ package com.github.MudPitBot.core;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Predicate;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
@@ -70,7 +72,6 @@ public class CommandClient {
 						processMessage(event, content);
 					});
 
-
 		}
 	};
 
@@ -83,12 +84,9 @@ public class CommandClient {
 	public void processMessage(MessageCreateEvent event, String content) {
 
 		// ignore any messages sent from a bot
-		(Mono.justOrEmpty(event.getMessage().getAuthor()).map(User::isBot)).subscribe(isBot -> {
-			if (isBot)
-				return;
-
-			// split content at ! to allow for compound commands (more than 1 command in 1
-			// message)
+		Mono.justOrEmpty(event.getMessage().getAuthor()).filter(Predicate.not(User::isBot)).subscribe(user -> {
+			// split content at ! to allow for compound commands (more
+			// than 1 command in 1 message)
 			// this regex splits at !, but doesn't remove it from the resulting string
 			String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
 			for (String command : commands) {
@@ -120,7 +118,6 @@ public class CommandClient {
 								}
 							});
 						}
-
 						break;
 					}
 				}
