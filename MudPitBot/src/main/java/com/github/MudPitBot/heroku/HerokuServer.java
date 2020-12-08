@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -47,6 +46,7 @@ class RootResponseHandler implements HttpHandler {
 			+ "<img style=\"-webkit-user-select: none;margin: auto;\""
 			+ " src=\"https://i.ytimg.com/vi/4Qto049GEkA/maxresdefault.jpg\" width=\"235\" height=\"132\">";
 
+	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 //		Headers h = exchange.getRequestHeaders();
 //		h.add("Content-Type", "text/html");
@@ -67,6 +67,7 @@ class InviteResponseHandler implements HttpHandler {
 			+ "      <meta http-equiv = \"refresh\" content = \"0; url = " + INVITE_LINK + "\" />\r\n"
 			+ "   </head>\r\n" + "   <body>\r\n" + "\r\n" + "   </body>\r\n" + "</html>";
 
+	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 //			Headers h = exchange.getRequestHeaders();
 //			h.add("Content-Type", "text/html");
