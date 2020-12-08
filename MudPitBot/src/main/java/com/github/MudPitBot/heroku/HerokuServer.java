@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -26,7 +27,7 @@ public class HerokuServer {
 		server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
 		server.createContext("/", new RootResponseHandler());
 		server.createContext("/invite", new InviteResponseHandler());
-		server.setExecutor(null);
+		server.setExecutor(Executors.newCachedThreadPool());
 		server.start();
 		System.out.println("Server started on port " + port);
 //		} catch (IOException e) {
