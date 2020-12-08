@@ -53,8 +53,6 @@ public class CommandReceiver {
 	private static CommandReceiver instance;
 	private static Random rand = new Random();
 
-
-
 	public static CommandReceiver getInstance() {
 		if (instance == null)
 			instance = new CommandReceiver();
@@ -83,18 +81,16 @@ public class CommandReceiver {
 				.subscribe(channel -> {
 
 					/*
-					 * check if bot is currently connected to another voice channel and disconnect
-					 * from it before trying to join a new one. only disconnect if we aren't trying
-					 * to join the same channel we are in
+					 * Check if bot is currently connected to another voice channel and disconnect
+					 * from it before trying to join a new one. Only disconnect if we aren't trying
+					 * to join the same channel we are already in
 					 */
-					// have to use an array here to get around using non-final var in lambda
-
 					Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
 							.flatMap(VoiceConnection::getChannelId).doOnNext(botChannelId -> {
 								// bot is in a voice channel, check if it's different from member's
 								if (botChannelId.asLong() != channel.getId().asLong()) {
-									Mono.justOrEmpty(TrackScheduler.getSchedulerMap().get(botChannelId)).map(TrackScheduler::getPlayer)
-											.subscribe(AudioPlayer::destroy);
+									Mono.justOrEmpty(TrackScheduler.getSchedulerMap().get(botChannelId))
+											.map(TrackScheduler::getPlayer).subscribe(AudioPlayer::destroy);
 									TrackScheduler.getSchedulerMap().remove(botChannelId);
 									event.getGuild().flatMap(Guild::getVoiceConnection)
 											.flatMap(VoiceConnection::disconnect).subscribe();
@@ -141,7 +137,8 @@ public class CommandReceiver {
 													// happen when the bot disconects though so also removes it from map
 													// during leave command
 													if (TrackScheduler.getSchedulerMap().containsKey(channelId)) {
-														TrackScheduler.getSchedulerMap().get(channelId).getPlayer().destroy();
+														TrackScheduler.getSchedulerMap().get(channelId).getPlayer()
+																.destroy();
 														TrackScheduler.getSchedulerMap().remove(channelId);
 														LOGGER.info("Bot disconnected to channel");
 													}
@@ -163,22 +160,16 @@ public class CommandReceiver {
 	 * @return null
 	 */
 	public CommandResponse leave(MessageCreateEvent event) {
-//		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(vs -> event.getClient().getVoiceConnectionRegistry()
-//                .getVoiceConnection(vs.getGuildId()).doOnSuccess(vc -> {if(vc == null) LOGGER.info("");}).flatMap(VoiceConnection::disconnect));
-
 		// get the voice channel the bot is connected to
 		Mono.just(event.getMessage()).flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
-				.subscribe(botConnection ->
-
-				{
-
+				.subscribe(botConnection -> {
 					// get member who sent the command voice channel
 					Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 							.map(VoiceChannel::getId).subscribe(memberChannelId -> {
 								// if the members voice channel is one the bot is in
 								if (TrackScheduler.getSchedulerMap().containsKey(memberChannelId)) {
-									Optional.of(TrackScheduler.getSchedulerMap().get(memberChannelId)).map(TrackScheduler::getPlayer)
-											.ifPresent(AudioPlayer::destroy);
+									Optional.of(TrackScheduler.getSchedulerMap().get(memberChannelId))
+											.map(TrackScheduler::getPlayer).ifPresent(AudioPlayer::destroy);
 									TrackScheduler.getSchedulerMap().remove(memberChannelId);
 									// disconnect from the channel
 									botConnection.disconnect().block();
@@ -245,17 +236,6 @@ public class CommandReceiver {
 	 */
 	public CommandResponse play(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
-
-			// reactive version of unpause below
-//			Mono.just(params.length == 0).subscribe(empty -> {
-//				if (empty) {
-//					(Mono.just(scheduler.isPaused())).subscribe(pause -> {
-//						scheduler.pause(!pause);
-//						return;
-//					});
-//				}
-//			});
-
 			// unpause
 			if ((params.length == 0 || params[0].isEmpty())) {
 				scheduler.pause(!scheduler.isPaused());
@@ -346,12 +326,13 @@ public class CommandReceiver {
 	 */
 
 	public CommandResponse mute(MessageCreateEvent event) {
-		// gets the member's channel who sent the message, and then all the VoiceStates
-		// connected to that channel. From there we can get the Member of the VoiceState
+		/*
+		 * gets the member's channel who sent the message, and then all the VoiceStates
+		 * connected to that channel. From there we can get the Member of the VoiceState
+		 */
 		Mono.justOrEmpty(event.getMember()).map(Member::getGuildId).subscribe(guildId -> {
 			Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 					.map(VoiceChannel::getVoiceStates).subscribe(users -> {
-						// boolean muted = true;
 						// gets the channel id of the member if present
 						Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
 								.filter(id -> id.isPresent()).subscribe(idOpt -> {
@@ -376,13 +357,15 @@ public class CommandReceiver {
 									if (mute)
 										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
 												.subscribe(member -> {
-													LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
+													LOGGER.info(new StringBuilder("Muting ")
+															.append(member.getUsername()).toString());
 													member.edit(spec -> spec.setMute(true)).block();
 												});
 									else
 										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
 												.subscribe(member -> {
-													LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
+													LOGGER.info(new StringBuilder("Unmuting ")
+															.append(member.getUsername()).toString());
 													member.edit(spec -> spec.setMute(false)).block();
 												});
 								});
