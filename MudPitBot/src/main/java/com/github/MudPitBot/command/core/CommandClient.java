@@ -2,20 +2,14 @@ package com.github.MudPitBot.command.core;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
-import com.github.MudPitBot.command.misc.MuteHelper;
-
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
-import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -44,8 +38,7 @@ public class CommandClient {
 		this.client = client;
 
 		setupListener();
-		MuteHelper.create(client);
-		LOGGER.info(("Client created."));
+		LOGGER.info(("Command Client created."));
 	}
 
 	/*
@@ -64,10 +57,6 @@ public class CommandClient {
 					.subscribe(event -> {
 						// 3.1 Message.getContent() is a String
 						final String content = event.getMessage().getContent();
-
-						// print out new message to logs
-						logMessage(event, content);
-
 						// process new message to check for commands
 						processMessage(event, content);
 					});
@@ -84,7 +73,7 @@ public class CommandClient {
 	public void processMessage(MessageCreateEvent event, String content) {
 
 		// ignore any messages sent from a bot
-		Mono.justOrEmpty(event.getMessage().getAuthor()).filter(Predicate.not(User::isBot)).subscribe(user -> {
+		event.getMessage().getAuthorAsMember().filter(Predicate.not(User::isBot)).subscribe(user -> {
 			// split content at ! to allow for compound commands (more
 			// than 1 command in 1 message)
 			// this regex splits at !, but doesn't remove it from the resulting string
@@ -96,6 +85,7 @@ public class CommandClient {
 					String[] splitCommand = command.split(" ");
 					if (splitCommand[0].toLowerCase()
 							.startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
+						// removes the command itself from the parameters
 						String[] params = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 
 						// commands will return any string that the bot should send back as a message to
@@ -106,44 +96,23 @@ public class CommandClient {
 						// message was sent from
 						if (response != null) {
 							event.getMessage().getChannel().subscribe(channel -> {
-								Message message = null;
 								if (response.getSpec() != null) {
-									message = channel.createMessage(response.getSpec()).block();
-								}
-
-								if (response.getPoll() != null && message != null) {
-									// add reactions as vote tickers, number of reactions depends on number of
-									// answers
-									response.getPoll().addReactions(message);
+									channel.createMessage(response.getSpec()).subscribe(message -> {
+										// if the response contained a poll
+										if (response.getPoll() != null) {
+											// add reactions as vote tickers, number of reactions depends on number of
+											// answers
+											response.getPoll().addReactions(message);
+										}
+									});
 								}
 							});
 						}
+						// we found a matching command
 						break;
 					}
 				}
 			}
 		});
-
-	}
-
-	/**
-	 * Formats and logs the message content and author
-	 * 
-	 * @param event   even of the message
-	 * @param content content of the message
-	 */
-	public void logMessage(MessageCreateEvent event, String content) {
-		StringBuilder sb = new StringBuilder("New message created: ");
-
-		Optional<Member> member = event.getMember();
-
-		// add the user name and put the message in quotes
-		if (member.isPresent()) {
-			sb.append(member.get().getUsername());
-		} else {
-			event.getMessage().getAuthor().ifPresent(a -> sb.append(a.getUsername()));
-		}
-		sb.append(" - \"").append(content).append("\"");
-		LOGGER.info(sb.toString());
 	}
 }

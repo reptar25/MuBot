@@ -11,6 +11,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import reactor.core.publisher.Mono;
 
 import static org.mockito.Mockito.*;
 
@@ -51,22 +52,11 @@ public class CommandClientTest {
 	@Test
 	void processMessage() {
 		when(mockEvent.getMessage()).thenReturn(mockMessage);
-		when(mockMessage.getAuthor()).thenReturn(mockUserOptional);
-		when(mockUserOptional.orElse(null)).thenReturn(mockUser);
+		when(mockMessage.getAuthorAsMember()).thenReturn(Mono.just(mockMember));
+		when(mockMember.isBot()).thenReturn(false);
 		client.processMessage(mockEvent, "!LeAvE");
-	}
-
-	@Test
-	void logMessage() {
-		when(mockEvent.getMember()).thenReturn(mockMemberOptional);
-		when(mockUserOptional.orElse(null)).thenReturn(mockUser);
-
-		when(mockEvent.getMessage()).thenReturn(mockMessage);
-		when(mockMessage.getAuthor()).thenReturn(mockUserOptional);
-		when(mockUserOptional.orElse(null)).thenReturn(mockUser);
-		when(mockUser.getUsername()).thenReturn("Test User Name");
-
-		client.logMessage(mockEvent, "Log me");
+		
+		client.processMessage(mockEvent, "message");
 	}
 
 }
