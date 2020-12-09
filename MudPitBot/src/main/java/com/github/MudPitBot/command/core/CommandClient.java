@@ -10,6 +10,8 @@ import com.github.MudPitBot.command.Commands;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
+import reactor.core.publisher.Mono;
+import reactor.function.TupleUtils;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -58,7 +60,7 @@ public class CommandClient {
 						// 3.1 Message.getContent() is a String
 						final String content = event.getMessage().getContent();
 						// process new message to check for commands
-						processMessage(event, content);
+						Mono.just(processMessage(event, content)).subscribe();
 					});
 
 		}
@@ -70,49 +72,54 @@ public class CommandClient {
 	 * @param event   event of the message
 	 * @param content content of the message
 	 */
-	public void processMessage(MessageCreateEvent event, String content) {
-
+	public Mono<Void> processMessage(MessageCreateEvent event, String content) {
 		// ignore any messages sent from a bot
-		event.getMessage().getAuthorAsMember().filter(Predicate.not(User::isBot)).subscribe(user -> {
-			// split content at ! to allow for compound commands (more
-			// than 1 command in 1 message)
-			// this regex splits at !, but doesn't remove it from the resulting string
-			String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
-			for (String command : commands) {
-				command = command.trim();
-				for (final Entry<String, Command> entry : Commands.getEntries()) {
-					// We will be using ! as our "prefix" to any command in the system.
-					String[] splitCommand = command.split(" ");
-					if (splitCommand[0].toLowerCase()
-							.startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
-						// removes the command itself from the parameters
-						String[] params = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
+		if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
+			return Mono.empty();
+		}
+		// split content at ! to allow for compound commands (more
+		// than 1 command in 1 message)
+		// this regex splits at !, but doesn't remove it from the resulting string
+		String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
+		for (String command : commands) {
+			command = command.trim();
+			for (final Entry<String, Command> entry : Commands.getEntries()) {
+				// We will be using ! as our "prefix" to any command in the system.
+				String[] splitCommand = command.split(" ");
 
-						// commands will return any string that the bot should send back as a message to
-						// the command
-						CommandResponse response = executor.executeCommand(event, entry.getValue(), params);
-
-						// if there is a message to send back send it to the channel the original
-						// message was sent from
-						if (response != null) {
-							event.getMessage().getChannel().subscribe(channel -> {
-								if (response.getSpec() != null) {
-									channel.createMessage(response.getSpec()).subscribe(message -> {
-										// if the response contained a poll
-										if (response.getPoll() != null) {
-											// add reactions as vote tickers, number of reactions depends on number of
-											// answers
-											response.getPoll().addReactions(message);
-										}
-									});
-								}
-							});
-						}
-						// we found a matching command
-						break;
-					}
+				if (splitCommand[0].toLowerCase().startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
+					// matching command found, so process and execute that command
+					// copy removes the command itself from the parameters
+					processCommand(event, entry.getValue(), Arrays.copyOfRange(splitCommand, 1, splitCommand.length));
+					// we found a matching command so stop the loop
+					break;
 				}
 			}
-		});
+		}
+		return Mono.empty();
+	}
+
+	private void processCommand(MessageCreateEvent event, Command command, String[] params) {
+
+		// commands will return any string that the bot should send back as a message to
+		// the command
+		CommandResponse response = executor.executeCommand(event, command, params);
+
+		// if there is a message to send back send it to the channel the original
+		// message was sent from
+		if (response != null) {
+			event.getMessage().getChannel().subscribe(channel -> {
+				if (response.getSpec() != null) {
+					channel.createMessage(response.getSpec()).subscribe(message -> {
+						// if the response contained a poll
+						if (response.getPoll() != null) {
+							// add reactions as vote tickers, number of reactions depends on number of
+							// answers
+							response.getPoll().addReactions(message);
+						}
+					});
+				}
+			});
+		}
 	}
 }

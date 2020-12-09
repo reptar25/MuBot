@@ -73,7 +73,8 @@ public class CommandReceiver {
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 				.subscribe(channel -> {
 					Mono.just(event).flatMap(MessageCreateEvent::getGuild).flatMap(Guild::getVoiceConnection)
-							.flatMap(VoiceConnection::getChannelId).subscribe(botChannelId -> {
+							.flatMap(VoiceConnection::getChannelId).defaultIfEmpty(Snowflake.of(0))
+							.subscribe(botChannelId -> {
 								Mono.just(channel.getId())
 										// dont join the channel if the bot is already connect to that channel
 										.filter(channelId -> !channelId.equals(botChannelId)).subscribe(channelId -> {
