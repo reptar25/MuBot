@@ -53,7 +53,7 @@ public class MessageLogger {
 	public void logMessage(MessageCreateEvent event, String content) {
 		Mono.just(event.getMessage()).map(Message::getAuthor).filter(user -> user.isPresent()).subscribe(userOpt -> {
 			Mono.just(event.getGuild()).flatMap(g -> g).map(Guild::getName).subscribe(guildName -> {
-				StringBuilder sb = new StringBuilder("New message created: ");
+				StringBuilder sb = new StringBuilder("New message: ");
 				sb.append("(").append(guildName).append(") ");
 				sb.append(userOpt.get().getUsername());
 				sb.append(" - \"").append(content).append("\"");
