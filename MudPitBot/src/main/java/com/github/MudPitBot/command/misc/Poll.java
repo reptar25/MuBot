@@ -66,7 +66,7 @@ public final class Poll {
 
 	public void addReactions(Message message) {
 		for (int i = 0; i < getAnswers().size(); i++) {
-			message.addReaction(Emoji.getUnicodeFromNum(i)).block();
+			message.addReaction(Emoji.getUnicodeFromNum(i)).subscribe();
 		}
 	}
 

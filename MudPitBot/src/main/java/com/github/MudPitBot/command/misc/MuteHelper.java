@@ -115,15 +115,16 @@ public class MuteHelper {
 	 */
 	private void unmuteUser(VoiceStateUpdateEvent event) {
 		Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).subscribe(member -> {
-			Mono.just(member).flatMap(Member::getVoiceState).subscribe(vs -> {
-				if (vs.isMuted()) {
-					if (!vs.getChannelId().orElse(null)
-							.equals(event.getCurrent().getGuild().block().getAfkChannelId().orElse(null))) {
-						member.edit(spec -> spec.setMute(false)).subscribe(null,
-								error -> LOGGER.error(error.getMessage()));
-						LOGGER.info("Unmuting " + member.getUsername());
+			Mono.just(event.getCurrent()).flatMap(VoiceState::getGuild).subscribe(guild -> {
+				Mono.just(member).flatMap(Member::getVoiceState).subscribe(vs -> {
+					if (vs.isMuted()) {
+						if (!vs.getChannelId().orElse(null).equals(guild.getAfkChannelId().orElse(null))) {
+							member.edit(spec -> spec.setMute(false)).subscribe(null,
+									error -> LOGGER.error(error.getMessage()));
+							LOGGER.info("Unmuting " + member.getUsername());
+						}
 					}
-				}
+				});
 			});
 		});
 	}

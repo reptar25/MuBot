@@ -72,32 +72,34 @@ public class CommandReceiver {
 		// get the voice channel of the member who sent the message
 		Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 				.subscribe(channel -> {
-					Mono.just(channel.getId())
-							// dont join the channel if the bot is already connect to that channel
-							.filter(channelId -> !channelId.equals(Mono.just(event.getMessage())
-									.flatMap(Message::getGuild).flatMap(Guild::getVoiceConnection)
-									.flatMap(VoiceConnection::getChannelId).block()))
-							.subscribe(channelId -> {
-								// joining a new channel
-								// once we are connected put the scheduler in the map with the
-								// channelId as the key
-								TrackScheduler scheduler = new TrackScheduler(channelId);
-								channel.join(
-										spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
-										.subscribe(vc -> {
-											// subscribe to connected/disconnected events
-											vc.onConnectOrDisconnect().subscribe(newState -> {
-												if (newState.equals(State.CONNECTED)) {
-													LOGGER.info("Bot connected to channel");
-												} else if (newState.equals(State.DISCONNECTED)) {
-													// remove the scheduler from the map. This doesn't ever seem to
-													// happen when the bot disconnects, though, so also remove it from
-													// map during leave command
-													TrackScheduler.remove(channelId);
-													LOGGER.info("Bot disconnected to channel");
-												}
-											});
-										});
+					Mono.just(event).flatMap(MessageCreateEvent::getGuild).flatMap(Guild::getVoiceConnection)
+							.flatMap(VoiceConnection::getChannelId).subscribe(botChannelId -> {
+								Mono.just(channel.getId())
+										// dont join the channel if the bot is already connect to that channel
+										.filter(channelId -> !channelId.equals(botChannelId)).subscribe(channelId -> {
+											// joining a new channel
+											// once we are connected put the scheduler in the map with the
+											// channelId as the key
+											TrackScheduler scheduler = new TrackScheduler(channelId);
+											channel.join(spec -> spec
+													.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+													.subscribe(vc -> {
+														// subscribe to connected/disconnected events
+														vc.onConnectOrDisconnect().subscribe(newState -> {
+															if (newState.equals(State.CONNECTED)) {
+																LOGGER.info("Bot connected to channel");
+															} else if (newState.equals(State.DISCONNECTED)) {
+																// remove the scheduler from the map. This doesn't ever
+																// seem to
+																// happen when the bot disconnects, though, so also
+																// remove it from
+																// map during leave command
+																TrackScheduler.remove(channelId);
+																LOGGER.info("Bot disconnected to channel");
+															}
+														});
+													});
+										}, error -> LOGGER.error(error.getMessage()));
 							}, error -> LOGGER.error(error.getMessage()));
 				}, error -> LOGGER.error(error.getMessage()));
 		return null;
@@ -309,14 +311,14 @@ public class CommandReceiver {
 												.subscribe(member -> {
 													LOGGER.info(new StringBuilder("Muting ")
 															.append(member.getUsername()).toString());
-													member.edit(spec -> spec.setMute(true)).block();
+													member.edit(spec -> spec.setMute(true)).subscribe();
 												});
 									else
 										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
 												.subscribe(member -> {
 													LOGGER.info(new StringBuilder("Unmuting ")
 															.append(member.getUsername()).toString());
-													member.edit(spec -> spec.setMute(false)).block();
+													member.edit(spec -> spec.setMute(false)).subscribe();
 												});
 								});
 					});
