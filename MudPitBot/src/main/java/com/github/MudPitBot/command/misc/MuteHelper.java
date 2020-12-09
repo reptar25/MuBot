@@ -49,19 +49,9 @@ public class MuteHelper {
 			client.getEventDispatcher().on(VoiceStateUpdateEvent.class).subscribe(event -> {
 				if (event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent()) {
 					if (MuteHelper.mutedChannels.containsKey(event.getCurrent().getGuildId())) {
-//						Snowflake oldId = null;
-//						if (event.getOld().isPresent()) {
-//							oldId = event.getOld().get().getChannelId().orElse(null);
-//						}
-//						Snowflake newId = event.getCurrent().getChannelId().orElse(null);
-//
-//						ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(event.getCurrent().getGuildId());
-//						// if we are joining or leaving a muted channel
-//						if (channelIds.contains(newId) || channelIds.contains(oldId)) {
 						// Checks whether a member should be muted on joining a voice channel and mutes
 						// them if so
 						muteOnJoin(event);
-//						}
 					}
 				}
 			});

@@ -27,9 +27,9 @@ public final class Commands {
 	}
 
 	/**
-	 * Use Reflections library to scan class path for subclasses of Command and add
-	 * those to the Commands map. This way any new commands that are created that
-	 * extend Command automatically get added to the map without any extra work
+	 * Use Reflections library to scan class path for subclasses of {@link Command} and add
+	 * those to the commands map. This way any new commands that are created that
+	 * extend {@link Command} automatically get added to the map without any extra work
 	 */
 	private static void buildCommandMap() {
 		// scan urls that contain 'com.github.MudPitBot.botCommand.commandImpl', include
@@ -75,7 +75,7 @@ public final class Commands {
 	 * @return the entries of the command map
 	 */
 	public static final Set<Entry<String, Command>> getEntries() {
-		Set<Entry<String, Command>> entries = new HashSet<Entry<String, Command>>(COMMANDS.entrySet());
+		final Set<Entry<String, Command>> entries = new HashSet<Entry<String, Command>>(COMMANDS.entrySet());
 		return entries;
 	}
 

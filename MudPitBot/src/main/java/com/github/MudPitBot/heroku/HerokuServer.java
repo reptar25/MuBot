@@ -23,17 +23,12 @@ public class HerokuServer {
 	}
 
 	private HerokuServer(int port) throws IOException {
-//		try {
 		server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
 		server.createContext("/", new RootResponseHandler());
 		server.createContext("/invite", new InviteResponseHandler());
 		server.setExecutor(Executors.newCachedThreadPool());
 		server.start();
 		System.out.println("Server started on port " + port);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-
 	}
 
 }
@@ -46,9 +41,6 @@ class RootResponseHandler implements HttpHandler {
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-//		Headers h = exchange.getRequestHeaders();
-//		h.add("Content-Type", "text/html");
-
 		InputStream is = exchange.getRequestBody();
 		exchange.sendResponseHeaders(200, homeHtml.length());
 		OutputStream os = exchange.getResponseBody();
@@ -67,9 +59,6 @@ class InviteResponseHandler implements HttpHandler {
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-//			Headers h = exchange.getRequestHeaders();
-//			h.add("Content-Type", "text/html");
-
 		InputStream is = exchange.getRequestBody();
 		exchange.sendResponseHeaders(200, inviteHtml.length());
 		OutputStream os = exchange.getResponseBody();
