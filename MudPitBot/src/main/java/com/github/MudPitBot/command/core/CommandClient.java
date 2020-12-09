@@ -2,16 +2,12 @@ package com.github.MudPitBot.command.core;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
-
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
-import reactor.core.publisher.Mono;
-import reactor.function.TupleUtils;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -60,7 +56,7 @@ public class CommandClient {
 						// 3.1 Message.getContent() is a String
 						final String content = event.getMessage().getContent();
 						// process new message to check for commands
-						Mono.just(processMessage(event, content)).subscribe();
+						processMessage(event, content);
 					});
 
 		}
@@ -72,10 +68,10 @@ public class CommandClient {
 	 * @param event   event of the message
 	 * @param content content of the message
 	 */
-	public Mono<Void> processMessage(MessageCreateEvent event, String content) {
+	public void processMessage(MessageCreateEvent event, String content) {
 		// ignore any messages sent from a bot
 		if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
-			return Mono.empty();
+			return;
 		}
 		// split content at ! to allow for compound commands (more
 		// than 1 command in 1 message)
@@ -96,7 +92,6 @@ public class CommandClient {
 				}
 			}
 		}
-		return Mono.empty();
 	}
 
 	private void processCommand(MessageCreateEvent event, Command command, String[] params) {

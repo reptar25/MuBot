@@ -2,7 +2,6 @@ package com.github.MudPitBot.command;
 
 import java.util.Optional;
 
-import com.github.MudPitBot.command.core.CommandReceiver;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
@@ -16,11 +15,9 @@ import discord4j.core.object.entity.Member;
 
 public abstract class Command implements CommandInterface {
 
-	protected CommandReceiver receiver;
 	protected String commandTrigger;
 
-	public Command(CommandReceiver receiver, String commandTrigger) {
-		this.receiver = receiver;
+	public Command(String commandTrigger) {
 		this.commandTrigger = commandTrigger;
 	}
 

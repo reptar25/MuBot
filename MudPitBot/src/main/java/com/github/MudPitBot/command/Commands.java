@@ -9,8 +9,6 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import com.github.MudPitBot.command.core.CommandReceiver;
-
 import java.lang.reflect.*;
 
 public final class Commands {
@@ -20,16 +18,16 @@ public final class Commands {
 	// Immutable structure that maps string commands to the concrete implementation
 	// of that command.
 	private static final HashMap<String, Command> COMMANDS = new HashMap<>();
-	private static final CommandReceiver RECEIVER = CommandReceiver.getInstance();
 
 	static {
 		buildCommandMap();
 	}
 
 	/**
-	 * Use Reflections library to scan class path for subclasses of {@link Command} and add
-	 * those to the commands map. This way any new commands that are created that
-	 * extend {@link Command} automatically get added to the map without any extra work
+	 * Use Reflections library to scan class path for subclasses of {@link Command}
+	 * and add those to the commands map. This way any new commands that are created
+	 * that extend {@link Command} automatically get added to the map without any
+	 * extra work
 	 */
 	private static void buildCommandMap() {
 		// scan urls that contain 'com.github.MudPitBot.botCommand.commandImpl', include
@@ -45,8 +43,8 @@ public final class Commands {
 			try {
 
 				Class<?> clazz = Class.forName(c.getName());
-				Constructor<?> constructor = clazz.getConstructor(CommandReceiver.class);
-				Command instance = (Command) constructor.newInstance(RECEIVER);
+				Constructor<?> constructor = clazz.getConstructor();
+				Command instance = (Command) constructor.newInstance();
 				COMMANDS.put(instance.getCommandTrigger().toLowerCase(), instance);
 
 			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
