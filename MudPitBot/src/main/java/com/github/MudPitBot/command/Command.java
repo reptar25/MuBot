@@ -1,13 +1,14 @@
 package com.github.MudPitBot.command;
 
-import java.util.Optional;
-
 import com.github.MudPitBot.sound.TrackScheduler;
 
-import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.Logger;
+import reactor.util.Loggers;
 
 /**
  * Implementation of the Command design pattern.
@@ -15,6 +16,7 @@ import discord4j.core.object.entity.Member;
 
 public abstract class Command implements CommandInterface {
 
+	private static final Logger LOGGER = Loggers.getLogger(Command.class);
 	protected String commandTrigger;
 
 	public Command(String commandTrigger) {
@@ -39,36 +41,15 @@ public abstract class Command implements CommandInterface {
 	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
 	 *         bot in the guild the message was sent from.
 	 */
-	private final static int MAX_RETRIES = 15;
-
-	// retries allow commands to still work while bot is joining channel and setting
-	// up scheduler eg "!join !play"
-	protected static TrackScheduler getScheduler(MessageCreateEvent event) {
-		int retries = 0;
-		TrackScheduler scheduler = null;
+	protected static Mono<TrackScheduler> getScheduler(MessageCreateEvent event) {
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
-		if (event.getGuildId().isPresent()) {
-			while (scheduler == null && retries <= MAX_RETRIES) {
-				Snowflake guildId = event.getGuildId().get();
-				Optional<Snowflake> channelIdSnowflakeOpt = event.getClient().getSelf()
-						.flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
-						.map(VoiceState::getChannelId).filter(id -> id.isPresent()).block();
-
-				if (channelIdSnowflakeOpt == null)
-					return null;
-
-				scheduler = TrackScheduler.getScheduler(channelIdSnowflakeOpt.get());
-
-				if (scheduler == null) {
-					try {
-						Thread.sleep(100);
-						retries++;
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		return scheduler;
+		return Mono.justOrEmpty(event.getGuildId()).flatMap(guildId -> {
+			return event.getClient().getSelf().flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
+					.map(VoiceState::getChannelId).flatMap(s -> Mono.justOrEmpty(s.get())).flatMap(channelId -> {
+						Mono<TrackScheduler> scheduler = Mono.justOrEmpty(TrackScheduler.getScheduler(channelId))
+								.repeatWhenEmpty(Integer.MAX_VALUE, Flux::repeat);
+						return scheduler;
+					});
+		});
 	}
 }

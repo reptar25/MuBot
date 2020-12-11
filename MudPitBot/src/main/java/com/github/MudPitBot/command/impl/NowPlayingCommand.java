@@ -6,6 +6,7 @@ import com.github.MudPitBot.sound.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class NowPlayingCommand extends Command {
 
@@ -14,8 +15,10 @@ public class NowPlayingCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return nowPlaying(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return nowPlaying(scheduler);
+		});
 	}
 
 	/**
@@ -24,20 +27,20 @@ public class NowPlayingCommand extends Command {
 	 * @param event The message event
 	 * @return Info of song currently playing
 	 */
-	public CommandResponse nowPlaying(TrackScheduler scheduler) {
+	public Mono<CommandResponse> nowPlaying(TrackScheduler scheduler) {
 		if (scheduler != null) {
-			StringBuilder sb = new StringBuilder("Now playing: ");
 			// get the track that's currently playing
 			AudioTrack track = scheduler.getNowPlaying();
 			if (track != null) {
+				StringBuilder sb = new StringBuilder("Now playing: ");
 				// add track title and author
 				sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
 						.append(track.getInfo().author);
+				return Mono.just(new CommandResponse(sb.toString()));
 			}
-
-			return new CommandResponse(sb.toString());
+			return Mono.just(new CommandResponse("No track is currently playing"));
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

@@ -5,20 +5,23 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 public class StopCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
-	
+
 	public StopCommand() {
 		super("stop");
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return stop(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return stop(scheduler);
+		});
 	}
 
 	/**
@@ -27,15 +30,15 @@ public class StopCommand extends Command {
 	 * @param event The message event
 	 * @return "Player stopped" if successful, null if not
 	 */
-	public CommandResponse stop(TrackScheduler scheduler) {
+	public Mono<CommandResponse> stop(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.getPlayer().stopTrack();
 			scheduler.clearQueue();
 			LOGGER.info("Stopped music");
-			return new CommandResponse("Player stopped");
+			return Mono.just(new CommandResponse("Player stopped"));
 		}
 
-		return null;
+		return Mono.empty();
 	}
 
 }

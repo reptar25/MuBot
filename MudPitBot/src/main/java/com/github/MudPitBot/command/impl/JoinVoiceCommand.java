@@ -1,5 +1,7 @@
 package com.github.MudPitBot.command.impl;
 
+import java.time.Duration;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
@@ -25,7 +27,7 @@ public class JoinVoiceCommand extends Command {
 	};
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return join(event);
 	}
 
@@ -35,13 +37,25 @@ public class JoinVoiceCommand extends Command {
 	 * @param event The message event
 	 * @return null
 	 */
-	public CommandResponse join(MessageCreateEvent event) {
-		Mono.just(event).flatMap(MessageCreateEvent::getGuild).flatMap(Guild::getVoiceConnection)
+	public Mono<CommandResponse> join(MessageCreateEvent event) {
+		return Mono.just(event).flatMap(MessageCreateEvent::getGuild).flatMap(Guild::getVoiceConnection)
 				.flatMap(VoiceConnection::getChannelId).defaultIfEmpty(Snowflake.of(-1)).flatMap(botChannelId -> {
 					// get the voice channel of the member who sent the message
 					return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
 							.flatMap(VoiceState::getChannel).flatMap(channel -> {
-								return Mono.just(channel.getId())
+								Mono<Void> dcMono = Mono.empty();
+								// if the bot is in a channel and its not the channel we are already in
+								if (botChannelId.asLong() != -1 && !botChannelId.equals(channel.getId())) {
+									dcMono = event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(vc -> {
+										// if we are already in a voice channel, disconnect first before joining
+										// a new channel
+										// Discord will sometimes disconnect on joining when switching channels if we do
+										// not do this
+										TrackScheduler.remove(channel.getId());
+										return vc.disconnect().then();
+									});
+								}
+								return dcMono.then(Mono.just(channel.getId())
 										// dont join the channel if the bot is already connect to that channel
 										.filter(channelId -> !channelId.equals(botChannelId)).flatMap(channelId -> {
 											// joining a new channel
@@ -66,11 +80,12 @@ public class JoinVoiceCommand extends Command {
 																LOGGER.info("Bot disconnected to channel");
 															}
 														});
-													});
-										});
+													}).delaySubscription(Duration.ofMillis(1)); // delay to allow
+																								// disconnect first if
+																								// already connected
+										}));
 							});
-				}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
-		return null;
+				}).then(Mono.empty());
 	}
 
 }

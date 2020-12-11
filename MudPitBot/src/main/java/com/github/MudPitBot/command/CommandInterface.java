@@ -1,12 +1,13 @@
 package com.github.MudPitBot.command;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 /**
  * Interface for Command
  */
 public interface CommandInterface {
 
-	public CommandResponse execute(MessageCreateEvent event, String[] params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params);
 	
 }

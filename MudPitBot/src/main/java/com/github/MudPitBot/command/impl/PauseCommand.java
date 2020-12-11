@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class PauseCommand extends Command {
 
@@ -13,8 +14,10 @@ public class PauseCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return pause(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return pause(scheduler);
+		});
 	}
 
 	/**
@@ -23,10 +26,10 @@ public class PauseCommand extends Command {
 	 * @param event The message event
 	 * @return null
 	 */
-	public CommandResponse pause(TrackScheduler scheduler) {
+	public Mono<CommandResponse> pause(TrackScheduler scheduler) {
 		if (scheduler != null)
 			scheduler.pause(!scheduler.isPaused());
 
-		return null;
+		return Mono.empty();
 	}
 }

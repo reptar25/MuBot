@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class SkipCommand extends Command {
 
@@ -13,8 +14,10 @@ public class SkipCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return skip(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return skip(scheduler);
+		});
 	}
 
 	/**
@@ -23,12 +26,12 @@ public class SkipCommand extends Command {
 	 * @param event The message event
 	 * @return The message event
 	 */
-	public CommandResponse skip(TrackScheduler scheduler) {
+	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.nextTrack();
 		}
 
-		return null;
+		return Mono.empty();
 	}
 
 }

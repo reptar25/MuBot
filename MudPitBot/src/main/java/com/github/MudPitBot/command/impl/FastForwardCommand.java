@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class FastForwardCommand extends Command {
 
@@ -13,16 +14,19 @@ public class FastForwardCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return fastForward(getScheduler(event), params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return fastForward(scheduler, params);
+		});
+
 	}
-	
+
 	/**
 	 * @param event  The message event
 	 * @param params The amount of time in seconds to fast forward
 	 * @return null
 	 */
-	public CommandResponse fastForward(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> fastForward(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			if (params.length > 0) {
 				try {
@@ -33,7 +37,7 @@ public class FastForwardCommand extends Command {
 				}
 			}
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

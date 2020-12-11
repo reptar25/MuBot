@@ -6,20 +6,23 @@ import com.github.MudPitBot.sound.PlayerManager;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 public class PlayCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(PlayCommand.class);
-	
+
 	public PlayCommand() {
 		super("play");
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return play(getScheduler(event), params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return play(scheduler, params);
+		});
 	}
 
 	/**
@@ -29,25 +32,26 @@ public class PlayCommand extends Command {
 	 * @param params The link of the audio
 	 * @return null
 	 */
-	public CommandResponse play(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> play(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			// unpause
 			if ((params.length == 0 || params[0].isEmpty())) {
 				scheduler.pause(!scheduler.isPaused());
-				return null;
+				return Mono.empty();
 			}
 
 			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
 				// LOGGER.error("Too many or few params for play");
-				return null;
+				return Mono.empty();
 			}
 			PlayerManager.loadItem(params[0], scheduler);
 			if (!scheduler.getQueue().isEmpty()) {
-				return new CommandResponse("New track added to the queue (#" + scheduler.getQueue().size() + ")");
+				return Mono.just(
+						new CommandResponse("New track added to the queue (#" + scheduler.getQueue().size() + ")"));
 			}
 			LOGGER.info("Loaded music item: " + params[0]);
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

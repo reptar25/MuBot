@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class SeekCommand extends Command {
 
@@ -13,8 +14,10 @@ public class SeekCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return seek(getScheduler(event), params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return seek(scheduler, params);
+		});
 	}
 
 	/**
@@ -22,7 +25,7 @@ public class SeekCommand extends Command {
 	 * @param params The position to move the current song to in seconds
 	 * @return null
 	 */
-	public CommandResponse seek(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> seek(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			if (params.length > 0) {
 				try {
@@ -33,7 +36,7 @@ public class SeekCommand extends Command {
 				}
 			}
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class ClearCommand extends Command {
 
@@ -13,8 +14,13 @@ public class ClearCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return clearQueue(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return clearQueue(scheduler);
+		});
+		// getScheduler(event).flatMap(scheduler -> return
+		// Mono.just(clearQueue(scheduler));
+		//return clearQueue(getScheduler(event));
 	}
 
 	/**
@@ -23,10 +29,10 @@ public class ClearCommand extends Command {
 	 * @param event The message event
 	 * @return "Queue cleared" if successful, null if not
 	 */
-	public CommandResponse clearQueue(TrackScheduler scheduler) {
+	public Mono<CommandResponse> clearQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.clearQueue();
-			return new CommandResponse("Queue cleared");
+			return Mono.just(new CommandResponse("Queue cleared"));
 		}
 
 		return null;

@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
+import reactor.core.publisher.Mono;
 
 public class ViewQueueCommand extends Command {
 
@@ -17,8 +18,10 @@ public class ViewQueueCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return viewQueue(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return viewQueue(scheduler);
+		});
 	}
 
 	/**
@@ -27,7 +30,7 @@ public class ViewQueueCommand extends Command {
 	 * @param event The message event
 	 * @return List of songs in the queue, or "The queue is empty" if empty
 	 */
-	public CommandResponse viewQueue(TrackScheduler scheduler) {
+	public Mono<CommandResponse> viewQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			// get list of songs currently in the queue
 			List<AudioTrack> queue = scheduler.getQueue();
@@ -52,8 +55,8 @@ public class ViewQueueCommand extends Command {
 			if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
 				retString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
 
-			return new CommandResponse(retString);
+			return Mono.just(new CommandResponse(retString));
 		}
-		return null;
+		return Mono.empty();
 	}
 }

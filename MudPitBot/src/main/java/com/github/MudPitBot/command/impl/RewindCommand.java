@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class RewindCommand extends Command {
 
@@ -13,8 +14,10 @@ public class RewindCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return rewind(getScheduler(event), params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return rewind(scheduler, params);
+		});
 	}
 
 	/**
@@ -22,7 +25,7 @@ public class RewindCommand extends Command {
 	 * @param params The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public CommandResponse rewind(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> rewind(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			if (params.length > 0) {
 				try {
@@ -33,7 +36,7 @@ public class RewindCommand extends Command {
 				}
 			}
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

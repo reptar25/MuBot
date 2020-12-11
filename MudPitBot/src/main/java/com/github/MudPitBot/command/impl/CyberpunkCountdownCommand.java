@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class CyberpunkCountdownCommand extends Command {
 
@@ -18,7 +19,7 @@ public class CyberpunkCountdownCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return cyberpunk();
 	}
 
@@ -28,7 +29,7 @@ public class CyberpunkCountdownCommand extends Command {
 	 * @return the time left in days, hours, minutes, seconds left until Cyberpunk
 	 *         releases or that it's already out if its past.
 	 */
-	public CommandResponse cyberpunk() {
+	public Mono<CommandResponse> cyberpunk() {
 
 		// gets current time in EST
 		LocalDateTime now = ZonedDateTime.now(ZoneId.of("America/New_York")).toLocalDateTime();
@@ -44,12 +45,12 @@ public class CyberpunkCountdownCommand extends Command {
 		long seconds = duration.toSecondsPart();
 
 		if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0)
-			return new CommandResponse("Cyberpunk is out dumbass, the wait is over!");
+			return Mono.just(new CommandResponse("Cyberpunk is out dumbass, the wait is over!"));
 
 		StringBuilder sb = new StringBuilder("Cyberpunk will release in: ").append(days).append(" days ").append(hours)
 				.append(" hours ").append(minutes).append(" minutes ").append(seconds).append(" seconds");
 
-		return new CommandResponse(sb.toString());
+		return Mono.just(new CommandResponse(sb.toString()));
 	}
 
 }

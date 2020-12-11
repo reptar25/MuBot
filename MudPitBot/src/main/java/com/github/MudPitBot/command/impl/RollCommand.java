@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class RollCommand extends Command {
 
@@ -16,7 +17,7 @@ public class RollCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return roll(params);
 	}
 
@@ -26,7 +27,7 @@ public class RollCommand extends Command {
 	 * @param params The number and type of dice to roll, eg "1d20"
 	 * @return The results of the dice roll
 	 */
-	public CommandResponse roll(String[] params) {
+	public Mono<CommandResponse> roll(String[] params) {
 
 		if (params == null || params.length <= 0) {
 			return null;
@@ -52,10 +53,10 @@ public class RollCommand extends Command {
 			}
 
 			sb.append("Rolled a " + diceSum + "\n");
-			return new CommandResponse(sb.toString());
+			return Mono.just(new CommandResponse(sb.toString()));
 		}
 
-		return null;
+		return Mono.empty();
 	}
 
 }

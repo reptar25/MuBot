@@ -7,6 +7,7 @@ import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class CommandsCommand extends Command {
 
@@ -15,7 +16,7 @@ public class CommandsCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return printCommands();
 	}
 
@@ -24,13 +25,13 @@ public class CommandsCommand extends Command {
 	 * 
 	 * @return List of available commands
 	 */
-	public CommandResponse printCommands() {
+	public Mono<CommandResponse> printCommands() {
 		StringBuilder sb = new StringBuilder("Available commands:");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
 		for (Entry<String, Command> entry : entries) {
 			sb.append(", ").append(Commands.COMMAND_PREFIX).append(entry.getKey());
 		}
-		return new CommandResponse((sb.toString().replaceAll(":,", ":")));
+		return Mono.just(new CommandResponse((sb.toString().replaceAll(":,", ":"))));
 	}
 
 }

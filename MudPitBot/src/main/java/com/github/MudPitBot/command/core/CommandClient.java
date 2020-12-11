@@ -1,5 +1,6 @@
 package com.github.MudPitBot.command.core;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import com.github.MudPitBot.command.Command;
@@ -8,6 +9,7 @@ import com.github.MudPitBot.command.Commands;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
+import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -73,6 +75,7 @@ public class CommandClient {
 		if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
 			return;
 		}
+		Mono<Void> mono = Mono.empty();
 		// split content at ! to allow for compound commands (more
 		// than 1 command in 1 message)
 		// this regex splits at !, but doesn't remove it from the resulting string
@@ -86,35 +89,41 @@ public class CommandClient {
 				if (splitCommand[0].toLowerCase().startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
 					// matching command found, so process and execute that command
 					// copy removes the command itself from the parameters
-					processCommand(event, entry.getValue(), Arrays.copyOfRange(splitCommand, 1, splitCommand.length));
+					LOGGER.info("Processing command " + splitCommand[0]);
+					mono = mono.then(processCommand(event, entry.getValue(),
+							Arrays.copyOfRange(splitCommand, 1, splitCommand.length)));
+
 					// we found a matching command so stop the loop
 					break;
 				}
 			}
 		}
+
+		mono.subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 	}
 
-	private void processCommand(MessageCreateEvent event, Command command, String[] params) {
+	private Mono<Void> processCommand(MessageCreateEvent event, Command command, String[] params) {
 
 		// commands will return any string that the bot should send back as a message to
 		// the command
-		CommandResponse response = executor.executeCommand(event, command, params);
-
-		// if there is a message to send back send it to the channel the original
-		// message was sent from
-		if (response != null) {
-			event.getMessage().getChannel().subscribe(channel -> {
+		// CommandResponse response = executor.executeCommand(command, event, params);
+		return executor.executeCommand(command, event, params).flatMap(response -> {
+			return event.getMessage().getChannel().flatMap(channel -> {
 				if (response.getSpec() != null) {
-					channel.createMessage(response.getSpec()).subscribe(message -> {
+					return channel.createMessage(response.getSpec()).flatMap(message -> {
 						// if the response contained a poll
 						if (response.getPoll() != null) {
 							// add reactions as vote tickers, number of reactions depends on number of
 							// answers
 							response.getPoll().addReactions(message);
 						}
+						return Mono.empty();
 					});
 				}
+				return Mono.empty();
 			});
-		}
+		}).then();
+		// if there is a message to send back send it to the channel the original
+		// message was sent from
 	}
 }

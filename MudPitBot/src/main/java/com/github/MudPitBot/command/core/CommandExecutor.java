@@ -4,6 +4,7 @@ import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 /**
  * Invoker class for command pattern. An invoker is an object that knows how to
@@ -13,7 +14,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
  */
 public class CommandExecutor {
 
-	public CommandResponse executeCommand(MessageCreateEvent event, Command command, String[] params) {
+	public Mono<CommandResponse> executeCommand(Command command, MessageCreateEvent event, String[] params) {
 		return command.execute(event, params);
 	}
 

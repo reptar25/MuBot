@@ -3,6 +3,7 @@ package com.github.MudPitBot.command.impl;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class EchoCommand extends Command {
 
@@ -11,7 +12,7 @@ public class EchoCommand extends Command {
 	};
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return echo();
 	}
 
@@ -20,8 +21,8 @@ public class EchoCommand extends Command {
 	 * 
 	 * @return "echo!"
 	 */
-	public CommandResponse echo() {
-		return new CommandResponse("echo!");
+	public Mono<CommandResponse> echo() {
+		return Mono.just(new CommandResponse("echo!"));
 	}
 
 }

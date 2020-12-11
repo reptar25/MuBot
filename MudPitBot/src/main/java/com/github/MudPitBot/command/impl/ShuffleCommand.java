@@ -5,6 +5,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class ShuffleCommand extends Command {
 
@@ -13,8 +14,10 @@ public class ShuffleCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return shuffleQueue(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return shuffleQueue(scheduler);
+		});
 	}
 
 	/**
@@ -23,11 +26,11 @@ public class ShuffleCommand extends Command {
 	 * @param event The message event
 	 * @return null
 	 */
-	public CommandResponse shuffleQueue(TrackScheduler scheduler) {
+	public Mono<CommandResponse> shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.shuffleQueue();
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

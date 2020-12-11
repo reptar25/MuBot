@@ -55,9 +55,9 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 	// Queue of songs for this scheduler
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
-
 	private final AudioPlayer player;
-	public static final int DEFAULT_VOLUME = 10;
+	private Snowflake channelId;
+	public static final int DEFAULT_VOLUME = 15;
 
 	/**
 	 * Creates a track scheduler for the given channel
@@ -67,7 +67,8 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	public TrackScheduler(Snowflake channelId) {
 		this.player = PlayerManager.createPlayer();
 		this.player.setVolume(DEFAULT_VOLUME);
-		// add this as a listener so we can listen for tracks ending
+		this.channelId = channelId;
+		// add this as a listener so we can listen for tracks loading/ending
 		player.addListener(this);
 		schedulerMap.put(channelId, this);
 	}
@@ -259,6 +260,11 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 */
 	public AudioPlayer getPlayer() {
 		return player;
+	}
+
+	@Override
+	public String toString() {
+		return "Scheduler channel id: " + this.channelId.asLong();
 	}
 
 }

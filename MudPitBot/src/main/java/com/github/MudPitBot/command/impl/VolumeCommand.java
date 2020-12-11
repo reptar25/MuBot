@@ -7,6 +7,7 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import reactor.core.publisher.Mono;
 
 public class VolumeCommand extends Command {
 
@@ -15,10 +16,12 @@ public class VolumeCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
-		return volume(getScheduler(event), params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+		return getScheduler(event).flatMap(scheduler -> {
+			return volume(scheduler, params);
+		});
 	}
-	
+
 	/**
 	 * Sets the volume of the
 	 * {@link com.sedmelluq.discord.lavaplayer.player.AudioPlayer}
@@ -27,16 +30,16 @@ public class VolumeCommand extends Command {
 	 * @param params The new volume setting
 	 * @return Responds with new volume setting
 	 */
-	public CommandResponse volume(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> volume(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 
 			StringBuilder sb = new StringBuilder();
 			if (params.length == 0) {
-				return new CommandResponse(
-						sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
+				return Mono.just(new CommandResponse(
+						sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString()));
 			} else if (params[0].equalsIgnoreCase("reset")) {
 				scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
-				return new CommandResponse(sb.append("Volume reset to default").toString());
+				return Mono.just(new CommandResponse(sb.append("Volume reset to default").toString()));
 			}
 
 			if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
@@ -44,11 +47,11 @@ public class VolumeCommand extends Command {
 				sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
 						.append(volume);
 				scheduler.getPlayer().setVolume(volume);
-				return new CommandResponse(sb.toString());
+				return Mono.just(new CommandResponse(sb.toString()));
 
 			}
 		}
-		return null;
+		return Mono.empty();
 	}
 
 }

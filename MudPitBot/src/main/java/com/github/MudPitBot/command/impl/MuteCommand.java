@@ -25,7 +25,7 @@ public class MuteCommand extends Command {
 	}
 
 	@Override
-	public CommandResponse execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return mute(event);
 	}
 
@@ -36,7 +36,7 @@ public class MuteCommand extends Command {
 	 * @return null
 	 */
 
-	public CommandResponse mute(MessageCreateEvent event) {
+	public Mono<CommandResponse> mute(MessageCreateEvent event) {
 		/*
 		 * gets the member's channel who sent the message, and then all the VoiceStates
 		 * connected to that channel. From there we can get the Member of the VoiceState
@@ -45,8 +45,8 @@ public class MuteCommand extends Command {
 			return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 					.map(VoiceChannel::getVoiceStates).flatMap(users -> {
 						// gets the channel id of the member if present
-						return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
-								.filter(id -> id.isPresent()).flatMap(idOpt -> {
+						return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
+								.map(VoiceState::getChannelId).filter(id -> id.isPresent()).flatMap(idOpt -> {
 									boolean mute = true;
 									Snowflake id = idOpt.get();
 									ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(guildId);
@@ -84,7 +84,7 @@ public class MuteCommand extends Command {
 					});
 		}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 
-		return null;
+		return Mono.empty();
 	}
 
 }
