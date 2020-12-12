@@ -41,7 +41,7 @@ public class MuteCommand extends Command {
 		 * gets the member's channel who sent the message, and then all the VoiceStates
 		 * connected to that channel. From there we can get the Member of the VoiceState
 		 */
-		Mono.justOrEmpty(event.getMember()).map(Member::getGuildId).flatMap(guildId -> {
+		return Mono.justOrEmpty(event.getMember()).map(Member::getGuildId).flatMap(guildId -> {
 			return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 					.map(VoiceChannel::getVoiceStates).flatMap(users -> {
 						// gets the channel id of the member if present
@@ -67,24 +67,23 @@ public class MuteCommand extends Command {
 
 									if (mute)
 										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
-												.subscribe(member -> {
+												.flatMap(member -> {
 													LOGGER.info(new StringBuilder("Muting ")
 															.append(member.getUsername()).toString());
-													member.edit(spec -> spec.setMute(true)).subscribe();
-												});
+													return member.edit(spec -> spec.setMute(true));
+												}).subscribe();
 									else
 										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
-												.subscribe(member -> {
+												.flatMap(member -> {
 													LOGGER.info(new StringBuilder("Unmuting ")
 															.append(member.getUsername()).toString());
-													member.edit(spec -> spec.setMute(false)).subscribe();
-												});
+													return member.edit(spec -> spec.setMute(false));
+												}).subscribe();
+
 									return Mono.empty();
 								});
 					});
-		}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
-
-		return Mono.empty();
+		});
 	}
 
 }

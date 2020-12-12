@@ -51,7 +51,7 @@ public class MuteHelper {
 					if (MuteHelper.mutedChannels.containsKey(event.getCurrent().getGuildId())) {
 						// Checks whether a member should be muted on joining a voice channel and mutes
 						// them if so
-						muteOnJoin(event);
+						muteOnJoin(event).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 					}
 				}
 			});
@@ -64,9 +64,10 @@ public class MuteHelper {
 	 * and mutes the member if it is
 	 * 
 	 * @param event event of the channel change
+	 * @return
 	 */
-	private void muteOnJoin(VoiceStateUpdateEvent event) {
-		Mono.justOrEmpty(event.getCurrent()).map(VoiceState::getChannelId)
+	private Mono<Object> muteOnJoin(VoiceStateUpdateEvent event) {
+		return Mono.justOrEmpty(event.getCurrent()).map(VoiceState::getChannelId)
 				.filter(currentChannelId -> currentChannelId.isPresent()).flatMap(currentChannelId -> {
 					// join/switch channels
 					return Mono.just(event.getCurrent()).flatMap(VoiceState::getMember)
@@ -76,9 +77,9 @@ public class MuteHelper {
 									if (MuteHelper.mutedChannels.get(event.getCurrent().getGuildId())
 											.contains(currentChannelId.get())) {
 										// mute the member that just joined
-										muteUser(event);
+										return muteUser(event);
 									} else {
-										unmuteUser(event);
+										return unmuteUser(event);
 									}
 								}
 								// if user joined another channel, make sure they arent muted still
@@ -89,12 +90,10 @@ public class MuteHelper {
 									// check if it's a non-muted channel when they join and unmute them then. This
 									// has the side effect of users staying muted if they are muted by the bot and
 									// leave, but rejoin a voice channel when the bot is not running
-									unmuteUser(event);
+									return unmuteUser(event);
 								}
-
-								return Mono.empty();
 							});
-				}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+				});
 
 	}
 
@@ -102,36 +101,36 @@ public class MuteHelper {
 	 * Mutes the user of the given VoiceStateUpdateEvent
 	 * 
 	 * @param event the VoiceStateUpdateEvent of the user
+	 * @return
 	 */
-	private void muteUser(VoiceStateUpdateEvent event) {
-		Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).flatMap(member -> {
-			member.edit(spec -> spec.setMute(true)).subscribe(null, error -> LOGGER.error(error.getMessage()));
+	private Mono<Member> muteUser(VoiceStateUpdateEvent event) {
+		return Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).flatMap(member -> {
 			LOGGER.info("Muting " + member.getUsername());
-			return Mono.empty();
-		}).subscribe(null, error -> LOGGER.error(error.getMessage()));
+			return member.edit(spec -> spec.setMute(true));
+		});
 	}
 
 	/**
 	 * Unmutes the user of the given VoiceStateUpdateEvent
 	 * 
 	 * @param event the VoiceStateUpdateEvent of the user
+	 * @return
 	 */
-	private void unmuteUser(VoiceStateUpdateEvent event) {
-		Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).flatMap(member -> {
+	private Mono<Member> unmuteUser(VoiceStateUpdateEvent event) {
+		return Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).flatMap(member -> {
 			return Mono.just(event.getCurrent()).flatMap(VoiceState::getGuild).flatMap(guild -> {
 				return Mono.just(member).flatMap(Member::getVoiceState).flatMap(vs -> {
 					if (vs.isMuted()) {
 						if (!vs.getChannelId().orElse(null).equals(guild.getAfkChannelId().orElse(null))) {
-							member.edit(spec -> spec.setMute(false)).subscribe(null,
-									error -> LOGGER.error(error.getMessage()));
 							LOGGER.info("Unmuting " + member.getUsername());
+							return member.edit(spec -> spec.setMute(false));
 						}
 					}
 
 					return Mono.empty();
 				});
 			});
-		}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+		});
 	}
 
 }
