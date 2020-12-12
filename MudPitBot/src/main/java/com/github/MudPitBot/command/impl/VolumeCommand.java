@@ -48,8 +48,8 @@ public class VolumeCommand extends Command {
 						.append(volume);
 				scheduler.getPlayer().setVolume(volume);
 				return Mono.just(new CommandResponse(sb.toString()));
-
-			}
+			} else
+				return Mono.just(new CommandResponse("Invalid volume amount"));
 		}
 		return Mono.empty();
 	}
