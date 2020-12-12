@@ -51,7 +51,7 @@ public class JoinVoiceCommand extends Command {
 										// a new channel
 										// Discord will sometimes disconnect on joining when switching channels if we do
 										// not do this
-										TrackScheduler.remove(channel.getId());
+										TrackScheduler.remove(channel.getId().asLong());
 										return vc.disconnect().then();
 									});
 								}
@@ -61,7 +61,7 @@ public class JoinVoiceCommand extends Command {
 											// joining a new channel
 											// once we are connected put the scheduler in the map with the
 											// channelId as the key
-											TrackScheduler scheduler = new TrackScheduler(channelId);
+											TrackScheduler scheduler = new TrackScheduler(channelId.asLong());
 											return channel
 													.join(spec -> spec.setProvider(
 															new LavaPlayerAudioProvider(scheduler.getPlayer())))
@@ -71,12 +71,11 @@ public class JoinVoiceCommand extends Command {
 															if (newState.equals(State.CONNECTED)) {
 																LOGGER.info("Bot connected to channel");
 															} else if (newState.equals(State.DISCONNECTED)) {
-																// remove the scheduler from the map. This doesn't ever
-																// seem to
-																// happen when the bot disconnects, though, so also
-																// remove it from
-																// map during leave command
-																TrackScheduler.remove(channelId);
+																// remove the scheduler from the map.
+																// This doesn't ever seem to happen when the bot
+																// disconnects, though, so also remove it from map
+																// during leave command
+																TrackScheduler.remove(channelId.asLong());
 																LOGGER.info("Bot disconnected to channel");
 															}
 														});

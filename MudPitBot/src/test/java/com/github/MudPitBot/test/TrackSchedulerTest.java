@@ -29,7 +29,7 @@ public class TrackSchedulerTest {
 
 	@Mock
 	AudioPlaylist mockPlaylist = mock(AudioPlaylist.class);
-	
+
 	@Mock
 	Snowflake mockSnowflake = mock(Snowflake.class);
 
@@ -38,7 +38,7 @@ public class TrackSchedulerTest {
 	@BeforeEach
 	void createTrackScheduler() {
 		// when(mockPlayerManager.getPlayer()).thenReturn(mockPlayer);
-		scheduler = new TrackScheduler(mockSnowflake);
+		scheduler = new TrackScheduler(mockSnowflake.asLong());
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class TrackSchedulerTest {
 	void testPause() {
 		scheduler.pause(true);
 		assertTrue(scheduler.isPaused());
-		
+
 		scheduler.pause(false);
 		assertFalse(scheduler.isPaused());
 	}

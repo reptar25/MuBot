@@ -7,8 +7,6 @@ import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
 /**
  * Implementation of the Command design pattern.
@@ -16,7 +14,6 @@ import reactor.util.Loggers;
 
 public abstract class Command implements CommandInterface {
 
-	private static final Logger LOGGER = Loggers.getLogger(Command.class);
 	protected String commandTrigger;
 
 	public Command(String commandTrigger) {
@@ -47,11 +44,12 @@ public abstract class Command implements CommandInterface {
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
 		return Mono.justOrEmpty(event.getGuildId()).flatMap(guildId -> {
 			return event.getClient().getMemberById(guildId, event.getClient().getSelfId())
-					.flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
-					.flatMap(s -> Mono.justOrEmpty(s.get())).flatMap(channelId -> {
-						Mono<TrackScheduler> scheduler = Mono.justOrEmpty(TrackScheduler.getScheduler(channelId))
+					.flatMap(Member::getVoiceState).flatMap(s -> Mono.justOrEmpty(s.getChannelId()))
+					.flatMap(channelId -> {
+						// repeat until we find the scheduler
+						// allows things like !join !play to work
+						return Mono.justOrEmpty(TrackScheduler.getScheduler(channelId.asLong()))
 								.repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat);
-						return scheduler;
 					});
 		});
 	}

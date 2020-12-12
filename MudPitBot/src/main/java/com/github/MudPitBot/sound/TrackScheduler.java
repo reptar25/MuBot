@@ -29,7 +29,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * Maps a new TrackScheduler for each new voice channel joined. Key is channel
 	 * id snowflake
 	 */
-	private static HashMap<Snowflake, TrackScheduler> schedulerMap = new HashMap<Snowflake, TrackScheduler>();
+	private static HashMap<Long, TrackScheduler> schedulerMap = new HashMap<Long, TrackScheduler>();
 
 	/**
 	 * Get the track scheduler for the guild of this event
@@ -37,7 +37,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * @param event The message event
 	 * @return The scheduler mapped to this channel
 	 */
-	public static TrackScheduler getScheduler(Snowflake channelId) {
+	public static TrackScheduler getScheduler(long channelId) {
 		return schedulerMap.get(channelId);
 	}
 
@@ -46,7 +46,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * 
 	 * @param channelId channel id of the channel to remove
 	 */
-	public static void remove(Snowflake channelId) {
+	public static void remove(long channelId) {
 		if (schedulerMap.containsKey(channelId)) {
 			schedulerMap.get(channelId).getPlayer().destroy();
 			schedulerMap.remove(channelId);
@@ -56,7 +56,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	// Queue of songs for this scheduler
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
 	private final AudioPlayer player;
-	private Snowflake channelId;
+	private long channelId;
 	public static final int DEFAULT_VOLUME = 15;
 
 	/**
@@ -64,7 +64,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * 
 	 * @param channelId the channel to create a track scheduler for
 	 */
-	public TrackScheduler(Snowflake channelId) {
+	public TrackScheduler(long channelId) {
 		this.player = PlayerManager.createPlayer();
 		this.player.setVolume(DEFAULT_VOLUME);
 		this.channelId = channelId;
@@ -264,7 +264,7 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 	@Override
 	public String toString() {
-		return "Scheduler channel id: " + this.channelId.asLong();
+		return "Scheduler channel id: " + this.channelId;
 	}
 
 }

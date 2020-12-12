@@ -39,14 +39,13 @@ class CommandReceiverTest {
 
 	@Mock
 	Mono<Message> monoMessage = mock(Mono.class);
-	
+
 	@Mock
 	Snowflake mockSnowflake = mock(Snowflake.class);
 
-	TrackScheduler mockScheduler = new TrackScheduler(mockSnowflake);
+	TrackScheduler mockScheduler = new TrackScheduler(mockSnowflake.asLong());
 
 	String[] args = null;
-
 
 //	@Test
 //	void nullEvent() {

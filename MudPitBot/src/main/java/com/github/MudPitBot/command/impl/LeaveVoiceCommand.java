@@ -8,9 +8,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.VoiceChannel;
-import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -45,7 +43,8 @@ public class LeaveVoiceCommand extends Command {
 						.flatMap(VoiceState::getChannel).map(VoiceChannel::getId).flatMap(memberChannelId -> {
 							// if the members voice channel is one the bot is in
 							if (memberChannelId.equals(botChannelId)) {
-								TrackScheduler.remove(memberChannelId);
+								LOGGER.info("Leaving channel " + botChannelId.asLong());
+								TrackScheduler.remove(botChannelId.asLong());
 								return botConnection.disconnect();
 							}
 							return Mono.empty();
