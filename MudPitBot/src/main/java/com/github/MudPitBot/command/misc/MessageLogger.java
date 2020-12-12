@@ -3,7 +3,6 @@ package com.github.MudPitBot.command.misc;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Message;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -39,7 +38,7 @@ public class MessageLogger {
 				final String content = event.getMessage().getContent();
 
 				// print out new message to logs
-				logMessage(event, content);
+				logMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 			});
 		}
 	}
@@ -49,15 +48,18 @@ public class MessageLogger {
 	 * 
 	 * @param event   even of the message
 	 * @param content content of the message
+	 * @return
 	 */
-	public void logMessage(MessageCreateEvent event, String content) {
-		Mono.just(event.getMessage()).map(Message::getAuthor).filter(user -> user.isPresent()).subscribe(userOpt -> {
-			Mono.just(event.getGuild()).flatMap(g -> g).map(Guild::getName).subscribe(guildName -> {
+	public Mono<Object> logMessage(MessageCreateEvent event, String content) {
+		return Mono.justOrEmpty(event.getMessage().getAuthor()).flatMap(user -> {
+			return event.getGuild().map(Guild::getName).flatMap(guildName -> {
 				StringBuilder sb = new StringBuilder("New message: ");
 				sb.append("(").append(guildName).append(") ");
-				sb.append(userOpt.get().getUsername());
+				sb.append(user.getUsername());
 				sb.append(" - \"").append(content).append("\"");
 				LOGGER.info(sb.toString());
+
+				return Mono.empty();
 			});
 		});
 	}
