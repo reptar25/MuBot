@@ -41,13 +41,16 @@ public abstract class Command implements CommandInterface {
 	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
 	 *         bot in the guild the message was sent from.
 	 */
+	private static final int RETRY_AMOUNT = 100;
+
 	protected static Mono<TrackScheduler> getScheduler(MessageCreateEvent event) {
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
 		return Mono.justOrEmpty(event.getGuildId()).flatMap(guildId -> {
-			return event.getClient().getMemberById(guildId, event.getClient().getSelfId()).flatMap(Member::getVoiceState)
-					.map(VoiceState::getChannelId).flatMap(s -> Mono.justOrEmpty(s.get())).flatMap(channelId -> {
+			return event.getClient().getMemberById(guildId, event.getClient().getSelfId())
+					.flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+					.flatMap(s -> Mono.justOrEmpty(s.get())).flatMap(channelId -> {
 						Mono<TrackScheduler> scheduler = Mono.justOrEmpty(TrackScheduler.getScheduler(channelId))
-								.repeatWhenEmpty(Integer.MAX_VALUE, Flux::repeat);
+								.repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat);
 						return scheduler;
 					});
 		});
