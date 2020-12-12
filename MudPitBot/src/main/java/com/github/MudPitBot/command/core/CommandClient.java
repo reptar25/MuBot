@@ -1,6 +1,5 @@
 package com.github.MudPitBot.command.core;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import com.github.MudPitBot.command.Command;
@@ -10,6 +9,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
 import reactor.core.publisher.Mono;
+import reactor.function.TupleUtils;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -58,7 +58,8 @@ public class CommandClient {
 						// 3.1 Message.getContent() is a String
 						final String content = event.getMessage().getContent();
 						// process new message to check for commands
-						processMessage(event, content);
+						// subscribe to any commands to process
+						processMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage()));
 					});
 
 		}
@@ -69,13 +70,14 @@ public class CommandClient {
 	 * 
 	 * @param event   event of the message
 	 * @param content content of the message
+	 * @return
 	 */
-	public void processMessage(MessageCreateEvent event, String content) {
+	public Mono<CommandResponse> processMessage(MessageCreateEvent event, String content) {
 		// ignore any messages sent from a bot
 		if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
-			return;
+			return Mono.empty();
 		}
-		Mono<Void> mono = Mono.empty();
+		Mono<CommandResponse> mono = Mono.empty();
 		// split content at ! to allow for compound commands (more
 		// than 1 command in 1 message)
 		// this regex splits at !, but doesn't remove it from the resulting string
@@ -87,11 +89,16 @@ public class CommandClient {
 				String[] splitCommand = command.split(" ");
 
 				if (splitCommand[0].toLowerCase().startsWith(Commands.COMMAND_PREFIX + entry.getKey().toLowerCase())) {
+					// LOGGER.info("Processing command " + splitCommand[0]);
+
 					// matching command found, so process and execute that command
 					// copy removes the command itself from the parameters
-					LOGGER.info("Processing command " + splitCommand[0]);
-					mono = mono.then(processCommand(event, entry.getValue(),
-							Arrays.copyOfRange(splitCommand, 1, splitCommand.length)));
+					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
+					// logs the time taken to execute the command
+					mono = mono.defaultIfEmpty(new CommandResponse("")).elapsed()
+							.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
+									.trace("{} took {} ms to be processed", splitCommand[0], elapsed)))
+							.then(processCommand(event, entry.getValue(), commandParams));
 
 					// we found a matching command so stop the loop
 					break;
@@ -99,16 +106,17 @@ public class CommandClient {
 			}
 		}
 
-		mono.subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+		return mono;
 	}
 
-	private Mono<Void> processCommand(MessageCreateEvent event, Command command, String[] params) {
+	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] params) {
 
 		// commands will return any string that the bot should send back as a message to
 		// the command
 		// CommandResponse response = executor.executeCommand(command, event, params);
 		return executor.executeCommand(command, event, params).flatMap(response -> {
 			return event.getMessage().getChannel().flatMap(channel -> {
+				// respond if the command returned a response
 				if (response.getSpec() != null) {
 					return channel.createMessage(response.getSpec()).flatMap(message -> {
 						// if the response contained a poll
@@ -117,12 +125,12 @@ public class CommandClient {
 							// answers
 							response.getPoll().addReactions(message);
 						}
-						return Mono.empty();
+						return Mono.just(response);
 					});
 				}
 				return Mono.empty();
 			});
-		}).then();
+		});
 		// if there is a message to send back send it to the channel the original
 		// message was sent from
 	}
