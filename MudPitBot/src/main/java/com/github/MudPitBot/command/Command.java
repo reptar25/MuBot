@@ -44,7 +44,7 @@ public abstract class Command implements CommandInterface {
 	protected static Mono<TrackScheduler> getScheduler(MessageCreateEvent event) {
 		// MessageChannel messageChannel = event.getMessage().getChannel().block();
 		return Mono.justOrEmpty(event.getGuildId()).flatMap(guildId -> {
-			return event.getClient().getSelf().flatMap(user -> user.asMember(guildId)).flatMap(Member::getVoiceState)
+			return event.getClient().getMemberById(guildId, event.getClient().getSelfId()).flatMap(Member::getVoiceState)
 					.map(VoiceState::getChannelId).flatMap(s -> Mono.justOrEmpty(s.get())).flatMap(channelId -> {
 						Mono<TrackScheduler> scheduler = Mono.justOrEmpty(TrackScheduler.getScheduler(channelId))
 								.repeatWhenEmpty(Integer.MAX_VALUE, Flux::repeat);
