@@ -2,19 +2,27 @@ package com.github.MudPitBot.test;
 
 import org.mockito.Mock;
 
+import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.impl.*;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import reactor.core.publisher.Mono;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class CommandReceiverTest {
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+
+class CommandTest {
 
 	@Mock
 	static GatewayDiscordClient mockClient = mock(GatewayDiscordClient.class);
@@ -43,9 +51,39 @@ class CommandReceiverTest {
 	@Mock
 	Snowflake mockSnowflake = mock(Snowflake.class);
 
+	@Mock
+	Member mockMember = mock(Member.class);
+
 	TrackScheduler mockScheduler = new TrackScheduler(mockSnowflake.asLong());
 
-	String[] args = null;
+	@Test
+	void echoTest() {
+		String[] args = null;
+		CommandResponse response = new EchoCommand().execute(mockEvent, args).block();
+
+		assertEquals(response.getContent(), "echo!");
+	}
+
+	@Test
+	void rollTest() {
+		String[] args = { "1d20" };
+		CommandResponse response = new RollCommand().execute(mockEvent, args).block();
+
+		assertTrue(response.getContent().startsWith("Rolling 1d20"));
+	}
+
+	@Test
+	void pollTest() {
+		String[] args = { "\"Question\"", "\"Answer 1\"", "\"Answer 2\"", "\"Answer 3\"" };
+		when(mockEvent.getMember()).thenReturn(Optional.of(mockMember));
+		when(mockMember.getUsername()).thenReturn("Test Username");
+		CommandResponse response = new PollCommand().execute(mockEvent, args).block();
+
+		assertTrue(response.getPoll().getTitle().equals("Question"));
+		assertTrue(response.getPoll().getAnswers().get(0).equals("Answer 1"));
+		assertTrue(response.getPoll().getAnswers().get(1).equals("Answer 2"));
+		assertTrue(response.getPoll().getAnswers().get(2).equals("Answer 3"));
+	}
 
 //	@Test
 //	void nullEvent() {
