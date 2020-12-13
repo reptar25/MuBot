@@ -39,10 +39,11 @@ public class ViewQueueCommand extends Command {
 			if (queue.size() > 0) {
 				// print total number of songs
 				sb.append("Number of songs in queue: ").append(queue.size()).append("\n");
-				for (AudioTrack track : queue) {
+				for (int i = 0; i < queue.size(); i++) {
+					AudioTrack track = queue.get(i);
 					// print title and author of song on its own line
-					sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
-							.append(track.getInfo().author).append("\n");
+					sb.append("(#").append(i + 1).append(")").append("\"").append(track.getInfo().title).append("\"")
+							.append(" by ").append(track.getInfo().author).append("\n");
 				}
 			} else {
 				sb.append("The queue is empty");
