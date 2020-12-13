@@ -1,6 +1,7 @@
 package com.github.MudPitBot.command.impl;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Map.Entry;
 
 import com.github.MudPitBot.command.Command;
@@ -26,12 +27,11 @@ public class CommandsCommand extends Command {
 	 * @return List of available commands
 	 */
 	public Mono<CommandResponse> printCommands() {
-		StringBuilder sb = new StringBuilder("Available commands:");
+		StringBuilder sb = new StringBuilder("Available commands: ");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
-		for (Entry<String, Command> entry : entries) {
-			sb.append(", ").append(Commands.COMMAND_PREFIX).append(entry.getKey());
-		}
-		return Mono.just(new CommandResponse((sb.toString().replaceAll(":,", ":"))));
+		sb.append(entries.parallelStream().map(entry -> String.format("%s%s", Commands.COMMAND_PREFIX, entry.getKey())).sorted()
+				.collect(Collectors.joining(", ")).toString());
+		return Mono.just(new CommandResponse(sb.toString()));
 	}
 
 }
