@@ -72,12 +72,12 @@ public class CommandClient {
 	 * @param content content of the message
 	 * @return
 	 */
-	public Mono<CommandResponse> processMessage(MessageCreateEvent event, String content) {
+	public Mono<Void> processMessage(MessageCreateEvent event, String content) {
 		// ignore any messages sent from a bot
 		if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
 			return Mono.empty();
 		}
-		Mono<CommandResponse> mono = Mono.empty();
+		Mono<Void> mono = Mono.empty();
 		// split content at ! to allow for compound commands (more
 		// than 1 command in 1 message)
 		// this regex splits at !, but doesn't remove it from the resulting string
@@ -95,10 +95,11 @@ public class CommandClient {
 					// copy removes the command itself from the parameters
 					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 					// logs the time taken to execute the command
-					mono = mono.defaultIfEmpty(new CommandResponse("")).elapsed()
+					mono = mono.then(processCommand(event, entry.getValue(), commandParams)
+							.defaultIfEmpty(new CommandResponse("")).elapsed()
 							.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
-									.trace("{} took {} ms to be processed", splitCommand[0], elapsed)))
-							.then(processCommand(event, entry.getValue(), commandParams));
+									.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
+							.then());
 
 					// we found a matching command so stop the loop
 					break;
