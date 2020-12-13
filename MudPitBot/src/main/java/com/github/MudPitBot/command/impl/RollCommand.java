@@ -30,7 +30,7 @@ public class RollCommand extends Command {
 	public Mono<CommandResponse> roll(String[] params) {
 
 		if (params == null || params.length <= 0) {
-			return null;
+			return Mono.empty();
 		}
 
 		String dice = params[0];

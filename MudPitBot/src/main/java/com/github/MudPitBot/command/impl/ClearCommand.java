@@ -35,7 +35,7 @@ public class ClearCommand extends Command {
 			return Mono.just(new CommandResponse("Queue cleared"));
 		}
 
-		return null;
+		return Mono.empty();
 	}
 
 }
