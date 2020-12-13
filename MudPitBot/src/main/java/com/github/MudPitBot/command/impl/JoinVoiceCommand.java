@@ -48,12 +48,11 @@ public class JoinVoiceCommand extends Command {
 								return Mono.justOrEmpty(botChannelId.asLong()).filter(id -> id != -1l)
 										.flatMap(ignored -> {
 											return event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(vc -> {
-												// if we are already in a voice channel, disconnect first before joining
-												// a new channel
+												// if we are already in a voice channel, disconnect first before
+												// joining a new channel
 												// Discord will sometimes disconnect on joining when switching channels
-												// if we do
-												// not do this
-												TrackScheduler.remove(botChannelId.asLong());
+												// if we do not do this
+												TrackScheduler.removeFromMap(botChannelId.asLong());
 												return vc.disconnect().then();
 											});
 										}).then(Mono.just(channel.getId()).flatMap(channelId -> {
@@ -75,7 +74,7 @@ public class JoinVoiceCommand extends Command {
 																// This doesn't ever seem to happen when the bot
 																// disconnects, though, so also remove it from map
 																// during leave command
-																TrackScheduler.remove(channelId.asLong());
+																TrackScheduler.removeFromMap(channelId.asLong());
 																LOGGER.info("Bot disconnected to channel with id "
 																		+ channelId.asLong());
 															}

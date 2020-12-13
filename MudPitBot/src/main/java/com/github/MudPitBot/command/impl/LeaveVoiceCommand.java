@@ -44,7 +44,7 @@ public class LeaveVoiceCommand extends Command {
 							// if the members voice channel is one the bot is in
 							if (memberChannelId.equals(botChannelId)) {
 								LOGGER.info("Leaving channel " + botChannelId.asLong());
-								TrackScheduler.remove(botChannelId.asLong());
+								TrackScheduler.removeFromMap(botChannelId.asLong());
 								return botConnection.disconnect();
 							}
 							return Mono.empty();

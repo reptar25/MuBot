@@ -45,19 +45,18 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * 
 	 * @param channelId channel id of the channel to remove
 	 */
-	public static void remove(long channelId) {
+	public static void removeFromMap(long channelId) {
 		if (schedulerMap.containsKey(channelId)) {
-			LOGGER.info("Removing TrackScheduler with id "+channelId);
+			LOGGER.info("Removing TrackScheduler with id " + channelId);
 			schedulerMap.get(channelId).getPlayer().destroy();
 			schedulerMap.remove(channelId);
-		}
-		else {
-			LOGGER.info("No TrackScheduler found with id "+channelId);
+		} else {
+			LOGGER.info("No TrackScheduler found with id " + channelId);
 		}
 	}
 
 	// Queue of songs for this scheduler
-	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
+	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<AudioTrack>();
 	private final AudioPlayer player;
 	private long channelId;
 	public static final int DEFAULT_VOLUME = 15;
@@ -140,6 +139,26 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	}
 
 	/**
+	 * Removes a specific track from the queue given by the index
+	 * 
+	 * @param index index of the item to remove from the queue
+	 * @return the AudioTrack that was removed or null if none was removed
+	 */
+	public AudioTrack removeFromQueue(int index) {
+		if (index >= queue.size() || index < 0)
+			return null;
+
+		// convert the queue into a list
+		List<AudioTrack> listQueue = getQueue();
+		// remove the item from that list
+		AudioTrack removed = listQueue.remove(index);
+		// convert the list back into a queue
+		queue = new LinkedBlockingQueue<AudioTrack>(listQueue);
+
+		return removed;
+	}
+
+	/**
 	 * Gets a list of the songs that are currently in the queue.
 	 * 
 	 * @return List of queued songs
@@ -153,9 +172,12 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * Shuffles the songs currently in the queue
 	 */
 	public void shuffleQueue() {
-		List<AudioTrack> ret = new ArrayList<AudioTrack>(queue);
+		// convert the queue to a list
+		List<AudioTrack> ret = getQueue();
+		// shuffle that list
 		Collections.shuffle(ret);
-		this.queue = ret.stream().collect(Collectors.toCollection(LinkedBlockingQueue::new));
+		// convert the list back into a queue
+		queue = new LinkedBlockingQueue<AudioTrack>(ret);
 	}
 
 	/**
