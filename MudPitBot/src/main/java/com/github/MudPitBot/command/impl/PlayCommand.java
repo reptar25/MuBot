@@ -35,7 +35,7 @@ public class PlayCommand extends Command {
 	public Mono<CommandResponse> play(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			// unpause
-			if ((params.length == 0 || params[0].isEmpty())) {
+			if (params.length == 0 || params[0].isEmpty()) {
 				scheduler.pause(!scheduler.isPaused());
 				return Mono.empty();
 			}
@@ -46,8 +46,8 @@ public class PlayCommand extends Command {
 			}
 			PlayerManager.loadItem(params[0], scheduler);
 			if (!scheduler.getQueue().isEmpty()) {
-				return Mono.just(
-						new CommandResponse("New track added to the queue (#" + scheduler.getQueue().size() + ")"));
+				return Mono.just(new CommandResponse(
+						"New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")"));
 			}
 			LOGGER.info("Loaded music item: " + params[0]);
 		}
