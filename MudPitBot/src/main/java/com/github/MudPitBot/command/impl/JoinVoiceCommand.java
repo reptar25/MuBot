@@ -38,26 +38,25 @@ public class JoinVoiceCommand extends Command {
 	 * @return null
 	 */
 	public Mono<CommandResponse> join(MessageCreateEvent event) {
-		return Mono.just(event).flatMap(MessageCreateEvent::getGuild).flatMap(Guild::getVoiceConnection)
-				.flatMap(VoiceConnection::getChannelId).defaultIfEmpty(Snowflake.of(-1)).flatMap(botChannelId -> {
+		return event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId)
+				.defaultIfEmpty(Snowflake.of(-1)).flatMap(botChannelId -> {
 					// get the voice channel of the member who sent the message
 					return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
-							.flatMap(VoiceState::getChannel).flatMap(channel -> {
-								Mono<Void> dcMono = Mono.empty();
-								// if the bot is in a channel and its not the channel we are already in
-								if (botChannelId.asLong() != -1 && !botChannelId.equals(channel.getId())) {
-									dcMono = event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(vc -> {
-										// if we are already in a voice channel, disconnect first before joining
-										// a new channel
-										// Discord will sometimes disconnect on joining when switching channels if we do
-										// not do this
-										TrackScheduler.remove(channel.getId().asLong());
-										return vc.disconnect().then();
-									});
-								}
-								return dcMono.then(Mono.just(channel.getId())
-										// dont join the channel if the bot is already connect to that channel
-										.filter(channelId -> !channelId.equals(botChannelId)).flatMap(channelId -> {
+							.flatMap(VoiceState::getChannel)
+							// if the bot is in a channel and its not the channel we are already in
+							.filter(channel -> !botChannelId.equals(channel.getId())).flatMap(channel -> {
+								return Mono.justOrEmpty(botChannelId.asLong()).filter(id -> id != -1l)
+										.flatMap(ignored -> {
+											return event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(vc -> {
+												// if we are already in a voice channel, disconnect first before joining
+												// a new channel
+												// Discord will sometimes disconnect on joining when switching channels
+												// if we do
+												// not do this
+												TrackScheduler.remove(botChannelId.asLong());
+												return vc.disconnect().then();
+											});
+										}).then(Mono.just(channel.getId()).flatMap(channelId -> {
 											// joining a new channel
 											// once we are connected put the scheduler in the map with the
 											// channelId as the key
@@ -69,14 +68,16 @@ public class JoinVoiceCommand extends Command {
 														// subscribe to connected/disconnected events
 														vc.onConnectOrDisconnect().subscribe(newState -> {
 															if (newState.equals(State.CONNECTED)) {
-																LOGGER.info("Bot connected to channel");
+																LOGGER.info("Bot connected to channel with id "
+																		+ channelId.asLong());
 															} else if (newState.equals(State.DISCONNECTED)) {
 																// remove the scheduler from the map.
 																// This doesn't ever seem to happen when the bot
 																// disconnects, though, so also remove it from map
 																// during leave command
 																TrackScheduler.remove(channelId.asLong());
-																LOGGER.info("Bot disconnected to channel");
+																LOGGER.info("Bot disconnected to channel with id "
+																		+ channelId.asLong());
 															}
 														});
 													}).delaySubscription(Duration.ofMillis(1)); // delay to allow
