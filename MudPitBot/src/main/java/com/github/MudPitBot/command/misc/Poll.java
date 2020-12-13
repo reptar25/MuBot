@@ -7,7 +7,6 @@ import java.util.Date;
 
 import com.github.MudPitBot.util.Emoji;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import reactor.util.Logger;
@@ -42,8 +41,8 @@ public final class Poll {
 //	}
 
 	private static final Logger LOGGER = Loggers.getLogger(Poll.class);
-	private MessageCreateEvent event;
 	private String[] params;
+	private Member member;
 	private String footer;
 	private String footerURL;
 	private String title;
@@ -59,8 +58,9 @@ public final class Poll {
 //		this.description = builder.description;
 //	}
 
-	public Poll(MessageCreateEvent event) {
-		this.event = event;
+	public Poll(String[] params, Member member) {
+		this.params = params;
+		this.member = member;
 		createPoll();
 	}
 
@@ -72,12 +72,6 @@ public final class Poll {
 
 	private void createPoll() {
 
-		if (event == null || event.getMessage() == null) {
-			return;
-		}
-
-		setParams();
-
 		createAnswers(params);
 
 		if (answers.isEmpty())
@@ -88,13 +82,6 @@ public final class Poll {
 		createDescription();
 	}
 
-	private void setParams() {
-		if (event != null && event.getMessage() != null && event.getMessage().getContent() != null) {
-			String command = event.getMessage().getContent().replace("!poll", "");
-			params = command.split(" \"");
-		}
-	}
-
 	private void createAnswers(String[] params) {
 		// String[] splitCommand = command.split(" \"");
 
@@ -103,10 +90,10 @@ public final class Poll {
 			return;
 		}
 
-		title = params[1].replaceAll("\"", "");
+		title = params[0];
 
-		for (int i = 2; i < params.length; i++) {
-			answers.add(params[i].replaceAll("\"", ""));
+		for (int i = 1; i < params.length; i++) {
+			answers.add(params[i]);
 		}
 	}
 
@@ -116,11 +103,11 @@ public final class Poll {
 		String timeStamp = df.format(date);
 
 		StringBuilder sb = new StringBuilder("Poll created by ");
-		sb.append(event.getMessage().getUserData().username());
+		if (member != null)
+			sb.append(member.getUsername());
 		sb.append(" on ");
 		sb.append(timeStamp);
 		this.footer = sb.toString();
-		Member member = event.getMember().orElse(null);
 		if (member != null)
 			this.footerURL = member.getAvatarUrl();
 	}
