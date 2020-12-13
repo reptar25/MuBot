@@ -47,8 +47,12 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 */
 	public static void remove(long channelId) {
 		if (schedulerMap.containsKey(channelId)) {
+			LOGGER.info("Removing TrackScheduler with id "+channelId);
 			schedulerMap.get(channelId).getPlayer().destroy();
 			schedulerMap.remove(channelId);
+		}
+		else {
+			LOGGER.info("No TrackScheduler found with id "+channelId);
 		}
 	}
 
