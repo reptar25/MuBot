@@ -5,9 +5,6 @@ import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.VoiceState;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
@@ -23,7 +20,7 @@ public class LeaveVoiceCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return leave(event);
+		return requireSameVoiceChannel(event).flatMap(channel -> leave(channel));
 	}
 
 	/**
@@ -33,23 +30,11 @@ public class LeaveVoiceCommand extends Command {
 	 * @param event The message event
 	 * @return null
 	 */
-	public Mono<CommandResponse> leave(MessageCreateEvent event) {
-		// get the voice channel the bot is connected to
-		return event.getMessage().getGuild().flatMap(Guild::getVoiceConnection).flatMap(botConnection -> {
-			// get the channel id of the bot's voice connection
-			return botConnection.getChannelId().flatMap(botChannelId -> {
-				// get member who sent the command voice channel
-				return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
-						.flatMap(VoiceState::getChannel).map(VoiceChannel::getId).flatMap(memberChannelId -> {
-							// if the members voice channel is one the bot is in
-							if (memberChannelId.equals(botChannelId)) {
-								LOGGER.info("Leaving channel " + botChannelId.asLong());
-								TrackScheduler.removeFromMap(botChannelId.asLong());
-								return botConnection.disconnect();
-							}
-							return Mono.empty();
-						});
-			});
+	public Mono<CommandResponse> leave(VoiceChannel channel) {
+		return channel.getVoiceConnection().flatMap(botVoiceConnection -> {
+			LOGGER.info("Leaving channel " + channel.getId().asLong());
+			TrackScheduler.removeFromMap(channel.getId().asLong());
+			return botVoiceConnection.disconnect();
 		}).then(Mono.empty());
 	}
 

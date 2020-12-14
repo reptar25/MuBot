@@ -1,6 +1,7 @@
 package com.github.MudPitBot.command.impl;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -12,6 +13,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
 import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Mono;
@@ -28,7 +30,9 @@ public class JoinVoiceCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return join(event);
+		return requireVoiceChannel(event).flatMap(channel -> {
+			return join(channel);
+		});
 	}
 
 	/**
@@ -37,54 +41,57 @@ public class JoinVoiceCommand extends Command {
 	 * @param event The message event
 	 * @return null
 	 */
-	public Mono<CommandResponse> join(MessageCreateEvent event) {
-		return event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(VoiceConnection::getChannelId)
-				.defaultIfEmpty(Snowflake.of(-1)).flatMap(botChannelId -> {
-					// get the voice channel of the member who sent the message
-					return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
-							.flatMap(VoiceState::getChannel)
-							// if the bot is in a channel and its not the channel we are already in
-							.filter(channel -> !botChannelId.equals(channel.getId())).flatMap(channel -> {
-								return Mono.justOrEmpty(botChannelId.asLong()).filter(id -> id != -1l)
-										.flatMap(ignored -> {
-											return event.getGuild().flatMap(Guild::getVoiceConnection).flatMap(vc -> {
-												// if we are already in a voice channel, disconnect first before
-												// joining a new channel
-												// Discord will sometimes disconnect on joining when switching channels
-												// if we do not do this
-												TrackScheduler.removeFromMap(botChannelId.asLong());
-												return vc.disconnect().then();
-											});
-										}).then(Mono.just(channel.getId()).flatMap(channelId -> {
-											// joining a new channel
-											// once we are connected put the scheduler in the map with the
-											// channelId as the key
-											TrackScheduler scheduler = new TrackScheduler(channelId.asLong());
-											return channel
-													.join(spec -> spec.setProvider(
-															new LavaPlayerAudioProvider(scheduler.getPlayer())))
-													.doOnNext(vc -> {
-														// subscribe to connected/disconnected events
-														vc.onConnectOrDisconnect().subscribe(newState -> {
-															if (newState.equals(State.CONNECTED)) {
-																LOGGER.info("Bot connected to channel with id "
-																		+ channelId.asLong());
-															} else if (newState.equals(State.DISCONNECTED)) {
-																// remove the scheduler from the map.
-																// This doesn't ever seem to happen when the bot
-																// disconnects, though, so also remove it from map
-																// during leave command
-																TrackScheduler.removeFromMap(channelId.asLong());
-																LOGGER.info("Bot disconnected to channel with id "
-																		+ channelId.asLong());
-															}
-														});
-													}).delaySubscription(Duration.ofMillis(1)); // delay to allow
-																								// disconnect first if
-																								// already connected
-										}));
-							});
-				}).then(Mono.empty());
+	public Mono<CommandResponse> join(VoiceChannel channel) {
+
+		final Mono<Snowflake> getBotVoiceChannelId = channel.getClient().getSelf()
+				.flatMap(user -> user.asMember(channel.getGuildId())).flatMap(Member::getVoiceState)
+				.map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty()).flatMap(s -> {
+					if (s.isPresent())
+						return Mono.just(s.get());
+					return Mono.empty();
+				}).flatMap(channel.getClient()::getChannelById).cast(VoiceChannel.class).map(VoiceChannel::getId)
+				.defaultIfEmpty(Snowflake.of(-1l));
+
+		Mono<Void> disconnect = getBotVoiceChannelId.filter(channelId -> !channelId.equals(channel.getId()))
+				.flatMap(botVoiceChannelId -> {
+					return channel.getGuild().flatMap(Guild::getVoiceConnection).flatMap(botVoiceConnection -> {
+						TrackScheduler.removeFromMap(botVoiceChannelId.asLong());
+						return botVoiceConnection.disconnect();
+					});
+				});
+
+		getBotVoiceChannelId.flatMap(id -> {
+			if (id.equals(channel.getId()))
+				return Mono.empty();
+			return Mono.just(channel.getId());
+		});
+		
+		Mono<VoiceConnection> joinChannel = getBotVoiceChannelId.flatMap(id -> {
+			if (id.equals(channel.getId()))
+				return Mono.empty();
+
+			return Mono.just(channel.getId());
+		}).flatMap(channelId -> {
+			TrackScheduler scheduler = new TrackScheduler(channelId.asLong());
+			return channel.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+					.doOnNext(vc -> {
+						// subscribe to connected/disconnected events
+						vc.onConnectOrDisconnect().subscribe(newState -> {
+							if (newState.equals(State.CONNECTED)) {
+								LOGGER.info("Bot connected to channel with id " + channelId.asLong());
+							} else if (newState.equals(State.DISCONNECTED)) {
+								// remove the scheduler from the map.
+								// This doesn't ever seem to happen when the bot
+								// disconnects, though, so also remove it from map
+								// during leave command
+								TrackScheduler.removeFromMap(channelId.asLong());
+								LOGGER.info("Bot disconnected from channel with id " + channelId.asLong());
+							}
+						});
+					}).delaySubscription(Duration.ofMillis(1));// allow disconnect first if already connected delay to
+		});
+
+		return disconnect.then(joinChannel).then(Mono.empty());
 	}
 
 }

@@ -15,10 +15,11 @@ public class FastForwardCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return fastForward(scheduler, params);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return fastForward(scheduler, params);
+			});
 		});
-
 	}
 
 	/**

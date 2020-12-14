@@ -69,7 +69,7 @@ public class PollCommand extends Command {
 				.setEmbed(s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
 						.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
 
-		return Mono.just(new CommandResponse.Builder().spec(spec).poll(poll).build());
+		return Mono.just(new CommandResponse(spec).withPoll(poll));
 
 	}
 

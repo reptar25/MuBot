@@ -16,8 +16,10 @@ public class NowPlayingCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return nowPlaying(scheduler);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return nowPlaying(scheduler);
+			});
 		});
 	}
 

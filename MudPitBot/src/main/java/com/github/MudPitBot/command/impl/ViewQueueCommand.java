@@ -8,7 +8,6 @@ import com.github.MudPitBot.sound.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Message;
 import reactor.core.publisher.Mono;
 
 public class ViewQueueCommand extends Command {
@@ -19,8 +18,10 @@ public class ViewQueueCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return viewQueue(scheduler);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return viewQueue(scheduler);
+			});
 		});
 	}
 
@@ -38,7 +39,7 @@ public class ViewQueueCommand extends Command {
 			// if the queue is not empty
 			if (queue.size() > 0) {
 				// print total number of songs
-				sb.append("Number of songs in queue: ").append(queue.size()).append("\n");
+				sb.append(queue.size()).append(" songs in queue: ").append("\n");
 				for (int i = 0; i < queue.size(); i++) {
 					AudioTrack track = queue.get(i);
 					// print title and author of song on its own line
@@ -50,11 +51,6 @@ public class ViewQueueCommand extends Command {
 			}
 
 			String retString = sb.toString();
-
-			// if the message is longer than 2000 character, trim it so that its not over
-			// the max character limit.
-			if (sb.toString().length() >= Message.MAX_CONTENT_LENGTH)
-				retString = sb.substring(0, Message.MAX_CONTENT_LENGTH - 1);
 
 			return Mono.just(new CommandResponse(retString));
 		}

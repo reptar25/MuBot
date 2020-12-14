@@ -20,8 +20,10 @@ public class PlayCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return play(scheduler, params);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return play(scheduler, params);
+			});
 		});
 	}
 
@@ -36,7 +38,8 @@ public class PlayCommand extends Command {
 		if (scheduler != null && params != null) {
 			// unpause
 			if (params.length == 0 || params[0].isEmpty()) {
-				scheduler.pause(!scheduler.isPaused());
+				if (scheduler.getNowPlaying() != null)
+					scheduler.pause(!scheduler.isPaused());
 				return Mono.empty();
 			}
 

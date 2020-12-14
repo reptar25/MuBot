@@ -15,8 +15,10 @@ public class SeekCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return seek(scheduler, params);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return seek(scheduler, params);
+			});
 		});
 	}
 

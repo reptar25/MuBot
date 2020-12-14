@@ -16,10 +16,11 @@ public class RemoveCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return remove(scheduler, params);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return remove(scheduler, params);
+			});
 		});
-
 	}
 
 	public Mono<CommandResponse> remove(TrackScheduler scheduler, String[] params) {
@@ -29,8 +30,8 @@ public class RemoveCommand extends Command {
 					int index = Integer.parseInt(params[0]);
 					AudioTrack removed = scheduler.removeFromQueue(index - 1);
 					if (removed != null)
-						return Mono
-								.just(new CommandResponse("Removed \"" + removed.getInfo().title + "\" from the queue."));
+						return Mono.just(
+								new CommandResponse("Removed \"" + removed.getInfo().title + "\" from the queue."));
 					else
 						return Mono.empty();
 				} catch (NumberFormatException ignored) {

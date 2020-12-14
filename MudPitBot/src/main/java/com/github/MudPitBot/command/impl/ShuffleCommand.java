@@ -15,8 +15,10 @@ public class ShuffleCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return getScheduler(event).flatMap(scheduler -> {
-			return shuffleQueue(scheduler);
+		return requireSameVoiceChannel(event).flatMap(channel -> {
+			return getScheduler(channel).flatMap(scheduler -> {
+				return shuffleQueue(scheduler);
+			});
 		});
 	}
 

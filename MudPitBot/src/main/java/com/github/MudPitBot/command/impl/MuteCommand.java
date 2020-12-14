@@ -12,6 +12,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -26,7 +27,7 @@ public class MuteCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return mute(event);
+		return requireVoiceChannel(event).flatMap(channel -> mute(channel));
 	}
 
 	/**
@@ -36,54 +37,49 @@ public class MuteCommand extends Command {
 	 * @return null
 	 */
 
-	public Mono<CommandResponse> mute(MessageCreateEvent event) {
+	public Mono<CommandResponse> mute(VoiceChannel channel) {
 		/*
 		 * gets the member's channel who sent the message, and then all the VoiceStates
 		 * connected to that channel. From there we can get the Member of the VoiceState
 		 */
-		return Mono.justOrEmpty(event.getMember()).map(Member::getGuildId).flatMap(guildId -> {
-			return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
-					.map(VoiceChannel::getVoiceStates).flatMap(users -> {
-						// gets the channel id of the member if present
-						return Mono.justOrEmpty(event.getMember()).flatMap(Member::getVoiceState)
-								.map(VoiceState::getChannelId).filter(id -> id.isPresent()).flatMap(idOpt -> {
-									boolean mute = true;
-									Snowflake id = idOpt.get();
-									ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(guildId);
-									if (channelIds != null) {
-										// channel is muted, so unmute
-										if (channelIds.contains(id)) {
-											mute = false;
-											channelIds.remove(id);
-										} else {
-											channelIds.add(id);
-										}
-									} else {
-										// channel should be muted
-										ArrayList<Snowflake> ids = new ArrayList<Snowflake>();
-										ids.add(id);
-										MuteHelper.mutedChannels.put(guildId, ids);
-									}
+		StringBuilder sb = new StringBuilder();
+		final Snowflake guildId = channel.getGuildId();
+		final Snowflake id = channel.getId();
+		Flux<VoiceState> users = channel.getVoiceStates();
 
-									if (mute)
-										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
-												.flatMap(member -> {
-													LOGGER.info(new StringBuilder("Muting ")
-															.append(member.getUsername()).toString());
-													return member.edit(spec -> spec.setMute(true));
-												}).subscribe();
-									else
-										users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot))
-												.flatMap(member -> {
-													LOGGER.info(new StringBuilder("Unmuting ")
-															.append(member.getUsername()).toString());
-													return member.edit(spec -> spec.setMute(false));
-												}).subscribe();
+		boolean mute = true;
+		ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(guildId);
+		if (channelIds != null) {
+			// channel is muted, so unmute
+			if (channelIds.contains(id)) {
+				mute = false;
+				channelIds.remove(id);
+			} else {
+				channelIds.add(id);
+			}
+		} else {
+			// channel should be muted
+			ArrayList<Snowflake> ids = new ArrayList<Snowflake>();
+			ids.add(id);
+			MuteHelper.mutedChannels.put(guildId, ids);
+		}
 
-									return Mono.empty();
-								});
-					});
-		});
+		if (mute) {
+			users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
+				LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
+				return member.edit(spec -> spec.setMute(true));
+			}).subscribe();
+			sb.append("Muting ");
+		} else {
+			users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
+				LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
+				return member.edit(spec -> spec.setMute(false));
+			}).subscribe();
+			sb.append("Unmuting ");
+		}
+
+		sb.append(channel.getName());
+		return Mono.just(new CommandResponse(sb.toString()));
 	}
 
 }
