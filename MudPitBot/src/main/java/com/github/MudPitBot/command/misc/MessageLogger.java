@@ -35,16 +35,13 @@ public class MessageLogger {
 	 */
 	private void setupListener() {
 		if (client.getEventDispatcher() != null) {
-			client.getEventDispatcher().on(MessageCreateEvent.class).subscribe(event -> {
-				final String content = event.getMessage().getContent();
-
-				// ignore messages from bots
-				if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
-					return;
-				}
-				// print out new message to logs
-				logMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
-			});
+			client.getEventDispatcher().on(MessageCreateEvent.class)
+					// ignore messages from bots
+					.filter(event -> event.getMessage().getAuthor().map(User::isBot).orElse(true)).subscribe(event -> {
+						final String content = event.getMessage().getContent();
+						// print out new message to logs
+						logMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+					});
 		}
 	}
 
