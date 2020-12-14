@@ -60,6 +60,7 @@ public class CommandClient {
 		 */
 		if (client.getEventDispatcher() != null) {
 
+			// process ReadyEvent and reconnect to any voice channels the bot is still in
 			client.getEventDispatcher().on(ReadyEvent.class).subscribe(event -> {
 				processReadyEvent(event);
 			});
@@ -117,7 +118,7 @@ public class CommandClient {
 					// logs the time taken to execute the command
 					mono = mono
 							.then(processCommand(event, entry.getValue(),
-									commandParams)
+									commandParams).defaultIfEmpty(CommandResponse.empty())
 											.elapsed()
 											.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
 													.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
@@ -132,7 +133,7 @@ public class CommandClient {
 		return mono;
 	}
 
-	private Mono<Void> processCommand(MessageCreateEvent event, Command command, String[] params) {
+	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] params) {
 
 		// commands will return any string that the bot should send back as a message to
 		// the command
@@ -179,11 +180,11 @@ public class CommandClient {
 	}
 
 	// TODO: Move this to a util class?
-	public static Mono<Void> sendReply(MessageCreateEvent event, CommandResponse response) {
+	public static Mono<CommandResponse> sendReply(MessageCreateEvent event, CommandResponse response) {
 		return sendReply(event.getMessage().getChannel(), response);
 	}
 
-	public static Mono<Void> sendReply(Mono<MessageChannel> channelMono, CommandResponse response) {
+	public static Mono<CommandResponse> sendReply(Mono<MessageChannel> channelMono, CommandResponse response) {
 		return channelMono.flatMap(channel -> {
 			if (response.getSpec() != null) {
 				return channel.createMessage(response.getSpec()).flatMap(message -> {
@@ -193,7 +194,7 @@ public class CommandClient {
 						// answers
 						response.getPoll().addReactions(message);
 					}
-					return Mono.empty();
+					return Mono.just(response);
 				});
 			}
 			return Mono.empty();
