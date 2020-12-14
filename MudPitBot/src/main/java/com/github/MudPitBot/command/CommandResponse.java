@@ -9,11 +9,19 @@ import discord4j.core.spec.MessageCreateSpec;
 
 public class CommandResponse {
 
-	private final String content;
+	private String content;
 	private Poll poll;
-	private final Consumer<? super MessageCreateSpec> spec;
+	private Consumer<? super MessageCreateSpec> spec;
+
+	// empty constructor
+	private CommandResponse() {
+		this.content = "";
+		this.spec = null;
+	}
 
 	public CommandResponse(String content) {
+		this.content = "";
+		this.spec = null;
 		// if the message is longer than 2000 character, trim it so that its not over
 		// the max character limit.
 		if (content.length() >= Message.MAX_CONTENT_LENGTH)
@@ -24,6 +32,8 @@ public class CommandResponse {
 	}
 
 	public CommandResponse(Consumer<? super MessageCreateSpec> spec) {
+		this.content = "";
+		this.spec = null;
 		this.spec = spec;
 		this.poll = null;
 		this.content = null;
@@ -44,6 +54,10 @@ public class CommandResponse {
 	public CommandResponse withPoll(Poll poll) {
 		this.poll = poll;
 		return this;
+	}
+
+	public static CommandResponse empty() {
+		return new CommandResponse();
 	}
 
 }
