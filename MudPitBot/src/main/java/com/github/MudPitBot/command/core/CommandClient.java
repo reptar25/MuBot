@@ -64,7 +64,7 @@ public class CommandClient {
 
 			client.getEventDispatcher().on(MessageCreateEvent.class)
 					// ignore any messages sent from a bot
-					.filter(event -> event.getMessage().getAuthor().map(User::isBot).orElse(true))
+					.filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true))
 					// subscribe is like block, in that it will *request* for action
 					// to be done, but instead of blocking the thread, waiting for it
 					// to finish, it will just execute the results asynchronously.
