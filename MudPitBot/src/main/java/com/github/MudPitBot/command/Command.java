@@ -11,15 +11,13 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
 /**
  * Implementation of the Command design pattern.
  */
 
 public abstract class Command implements CommandInterface {
-	private static final Logger LOGGER = Loggers.getLogger(Command.class);
+
 	protected String commandTrigger;
 
 	public Command(String commandTrigger) {
@@ -64,8 +62,7 @@ public abstract class Command implements CommandInterface {
 					if (s.isPresent())
 						return Mono.just(s.get());
 
-					LOGGER.info("User is not in a voice channel");
-					return Mono.empty();
+					return Mono.error(new CommandException("You have to be in a voice channel to use this command"));
 				}).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
 	}
 
@@ -90,20 +87,17 @@ public abstract class Command implements CommandInterface {
 			final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
 
 			// If the user and the bot are not in a voice channel
-			if (botVoiceChannelId.isEmpty() && userVoiceChannelId.isEmpty()) {
-				LOGGER.info("User and bot are not in a voice channel");
-				return Snowflake.of(-1l);
+			if (botVoiceChannelId.isEmpty() || userVoiceChannelId.isEmpty()) {
+				throw new CommandException("You have to be in the same voice channel as the bot to use this command");
 			}
 
 			// If the user and the bot are not in the same voice channel
 			if (botVoiceChannelId.isPresent()
 					&& !userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
-				LOGGER.info("User and bot are not in the same voice channel");
-				return Snowflake.of(-1l);
+				throw new CommandException("You have to be in the same voice channel as the bot to use this command");
 			}
 
 			return userVoiceChannelId.get();
-		}).filter(snowflake -> snowflake.asLong() != -1).flatMap(event.getClient()::getChannelById)
-				.cast(VoiceChannel.class);
+		}).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
 	}
 }

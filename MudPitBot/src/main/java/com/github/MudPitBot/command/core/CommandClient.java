@@ -3,6 +3,7 @@ package com.github.MudPitBot.command.core;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import com.github.MudPitBot.command.Command;
+import com.github.MudPitBot.command.CommandException;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
@@ -13,6 +14,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -74,7 +76,14 @@ public class CommandClient {
 
 						// process new message to check for commands
 						// subscribe to any commands to process
-						processMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage()));
+						processMessage(event, content).doOnError(error -> {
+							LOGGER.error(error.getMessage());
+							// if the error is a CommandException we should send back the error message to
+							// the user
+							if (error instanceof CommandException) {
+								sendReply(event, new CommandResponse(error.getMessage())).subscribe();
+							}
+						}).subscribe();
 					});
 		}
 
@@ -106,11 +115,13 @@ public class CommandClient {
 					// copy removes the command itself from the parameters
 					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 					// logs the time taken to execute the command
-					mono = mono.then(processCommand(event, entry.getValue(), commandParams)
-							.defaultIfEmpty(new CommandResponse("")).elapsed()
-							.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
-									.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
-							.then());
+					mono = mono
+							.then(processCommand(event, entry.getValue(),
+									commandParams)
+											.elapsed()
+											.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
+													.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
+											.then());
 
 					// we found a matching command so stop the loop
 					break;
@@ -121,27 +132,13 @@ public class CommandClient {
 		return mono;
 	}
 
-	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] params) {
+	private Mono<Void> processCommand(MessageCreateEvent event, Command command, String[] params) {
 
 		// commands will return any string that the bot should send back as a message to
 		// the command
 		// CommandResponse response = executor.executeCommand(command, event, params);
 		return executor.executeCommand(command, event, params).flatMap(response -> {
-			return event.getMessage().getChannel().flatMap(channel -> {
-				// respond if the command returned a response
-				if (response.getSpec() != null) {
-					return channel.createMessage(response.getSpec()).flatMap(message -> {
-						// if the response contained a poll
-						if (response.getPoll() != null) {
-							// add reactions as vote tickers, number of reactions depends on number of
-							// answers
-							response.getPoll().addReactions(message);
-						}
-						return Mono.just(response);
-					});
-				}
-				return Mono.empty();
-			});
+			return sendReply(event, response);
 		});
 	}
 
@@ -178,6 +175,28 @@ public class CommandClient {
 					.doOnNext(TupleUtils.consumer(
 							(elapsed, response) -> LOGGER.info("ReadyEvent took {} ms to be processed", elapsed)))
 					.subscribe();
+		});
+	}
+
+	// TODO: Move this to a util class?
+	public static Mono<Void> sendReply(MessageCreateEvent event, CommandResponse response) {
+		return sendReply(event.getMessage().getChannel(), response);
+	}
+
+	public static Mono<Void> sendReply(Mono<MessageChannel> channelMono, CommandResponse response) {
+		return channelMono.flatMap(channel -> {
+			if (response.getSpec() != null) {
+				return channel.createMessage(response.getSpec()).flatMap(message -> {
+					// if the response contained a poll
+					if (response.getPoll() != null) {
+						// add reactions as vote tickers, number of reactions depends on number of
+						// answers
+						response.getPoll().addReactions(message);
+					}
+					return Mono.empty();
+				});
+			}
+			return Mono.empty();
 		});
 	}
 
