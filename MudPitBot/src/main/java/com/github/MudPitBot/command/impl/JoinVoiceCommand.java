@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import com.github.MudPitBot.command.Command;
+import com.github.MudPitBot.command.CommandException;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.TrackScheduler;
@@ -65,10 +66,10 @@ public class JoinVoiceCommand extends Command {
 				return Mono.empty();
 			return Mono.just(channel.getId());
 		});
-		
+
 		Mono<VoiceConnection> joinChannel = getBotVoiceChannelId.flatMap(id -> {
 			if (id.equals(channel.getId()))
-				return Mono.empty();
+				return Mono.error(new CommandException("I'm already in your voice channel"));
 
 			return Mono.just(channel.getId());
 		}).flatMap(channelId -> {
