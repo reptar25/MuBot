@@ -3,6 +3,7 @@ package com.github.MudPitBot.command.misc;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.User;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -37,6 +38,10 @@ public class MessageLogger {
 			client.getEventDispatcher().on(MessageCreateEvent.class).subscribe(event -> {
 				final String content = event.getMessage().getContent();
 
+				// ignore messages from bots
+				if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
+					return;
+				}
 				// print out new message to logs
 				logMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 			});
