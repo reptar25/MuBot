@@ -66,7 +66,7 @@ public class MuteHelper {
 	 * @param event event of the channel change
 	 * @return
 	 */
-	private Mono<Object> muteOnJoin(VoiceStateUpdateEvent event) {
+	private Mono<Void> muteOnJoin(VoiceStateUpdateEvent event) {
 		return Mono.justOrEmpty(event.getCurrent()).map(VoiceState::getChannelId)
 				.filter(currentChannelId -> currentChannelId.isPresent()).flatMap(currentChannelId -> {
 					// join/switch channels
@@ -103,7 +103,7 @@ public class MuteHelper {
 	 * @param event the VoiceStateUpdateEvent of the user
 	 * @return
 	 */
-	private Mono<Member> muteUser(VoiceStateUpdateEvent event) {
+	private Mono<Void> muteUser(VoiceStateUpdateEvent event) {
 		return Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).flatMap(member -> {
 			LOGGER.info("Muting " + member.getUsername());
 			return member.edit(spec -> spec.setMute(true));
@@ -116,7 +116,7 @@ public class MuteHelper {
 	 * @param event the VoiceStateUpdateEvent of the user
 	 * @return
 	 */
-	private Mono<Member> unmuteUser(VoiceStateUpdateEvent event) {
+	private Mono<Void> unmuteUser(VoiceStateUpdateEvent event) {
 		return Mono.just(event.getCurrent()).flatMap(VoiceState::getMember).flatMap(member -> {
 			return Mono.just(event.getCurrent()).flatMap(VoiceState::getGuild).flatMap(guild -> {
 				return Mono.just(member).flatMap(Member::getVoiceState).flatMap(vs -> {
