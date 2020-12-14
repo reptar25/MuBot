@@ -5,9 +5,16 @@ import java.util.Map.Entry;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
+import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
+import com.github.MudPitBot.sound.TrackScheduler;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.VoiceState;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import discord4j.voice.VoiceConnection.State;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.function.TupleUtils;
 import reactor.util.Logger;
@@ -50,20 +57,28 @@ public class CommandClient {
 		 * chat that the bot is able to see it should filter through this method.
 		 */
 		if (client.getEventDispatcher() != null) {
+
+			client.getEventDispatcher().on(ReadyEvent.class).subscribe(event -> {
+				processReadyEvent(event);
+			});
+
 			client.getEventDispatcher().on(MessageCreateEvent.class)
+					// ignore any messages sent from a bot
+					.filter(event -> event.getMessage().getAuthor().map(User::isBot).orElse(true))
 					// subscribe is like block, in that it will *request* for action
 					// to be done, but instead of blocking the thread, waiting for it
 					// to finish, it will just execute the results asynchronously.
 					.subscribe(event -> {
 						// 3.1 Message.getContent() is a String
 						final String content = event.getMessage().getContent();
+
 						// process new message to check for commands
 						// subscribe to any commands to process
 						processMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage()));
 					});
-
 		}
-	};
+
+	}
 
 	/**
 	 * Processes the message to check for commands and execute those commands
@@ -73,10 +88,6 @@ public class CommandClient {
 	 * @return
 	 */
 	public Mono<Void> processMessage(MessageCreateEvent event, String content) {
-		// ignore any messages sent from a bot
-		if (event.getMessage().getAuthor().map(User::isBot).orElse(true)) {
-			return Mono.empty();
-		}
 		Mono<Void> mono = Mono.empty();
 		// split content at ! to allow for compound commands (more
 		// than 1 command in 1 message)
@@ -132,7 +143,42 @@ public class CommandClient {
 				return Mono.empty();
 			});
 		});
-		// if there is a message to send back send it to the channel the original
-		// message was sent from
 	}
+
+	/**
+	 * Called once initial handshakes with gateway are completed. Will reconnect any
+	 * voice channels the bot is still connected to and create a TrackScheduler
+	 * 
+	 * @param event the {@link ReadyEvent}
+	 */
+	private void processReadyEvent(ReadyEvent event) {
+		Flux.fromIterable(event.getGuilds()).subscribe(guild -> {
+			event.getSelf().asMember(guild.getId()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
+					.flatMap(channel -> {
+						TrackScheduler scheduler = new TrackScheduler(channel.getId().asLong());
+						return channel
+								.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+								.doOnNext(vc -> {
+									// subscribe to connected/disconnected events
+									vc.onConnectOrDisconnect().subscribe(newState -> {
+										if (newState.equals(State.CONNECTED)) {
+											LOGGER.info("Bot connected to channel with id " + channel.getId().asLong());
+										} else if (newState.equals(State.DISCONNECTED)) {
+											// remove the scheduler from the map.
+											// This doesn't ever seem to happen when the bot
+											// disconnects, though, so also remove it from map
+											// during leave command
+											TrackScheduler.removeFromMap(channel.getId().asLong());
+											LOGGER.info("Bot disconnected from channel with id "
+													+ channel.getId().asLong());
+										}
+									});
+								});
+					}).elapsed()
+					.doOnNext(TupleUtils.consumer(
+							(elapsed, response) -> LOGGER.info("ReadyEvent took {} ms to be processed", elapsed)))
+					.subscribe();
+		});
+	}
+
 }
