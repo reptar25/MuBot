@@ -1,20 +1,22 @@
-package com.github.MudPitBot.command.core;
+package com.github.MudPitBot.command;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
-import com.github.MudPitBot.command.Command;
-import com.github.MudPitBot.command.CommandException;
-import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.Commands;
+
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.TrackScheduler;
+
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.object.entity.channel.PrivateChannel;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -77,14 +79,13 @@ public class CommandClient {
 
 						// process new message to check for commands
 						// subscribe to any commands to process
-						processMessage(event, content).doOnError(error -> {
+						processMessage(event, content).onErrorResume(CommandException.class, error -> {
 							LOGGER.error(error.getMessage());
-							// if the error is a CommandException we should send back the error message to
-							// the user
-							if (error instanceof CommandException) {
-								sendReply(event, CommandResponse.createFlat(error.getMessage())).subscribe();
-							}
-						}).subscribe();
+							if (!error.isSendError())
+								return sendReply(event, CommandResponse.createFlat(error.getMessage())).then();
+
+							return Mono.empty();
+						}).doOnError(error -> LOGGER.error(error.getMessage(), error)).subscribe();
 					});
 		}
 
@@ -137,6 +138,9 @@ public class CommandClient {
 		// the command
 		// CommandResponse response = executor.executeCommand(command, event, params);
 		return executor.executeCommand(command, event, params).flatMap(response -> {
+			if (response.getSpec() == null)
+				return CommandResponse.empty();
+
 			return sendReply(event, response);
 		});
 	}
@@ -178,25 +182,48 @@ public class CommandClient {
 	}
 
 	// TODO: Move this to a util class?
+
 	public static Mono<CommandResponse> sendReply(MessageCreateEvent event, CommandResponse response) {
-		return sendReply(event.getMessage().getChannel(), response);
+		return sendReply(event.getMessage().getChannel(), response).onErrorResume(CommandException.class, error -> {
+			return Mono.justOrEmpty(event.getMember()).flatMap(member -> {
+				return sendPrivateReply(member.getPrivateChannel(), response);
+			});
+		});
+//		return sendReply(event.getMessage().getChannel(), response).doOnError(CommandException.class, error -> {
+//			Mono.justOrEmpty(event.getMember()).flatMap(member -> {
+//				return sendPrivateReply(member.getPrivateChannel(), response);
+//			}).subscribe();
+//		});
 	}
 
 	public static Mono<CommandResponse> sendReply(Mono<MessageChannel> channelMono, CommandResponse response) {
 		return channelMono.flatMap(channel -> {
-			if (response.getSpec() != null) {
-				return channel.createMessage(response.getSpec()).flatMap(message -> {
-					// if the response contained a poll
-					if (response.getPoll() != null) {
-						// add reactions as vote tickers, number of reactions depends on number of
-						// answers
-						response.getPoll().addReactions(message);
-					}
-					return Mono.just(response);
-				});
-			}
-			return Mono.empty();
+			Mono<PermissionSet> permissions;
+			if (channel instanceof PrivateChannel)
+				permissions = Mono.just(PermissionSet.all());
+			else
+				permissions = Command.requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
+			return permissions.flatMap(ignored -> {
+				if (response.getSpec() != null) {
+					return channel.createMessage(response.getSpec()).flatMap(message -> {
+						// if the response contained a poll
+						if (response.getPoll() != null) {
+							// add reactions as vote tickers, number of reactions depends on number of
+							// answers
+							response.getPoll().addReactions(message);
+						}
+						return Mono.just(response);
+					});
+				}
+				return Mono.empty();
+			});
 		});
 	}
 
+	private static Mono<CommandResponse> sendPrivateReply(Mono<PrivateChannel> privateChannelMono,
+			CommandResponse response) {
+		return privateChannelMono.flatMap(privateChannel -> {
+			return privateChannel.createMessage(response.getSpec()).thenReturn(response);
+		});
+	}
 }

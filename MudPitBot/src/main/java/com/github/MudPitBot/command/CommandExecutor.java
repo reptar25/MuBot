@@ -1,7 +1,4 @@
-package com.github.MudPitBot.command.core;
-
-import com.github.MudPitBot.command.Command;
-import com.github.MudPitBot.command.CommandResponse;
+package com.github.MudPitBot.command;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
