@@ -15,6 +15,7 @@ import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.rest.util.Permission;
 import discord4j.voice.VoiceConnection;
 import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Mono;
@@ -31,8 +32,10 @@ public class JoinVoiceCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireVoiceChannel(event).flatMap(channel -> {
-			return join(channel);
+		return requireVoiceChannel(event).flatMap(voiceChannel -> {
+			return requireBotPermissions(voiceChannel, Permission.CONNECT, Permission.VIEW_CHANNEL).flatMap(ignored -> {
+				return join(voiceChannel);
+			});
 		});
 	}
 
@@ -67,6 +70,7 @@ public class JoinVoiceCommand extends Command {
 
 			return Mono.just(channel.getId());
 		}).flatMap(channelId -> {
+
 			TrackScheduler scheduler = new TrackScheduler(channelId.asLong());
 			return channel.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
 					.doOnNext(vc -> {

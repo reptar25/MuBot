@@ -1,5 +1,7 @@
 package com.github.MudPitBot.command;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,8 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.reflections.Reflections;
-
-import java.lang.reflect.*;
 
 public final class Commands {
 

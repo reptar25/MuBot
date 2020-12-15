@@ -12,6 +12,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
@@ -27,7 +28,11 @@ public class MuteCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireVoiceChannel(event).flatMap(channel -> mute(channel));
+		return requireVoiceChannel(event).flatMap(channel -> {
+			return requireBotPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> {
+				return mute(channel);
+			});
+		});
 	}
 
 	/**

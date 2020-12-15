@@ -1,12 +1,13 @@
 package com.github.MudPitBot.command.impl;
 
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.Map.Entry;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
+
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 

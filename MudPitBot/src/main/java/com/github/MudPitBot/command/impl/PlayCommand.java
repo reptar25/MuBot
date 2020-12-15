@@ -6,6 +6,7 @@ import com.github.MudPitBot.sound.PlayerManager;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -21,8 +22,10 @@ public class PlayCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return play(scheduler, params);
+			return requireBotPermissions(channel, Permission.SPEAK).flatMap(ignored -> {
+				return getScheduler(channel).flatMap(scheduler -> {
+					return play(scheduler, params);
+				});
 			});
 		});
 	}
