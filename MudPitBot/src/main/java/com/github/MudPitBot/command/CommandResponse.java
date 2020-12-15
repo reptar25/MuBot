@@ -57,12 +57,13 @@ public class CommandResponse {
 		return this;
 	}
 
+	private static final CommandResponse empty = new CommandResponse();
 	public static CommandResponse emptyResponse() {
-		return new CommandResponse();
+		return empty;
 	}
 
 	public static Mono<CommandResponse> empty() {
-		return Mono.just(CommandResponse.emptyResponse());
+		return Mono.just(empty);
 	}
 	
 	public static CommandResponse createFlat(String content) {
