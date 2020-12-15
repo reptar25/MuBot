@@ -1,8 +1,10 @@
 package com.github.MudPitBot.command;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map.Entry;
 
+import com.github.MudPitBot.command.exceptions.*;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.TrackScheduler;
 
@@ -79,13 +81,7 @@ public class CommandClient {
 
 						// process new message to check for commands
 						// subscribe to any commands to process
-						processMessage(event, content).onErrorResume(CommandException.class, error -> {
-							LOGGER.error(error.getMessage());
-							if (!error.isSendError())
-								return sendReply(event, CommandResponse.createFlat(error.getMessage())).then();
-
-							return Mono.empty();
-						}).doOnError(error -> LOGGER.error(error.getMessage(), error)).subscribe();
+						processMessage(event, content);
 					});
 		}
 
@@ -96,14 +92,13 @@ public class CommandClient {
 	 * 
 	 * @param event   event of the message
 	 * @param content content of the message
-	 * @return
 	 */
-	public Mono<Void> processMessage(MessageCreateEvent event, String content) {
-		Mono<Void> mono = Mono.empty();
+	public void processMessage(MessageCreateEvent event, String content) {
 		// split content at ! to allow for compound commands (more
 		// than 1 command in 1 message)
 		// this regex splits at !, but doesn't remove it from the resulting string
 		String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
+		ArrayList<Mono<Void>> commandList = new ArrayList<Mono<Void>>();
 		for (String command : commands) {
 			command = command.trim();
 			for (final Entry<String, Command> entry : Commands.getEntries()) {
@@ -117,7 +112,7 @@ public class CommandClient {
 					// copy removes the command itself from the parameters
 					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 					// logs the time taken to execute the command
-					mono = mono.then(processCommand(event, entry.getValue(), commandParams)
+					commandList.add(processCommand(event, entry.getValue(), commandParams)
 							.defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
 							.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
 									.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
@@ -128,8 +123,19 @@ public class CommandClient {
 				}
 			}
 		}
+		// create a new flux of the list of commands obtained from the message
+		Flux.fromIterable(commandList).subscribe(mono -> {
+			mono.onErrorResume(CommandException.class, error -> {
+				LOGGER.error(error.getMessage());
+				// SendMessagesException automatically get sent as private messages to the user
+				// who used
+				// the commands
+				if (error instanceof SendMessagesException)
+					sendReply(event, CommandResponse.createFlat(error.getMessage())).subscribe();
 
-		return mono;
+				return Mono.empty();
+			}).doOnError(error -> LOGGER.error(error.getMessage(), error)).subscribe();
+		});
 	}
 
 	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] params) {
@@ -184,25 +190,23 @@ public class CommandClient {
 	// TODO: Move this to a util class?
 
 	public static Mono<CommandResponse> sendReply(MessageCreateEvent event, CommandResponse response) {
+		// send reply, on CommandException error send the message to the member in a
+		// private message
 		return sendReply(event.getMessage().getChannel(), response).onErrorResume(CommandException.class, error -> {
 			return Mono.justOrEmpty(event.getMember()).flatMap(member -> {
+				//
 				return sendPrivateReply(member.getPrivateChannel(), response);
 			});
 		});
-//		return sendReply(event.getMessage().getChannel(), response).doOnError(CommandException.class, error -> {
-//			Mono.justOrEmpty(event.getMember()).flatMap(member -> {
-//				return sendPrivateReply(member.getPrivateChannel(), response);
-//			}).subscribe();
-//		});
 	}
 
 	public static Mono<CommandResponse> sendReply(Mono<MessageChannel> channelMono, CommandResponse response) {
 		return channelMono.flatMap(channel -> {
-			Mono<PermissionSet> permissions;
+			Mono<PermissionSet> permissions = Command.requireBotPermissions((GuildChannel) channel,
+					Permission.SEND_MESSAGES);
 			if (channel instanceof PrivateChannel)
 				permissions = Mono.just(PermissionSet.all());
-			else
-				permissions = Command.requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
+
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {
 					return channel.createMessage(response.getSpec()).flatMap(message -> {
