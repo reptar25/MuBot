@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.misc;
+package com.github.MudPitBot.command.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;

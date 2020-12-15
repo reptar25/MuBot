@@ -1,4 +1,4 @@
-package com.github.MudPitBot.util;
+package com.github.MudPitBot.command.util;
 
 import discord4j.core.object.reaction.ReactionEmoji;
 

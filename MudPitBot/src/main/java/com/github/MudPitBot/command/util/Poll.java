@@ -1,11 +1,9 @@
-package com.github.MudPitBot.command.misc;
+package com.github.MudPitBot.command.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-import com.github.MudPitBot.util.Emoji;
 
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;

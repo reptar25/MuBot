@@ -3,8 +3,8 @@ package com.github.MudPitBot.main;
 import java.io.IOException;
 
 import com.github.MudPitBot.command.CommandClient;
-import com.github.MudPitBot.command.misc.MessageLogger;
-import com.github.MudPitBot.command.misc.MuteHelper;
+import com.github.MudPitBot.command.util.MessageLogger;
+import com.github.MudPitBot.command.util.MuteHelper;
 import com.github.MudPitBot.heroku.HerokuServer;
 
 import discord4j.core.DiscordClientBuilder;
