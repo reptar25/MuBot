@@ -61,12 +61,6 @@ public class JoinVoiceCommand extends Command {
 					});
 				});
 
-		getBotVoiceChannelId.flatMap(id -> {
-			if (id.equals(channel.getId()))
-				return Mono.empty();
-			return Mono.just(channel.getId());
-		});
-
 		Mono<VoiceConnection> joinChannel = getBotVoiceChannelId.flatMap(id -> {
 			if (id.equals(channel.getId()))
 				return Mono.error(new CommandException("I'm already in your voice channel"));
