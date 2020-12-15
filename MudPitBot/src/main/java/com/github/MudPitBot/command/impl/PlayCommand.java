@@ -51,7 +51,7 @@ public class PlayCommand extends Command {
 				return CommandResponse.empty();
 			}
 			PlayerManager.loadItem(params[0], scheduler);
-			if (!scheduler.getQueue().isEmpty()) {
+			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
 				return CommandResponse
 						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");
 			}
