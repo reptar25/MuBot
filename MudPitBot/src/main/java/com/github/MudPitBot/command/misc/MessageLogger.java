@@ -4,6 +4,8 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.core.object.entity.channel.PrivateChannel;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -53,17 +55,32 @@ public class MessageLogger {
 	 * @return
 	 */
 	public Mono<Object> logMessage(MessageCreateEvent event, String content) {
-		return Mono.justOrEmpty(event.getMessage().getAuthor()).flatMap(user -> {
-			return event.getGuild().map(Guild::getName).flatMap(guildName -> {
-				StringBuilder sb = new StringBuilder("New message: ");
-				sb.append("(").append(guildName).append(") ");
-				sb.append(user.getUsername());
-				sb.append(" - \"").append(content).append("\"");
-				LOGGER.info(sb.toString());
-
+		Mono<User> getUser = Mono.justOrEmpty(event.getMessage().getAuthor()).defaultIfEmpty(null);
+		Mono<String> getGuildName = event.getGuild().map(Guild::getName).defaultIfEmpty("Private Message");
+		Mono<String> getGuildChannelName = event.getMessage().getChannel().flatMap(channel -> {
+			if (channel instanceof PrivateChannel)
 				return Mono.empty();
-			});
+			return Mono.just((GuildChannel) channel);
+		}).map(GuildChannel::getName).defaultIfEmpty("Private Message");
+
+		return Mono.zip(getUser, getGuildName, getGuildChannelName).map(tuple -> {
+			User user = tuple.getT1();
+			String guildName = tuple.getT2();
+			String channelName = tuple.getT3();
+			String username;
+
+			if (user == null)
+				username = "Uknown Author";
+			else
+				username = user.getUsername();
+
+			StringBuilder sb = new StringBuilder("New message: ");
+			sb.append("(").append(guildName).append(")");
+			sb.append("(").append(channelName).append(")");
+			sb.append(" ").append(username);
+			sb.append(" - \"").append(content).append("\"");
+			LOGGER.info(sb.toString());
+			return Mono.empty();
 		});
 	}
-
 }
