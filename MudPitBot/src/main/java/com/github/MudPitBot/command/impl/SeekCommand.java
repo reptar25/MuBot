@@ -38,7 +38,7 @@ public class SeekCommand extends Command {
 				}
 			}
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

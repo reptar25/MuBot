@@ -30,10 +30,12 @@ public class SkipCommand extends Command {
 	 */
 	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
+			StringBuilder sb = new StringBuilder("Skipping ").append(scheduler.getNowPlaying().getInfo().title);
+			CommandResponse.create(sb.toString());
 			scheduler.nextTrack();
 		}
 
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

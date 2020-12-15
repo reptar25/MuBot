@@ -79,7 +79,7 @@ public class MuteCommand extends Command {
 		}
 
 		sb.append(channel.getName());
-		return Mono.just(new CommandResponse(sb.toString()));
+		return CommandResponse.create(sb.toString());
 	}
 
 }

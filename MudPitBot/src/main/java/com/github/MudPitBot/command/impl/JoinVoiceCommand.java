@@ -86,7 +86,7 @@ public class JoinVoiceCommand extends Command {
 					}).delaySubscription(Duration.ofMillis(1));// allow disconnect first if already connected delay to
 		});
 
-		return disconnect.then(joinChannel).then(Mono.empty());
+		return disconnect.then(joinChannel).then(CommandResponse.empty());
 	}
 
 }

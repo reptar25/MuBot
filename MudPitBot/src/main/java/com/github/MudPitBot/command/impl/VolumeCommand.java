@@ -37,11 +37,11 @@ public class VolumeCommand extends Command {
 
 			StringBuilder sb = new StringBuilder();
 			if (params.length == 0) {
-				return Mono.just(new CommandResponse(
-						sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString()));
+				return CommandResponse
+						.create(sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
 			} else if (params[0].equalsIgnoreCase("reset")) {
 				scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
-				return Mono.just(new CommandResponse(sb.append("Volume reset to default").toString()));
+				return CommandResponse.create(sb.append("Volume reset to default").toString());
 			}
 
 			if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
@@ -49,11 +49,11 @@ public class VolumeCommand extends Command {
 				sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
 						.append(volume);
 				scheduler.getPlayer().setVolume(volume);
-				return Mono.just(new CommandResponse(sb.toString()));
+				return CommandResponse.create(sb.toString());
 			} else
-				return Mono.just(new CommandResponse("Invalid volume amount"));
+				return CommandResponse.create("Invalid volume amount");
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

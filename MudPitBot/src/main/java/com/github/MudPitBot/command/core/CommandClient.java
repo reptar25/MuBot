@@ -82,7 +82,7 @@ public class CommandClient {
 							// if the error is a CommandException we should send back the error message to
 							// the user
 							if (error instanceof CommandException) {
-								sendReply(event, new CommandResponse(error.getMessage())).subscribe();
+								sendReply(event, CommandResponse.createFlat(error.getMessage())).subscribe();
 							}
 						}).subscribe();
 					});
@@ -116,13 +116,11 @@ public class CommandClient {
 					// copy removes the command itself from the parameters
 					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 					// logs the time taken to execute the command
-					mono = mono
-							.then(processCommand(event, entry.getValue(),
-									commandParams).defaultIfEmpty(CommandResponse.empty())
-											.elapsed()
-											.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
-													.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
-											.then());
+					mono = mono.then(processCommand(event, entry.getValue(), commandParams)
+							.defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
+							.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
+									.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
+							.then());
 
 					// we found a matching command so stop the loop
 					break;

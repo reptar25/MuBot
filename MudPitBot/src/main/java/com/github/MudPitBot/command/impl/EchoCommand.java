@@ -22,7 +22,7 @@ public class EchoCommand extends Command {
 	 * @return "echo!"
 	 */
 	public Mono<CommandResponse> echo() {
-		return Mono.just(new CommandResponse("echo!"));
+		return CommandResponse.create("echo!");
 	}
 
 }

@@ -29,9 +29,9 @@ public class CommandsCommand extends Command {
 	public Mono<CommandResponse> printCommands() {
 		StringBuilder sb = new StringBuilder("Available commands: ");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
-		sb.append(entries.parallelStream().map(entry -> String.format("%s%s", Commands.COMMAND_PREFIX, entry.getKey())).sorted()
-				.collect(Collectors.joining(", ")).toString());
-		return Mono.just(new CommandResponse(sb.toString()));
+		sb.append(entries.parallelStream().map(entry -> String.format("%s%s", Commands.COMMAND_PREFIX, entry.getKey()))
+				.sorted().collect(Collectors.joining(", ")).toString());
+		return CommandResponse.create(sb.toString());
 	}
 
 }

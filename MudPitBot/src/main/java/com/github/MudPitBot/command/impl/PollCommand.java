@@ -61,7 +61,7 @@ public class PollCommand extends Command {
 
 		// if the poll is invalid just stop
 		if (poll.getAnswers().size() <= 1) {
-			return Mono.empty();
+			return CommandResponse.empty();
 		}
 
 		// create the embed to put the poll into
@@ -69,7 +69,7 @@ public class PollCommand extends Command {
 				.setEmbed(s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
 						.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
 
-		return Mono.just(new CommandResponse(spec).withPoll(poll));
+		return CommandResponse.create(spec, poll);
 
 	}
 

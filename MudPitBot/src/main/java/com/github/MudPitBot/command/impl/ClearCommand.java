@@ -34,10 +34,10 @@ public class ClearCommand extends Command {
 	public Mono<CommandResponse> clearQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.clearQueue();
-			return Mono.just(new CommandResponse("Queue cleared"));
+			return CommandResponse.create("Queue cleared");
 		}
 
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

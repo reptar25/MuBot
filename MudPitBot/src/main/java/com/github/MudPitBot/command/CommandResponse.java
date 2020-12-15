@@ -6,6 +6,7 @@ import com.github.MudPitBot.command.misc.Poll;
 
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.MessageCreateSpec;
+import reactor.core.publisher.Mono;
 
 public class CommandResponse {
 
@@ -19,7 +20,7 @@ public class CommandResponse {
 		this.spec = null;
 	}
 
-	public CommandResponse(String content) {
+	private CommandResponse(String content) {
 		this.content = "";
 		this.spec = null;
 		// if the message is longer than 2000 character, trim it so that its not over
@@ -31,7 +32,7 @@ public class CommandResponse {
 		this.poll = null;
 	}
 
-	public CommandResponse(Consumer<? super MessageCreateSpec> spec) {
+	private CommandResponse(Consumer<? super MessageCreateSpec> spec) {
 		this.content = "";
 		this.spec = null;
 		this.spec = spec;
@@ -56,8 +57,28 @@ public class CommandResponse {
 		return this;
 	}
 
-	public static CommandResponse empty() {
+	public static CommandResponse emptyResponse() {
 		return new CommandResponse();
+	}
+
+	public static Mono<CommandResponse> empty() {
+		return Mono.just(CommandResponse.emptyResponse());
+	}
+	
+	public static CommandResponse createFlat(String content) {
+		return new CommandResponse(content);
+	}
+
+	public static Mono<CommandResponse> create(String content) {
+		return Mono.just(new CommandResponse(content));
+	}
+
+	public static Mono<CommandResponse> create(String content, Poll p) {
+		return Mono.just(new CommandResponse(content).withPoll(p));
+	}
+	
+	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec, Poll p){
+		return Mono.just(new CommandResponse(spec).withPoll(p));
 	}
 
 }

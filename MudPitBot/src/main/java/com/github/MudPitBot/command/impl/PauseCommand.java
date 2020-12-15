@@ -32,6 +32,6 @@ public class PauseCommand extends Command {
 		if (scheduler != null)
 			scheduler.pause(!scheduler.isPaused());
 
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 }

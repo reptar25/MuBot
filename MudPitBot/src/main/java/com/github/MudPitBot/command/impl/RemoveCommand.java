@@ -30,16 +30,15 @@ public class RemoveCommand extends Command {
 					int index = Integer.parseInt(params[0]);
 					AudioTrack removed = scheduler.removeFromQueue(index - 1);
 					if (removed != null)
-						return Mono.just(
-								new CommandResponse("Removed \"" + removed.getInfo().title + "\" from the queue."));
+						return CommandResponse.create("Removed \"" + removed.getInfo().title + "\" from the queue.");
 					else
-						return Mono.empty();
+						return CommandResponse.empty();
 				} catch (NumberFormatException ignored) {
-					return Mono.empty();
+					return CommandResponse.empty();
 				}
 			}
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

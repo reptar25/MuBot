@@ -37,10 +37,10 @@ public class StopCommand extends Command {
 			scheduler.getPlayer().stopTrack();
 			scheduler.clearQueue();
 			LOGGER.info("Stopped music");
-			return Mono.just(new CommandResponse("Player stopped"));
+			return CommandResponse.create("Player stopped");
 		}
 
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

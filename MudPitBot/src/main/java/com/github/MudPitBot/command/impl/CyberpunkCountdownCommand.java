@@ -45,12 +45,12 @@ public class CyberpunkCountdownCommand extends Command {
 		long seconds = duration.toSecondsPart();
 
 		if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0)
-			return Mono.just(new CommandResponse("Cyberpunk is out dumbass, the wait is over!"));
+			return CommandResponse.create("Cyberpunk is out dumbass, the wait is over!");
 
 		StringBuilder sb = new StringBuilder("Cyberpunk will release in: ").append(days).append(" days ").append(hours)
 				.append(" hours ").append(minutes).append(" minutes ").append(seconds).append(" seconds");
 
-		return Mono.just(new CommandResponse(sb.toString()));
+		return CommandResponse.create(sb.toString());
 	}
 
 }

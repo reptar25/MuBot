@@ -30,7 +30,7 @@ public class RollCommand extends Command {
 	public Mono<CommandResponse> roll(String[] params) {
 
 		if (params == null || params.length <= 0) {
-			return Mono.empty();
+			return CommandResponse.empty();
 		}
 
 		String dice = params[0];
@@ -53,10 +53,10 @@ public class RollCommand extends Command {
 			}
 
 			sb.append("Rolled a " + diceSum + "\n");
-			return Mono.just(new CommandResponse(sb.toString()));
+			return CommandResponse.create(sb.toString());
 		}
 
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

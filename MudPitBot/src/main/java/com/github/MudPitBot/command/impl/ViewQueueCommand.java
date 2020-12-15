@@ -52,8 +52,8 @@ public class ViewQueueCommand extends Command {
 
 			String retString = sb.toString();
 
-			return Mono.just(new CommandResponse(retString));
+			return CommandResponse.create(retString);
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 }

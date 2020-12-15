@@ -35,7 +35,7 @@ public class LeaveVoiceCommand extends Command {
 			LOGGER.info("Leaving channel " + channel.getId().asLong());
 			TrackScheduler.removeFromMap(channel.getId().asLong());
 			return botVoiceConnection.disconnect();
-		}).then(Mono.empty());
+		}).then(CommandResponse.empty());
 	}
 
 }

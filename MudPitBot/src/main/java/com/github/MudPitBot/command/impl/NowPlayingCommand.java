@@ -38,11 +38,11 @@ public class NowPlayingCommand extends Command {
 				// add track title and author
 				sb.append("\"").append(track.getInfo().title).append("\"").append(" by ")
 						.append(track.getInfo().author);
-				return Mono.just(new CommandResponse(sb.toString()));
+				return CommandResponse.create(sb.toString());
 			}
-			return Mono.just(new CommandResponse("No track is currently playing"));
+			return CommandResponse.create("No track is currently playing");
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

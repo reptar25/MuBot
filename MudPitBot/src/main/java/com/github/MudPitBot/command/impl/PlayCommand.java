@@ -40,21 +40,21 @@ public class PlayCommand extends Command {
 			if (params.length == 0 || params[0].isEmpty()) {
 				if (scheduler.getNowPlaying() != null)
 					scheduler.pause(!scheduler.isPaused());
-				return Mono.empty();
+				return CommandResponse.empty();
 			}
 
 			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
 				// LOGGER.error("Too many or few params for play");
-				return Mono.empty();
+				return CommandResponse.empty();
 			}
 			PlayerManager.loadItem(params[0], scheduler);
 			if (!scheduler.getQueue().isEmpty()) {
-				return Mono.just(new CommandResponse(
-						"New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")"));
+				return CommandResponse
+						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");
 			}
 			LOGGER.info("Loaded music item: " + params[0]);
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

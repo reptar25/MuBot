@@ -38,7 +38,7 @@ public class FastForwardCommand extends Command {
 				}
 			}
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

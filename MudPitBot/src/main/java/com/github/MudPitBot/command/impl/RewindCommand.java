@@ -38,7 +38,7 @@ public class RewindCommand extends Command {
 				}
 			}
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }

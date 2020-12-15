@@ -31,9 +31,9 @@ public class ShuffleCommand extends Command {
 	public Mono<CommandResponse> shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.shuffleQueue();
-			return Mono.just(new CommandResponse("Queue shuffled"));
+			return CommandResponse.create("Queue shuffled");
 		}
-		return Mono.empty();
+		return CommandResponse.empty();
 	}
 
 }
