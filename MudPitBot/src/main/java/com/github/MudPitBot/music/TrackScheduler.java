@@ -30,7 +30,7 @@ public final class TrackScheduler extends AudioEventAdapter {
 	 */
 	public TrackScheduler(long guildId, AudioPlayer player) {
 		this.player = player;
-		// add this as a listener so we can listen for tracks loading/ending
+		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
 	}
 
@@ -209,6 +209,11 @@ public final class TrackScheduler extends AudioEventAdapter {
 		// Only start the next track if the end reason is suitable for it (FINISHED or
 		// LOAD_FAILED)
 		LOGGER.info("TRACK ENDED");
+		if (track.getInfo().length == Long.MAX_VALUE) { // Live stream somehow ended, restart it again
+			LOGGER.error("Live stream track ended, restarting track");
+			player.startTrack(track, false);
+			return;
+		}
 		if (endReason.mayStartNext) {
 			nextTrack();
 		}
