@@ -36,7 +36,7 @@ public final class CommandUtil {
 		return sendReply(event.getMember(), event.getMessage().getChannel(), response);
 	}
 
-	public static Mono<CommandResponse> sendReply(Optional<Member> memberOpt, Mono<MessageChannel> channelMono,
+	private static Mono<CommandResponse> sendReply(Optional<Member> memberOpt, Mono<MessageChannel> channelMono,
 			CommandResponse response) {
 		return channelMono.flatMap(channel -> {
 			Mono<PermissionSet> permissions = requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
