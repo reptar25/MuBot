@@ -211,7 +211,7 @@ public final class TrackScheduler extends AudioEventAdapter {
 		LOGGER.info("TRACK ENDED");
 		if (track.getInfo().length == Long.MAX_VALUE) { // Live stream somehow ended, restart it again
 			LOGGER.error("Live stream track ended, restarting track");
-			player.startTrack(track, false);
+			player.startTrack(track.makeClone(), false);
 			return;
 		}
 		if (endReason.mayStartNext) {
