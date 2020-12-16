@@ -8,6 +8,7 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+
 public class SkipCommand extends Command {
 
 	public SkipCommand() {
@@ -31,12 +32,14 @@ public class SkipCommand extends Command {
 	 */
 	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
-			StringBuilder sb = new StringBuilder("Skipping ").append(scheduler.getNowPlaying().getInfo().title);
-			CommandResponse.create(sb.toString());
-			scheduler.nextTrack();
+			if (scheduler.getNowPlaying() != null) {
+				StringBuilder sb = new StringBuilder("Skipping ").append(scheduler.getNowPlaying().getInfo().title);
+				scheduler.nextTrack();
+				return CommandResponse.create(sb.toString());
+			} else {
+				return CommandResponse.create("No song is currently playing");
+			}
 		}
-
 		return CommandResponse.empty();
 	}
-
 }

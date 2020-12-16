@@ -1,4 +1,4 @@
-package com.github.MudPitBot.test;
+package com.github.MudPitBot.command.commands.gerneral.test;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,6 @@ public class CommandClientTest {
 		when(mockEvent.getMessage()).thenReturn(mockMessage);
 		when(mockMessage.getAuthorAsMember()).thenReturn(Mono.just(mockMember));
 		when(mockMember.isBot()).thenReturn(false);
-		client.processMessage(mockEvent, "!LeAvE");
 		
 		client.processMessage(mockEvent, "message");
 	}
