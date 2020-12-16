@@ -9,8 +9,8 @@ import java.util.Optional;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.exceptions.CommandException;
-import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.LavaPlayerAudioProvider;
+import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;

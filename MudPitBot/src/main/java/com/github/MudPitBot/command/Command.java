@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command;
 
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.object.entity.channel.VoiceChannel;
 import reactor.core.publisher.Flux;

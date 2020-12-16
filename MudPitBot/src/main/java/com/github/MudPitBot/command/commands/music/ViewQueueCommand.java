@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;

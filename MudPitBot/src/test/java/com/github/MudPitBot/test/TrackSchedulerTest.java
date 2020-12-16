@@ -2,8 +2,8 @@ package com.github.MudPitBot.test;
 
 import org.mockito.Mock;
 
-import com.github.MudPitBot.sound.PlayerManager;
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.PlayerManager;
+import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;

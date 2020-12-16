@@ -1,4 +1,4 @@
-package com.github.MudPitBot.sound;
+package com.github.MudPitBot.music;
 
 import java.util.ArrayList;
 import java.util.Collections;

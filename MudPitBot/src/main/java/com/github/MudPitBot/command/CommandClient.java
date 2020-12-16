@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.Map.Entry;
 
 import com.github.MudPitBot.command.exceptions.CommandException;
-import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.LavaPlayerAudioProvider;
+import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;

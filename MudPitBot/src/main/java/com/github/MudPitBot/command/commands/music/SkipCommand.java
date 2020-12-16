@@ -4,7 +4,7 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;

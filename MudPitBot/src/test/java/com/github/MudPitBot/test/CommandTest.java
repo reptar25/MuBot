@@ -4,7 +4,7 @@ import org.mockito.Mock;
 
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.commands.general.*;
-import com.github.MudPitBot.sound.TrackScheduler;
+import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
