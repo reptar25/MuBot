@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Map.Entry;
 
 import com.github.MudPitBot.command.exceptions.CommandException;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.LavaPlayerAudioProvider;
 
@@ -114,8 +115,9 @@ public class CommandClient {
 								LOGGER.error(error.getMessage());
 
 								// Send errors back as a reply to the user who used the command
-								sendReply(event, CommandResponse.createFlat(error.getUserFriendlyMessage()))
-										.subscribe();
+								sendReply(event, CommandResponse.createFlat(
+										Emoji.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + Emoji.NO_ENTRY))
+												.subscribe();
 
 								return Mono.empty();
 							}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed())
