@@ -2,7 +2,6 @@ package com.github.MudPitBot.command;
 
 import static com.github.MudPitBot.command.util.CommandUtil.sendReply;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map.Entry;
 
@@ -95,7 +94,7 @@ public class CommandClient {
 		// than 1 command in 1 message)
 		// this regex splits at !, but doesn't remove it from the resulting string
 		String[] commands = content.split("(?=" + Commands.COMMAND_PREFIX + ")");
-		ArrayList<Mono<Void>> commandList = new ArrayList<Mono<Void>>();
+		Mono<Void> commandList = Mono.empty();
 		for (String command : commands) {
 			command = command.trim();
 			for (final Entry<String, Command> entry : Commands.getEntries()) {
@@ -108,31 +107,30 @@ public class CommandClient {
 					// matching command found, so process and execute that command
 					// copy removes the command itself from the parameters
 					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
-					// add the command process to the list to be executed
-					// logs the time taken to execute the command
-					commandList.add(processCommand(event, entry.getValue(), commandParams)
-							.defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
+					// merge the commands from the message into one mono so they are done
+					// sequentially
+					commandList = commandList.then(processCommand(event, entry.getValue(), commandParams)
+							.onErrorResume(CommandException.class, error -> {
+								LOGGER.error(error.getMessage());
+
+								// Send errors back as a reply to the user who used the command
+								sendReply(event, CommandResponse.createFlat(error.getUserFriendlyMessage()))
+										.subscribe();
+
+								return Mono.empty();
+							}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed())
 							.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
 									.info("{} took {} ms to be processed", splitCommand[0], elapsed)))
-							.then());
+							.then();
 
 					// we found a matching command so stop the loop
 					break;
 				}
 			}
 		}
-		// create a new flux of the list of commands obtained from the message
-		Flux.fromIterable(commandList).subscribe(mono -> {
-			mono.onErrorResume(CommandException.class, error -> {
-				LOGGER.error(error.getMessage());
 
-				// Send errors back as a reply to the user who used the command
-				sendReply(event, CommandResponse.createFlat(error.getUserFriendlyMessage())).subscribe();
-
-				return Mono.empty();
-			}).doOnError(error -> LOGGER.error(error.getMessage(), error)).block(); // block here so that we ensure the
-																					// commands are done sequentially
-		});
+		// subscribe to the commands mono
+		commandList.subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 	}
 
 	/**
