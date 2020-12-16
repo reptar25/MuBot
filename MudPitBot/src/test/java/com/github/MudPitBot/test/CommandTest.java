@@ -1,9 +1,20 @@
 package com.github.MudPitBot.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.commands.general.*;
+import com.github.MudPitBot.command.commands.general.EchoCommand;
+import com.github.MudPitBot.command.commands.general.PollCommand;
+import com.github.MudPitBot.command.commands.general.RollCommand;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
@@ -14,13 +25,6 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;
 import reactor.core.publisher.Mono;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.Test;
 
 class CommandTest {
 
@@ -54,7 +58,7 @@ class CommandTest {
 	@Mock
 	Member mockMember = mock(Member.class);
 
-	TrackScheduler mockScheduler = new TrackScheduler(mockSnowflake.asLong());
+	TrackScheduler mockScheduler = GuildMusicManager.createTrackScheduler(mockSnowflake.asLong());
 
 	@Test
 	void echoTest() {

@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.Map.Entry;
 
 import com.github.MudPitBot.command.exceptions.CommandException;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.LavaPlayerAudioProvider;
-import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
@@ -166,9 +166,10 @@ public class CommandClient {
 		Flux.fromIterable(event.getGuilds()).subscribe(guild -> {
 			event.getSelf().asMember(guild.getId()).flatMap(Member::getVoiceState).flatMap(VoiceState::getChannel)
 					.flatMap(channel -> {
-						TrackScheduler scheduler = new TrackScheduler(channel.getId().asLong());
+						GuildMusicManager.createTrackScheduler(channel.getGuildId().asLong());
 						return channel
-								.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+								.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(
+										GuildMusicManager.getScheduler(channel.getGuildId().asLong()).getPlayer())))
 								.doOnNext(vc -> {
 									// subscribe to connected/disconnected events
 									vc.onConnectOrDisconnect().subscribe(newState -> {
@@ -179,7 +180,7 @@ public class CommandClient {
 											// This doesn't ever seem to happen when the bot
 											// disconnects, though, so also remove it from map
 											// during leave command
-											TrackScheduler.removeFromMap(channel.getId().asLong());
+											GuildMusicManager.removeFromMap(channel.getGuildId().asLong());
 											LOGGER.info("Bot disconnected from channel with id "
 													+ channel.getId().asLong());
 										}

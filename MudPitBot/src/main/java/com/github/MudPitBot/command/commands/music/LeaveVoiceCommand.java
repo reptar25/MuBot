@@ -4,7 +4,7 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.music.TrackScheduler;
+import com.github.MudPitBot.music.GuildMusicManager;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.VoiceChannel;
@@ -35,7 +35,7 @@ public class LeaveVoiceCommand extends Command {
 	public Mono<CommandResponse> leave(VoiceChannel channel) {
 		return channel.getVoiceConnection().flatMap(botVoiceConnection -> {
 			LOGGER.info("Leaving channel " + channel.getId().asLong());
-			TrackScheduler.removeFromMap(channel.getId().asLong());
+			GuildMusicManager.removeFromMap(channel.getGuildId().asLong());
 			return botVoiceConnection.disconnect();
 		}).then(CommandResponse.empty());
 	}

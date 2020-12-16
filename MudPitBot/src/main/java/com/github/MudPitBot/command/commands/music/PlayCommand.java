@@ -5,7 +5,7 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.music.PlayerManager;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -13,6 +13,7 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+
 public class PlayCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(PlayCommand.class);
@@ -52,7 +53,7 @@ public class PlayCommand extends Command {
 				// LOGGER.error("Too many or few params for play");
 				return CommandResponse.empty();
 			}
-			PlayerManager.loadItem(params[0], scheduler);
+			GuildMusicManager.loadItem(params[0], scheduler);
 			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
 				return CommandResponse
 						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");

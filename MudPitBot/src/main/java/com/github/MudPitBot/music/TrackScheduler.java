@@ -2,7 +2,6 @@ package com.github.MudPitBot.music;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -23,55 +22,19 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 
 	private static final Logger LOGGER = Loggers.getLogger(TrackScheduler.class);
 
-	/**
-	 * Maps a new TrackScheduler for each new voice channel joined. Key is channel
-	 * id snowflake
-	 */
-	private static HashMap<Long, TrackScheduler> schedulerMap = new HashMap<Long, TrackScheduler>();
-
-	/**
-	 * Get the track scheduler for the guild of this event
-	 * 
-	 * @param event The message event
-	 * @return The scheduler mapped to this channel
-	 */
-	public static TrackScheduler getScheduler(long channelId) {
-		return schedulerMap.get(channelId);
-	}
-
-	/**
-	 * Removes channel and destroys audio player if present in the map
-	 * 
-	 * @param channelId channel id of the channel to remove
-	 */
-	public static void removeFromMap(long channelId) {
-		if (schedulerMap.containsKey(channelId)) {
-			LOGGER.info("Removing TrackScheduler with id " + channelId);
-			schedulerMap.get(channelId).getPlayer().destroy();
-			schedulerMap.remove(channelId);
-		} else {
-			LOGGER.info("No TrackScheduler found with id " + channelId);
-		}
-	}
-
 	// Queue of songs for this scheduler
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<AudioTrack>();
 	private final AudioPlayer player;
-	private long channelId;
-	public static final int DEFAULT_VOLUME = 15;
 
 	/**
 	 * Creates a track scheduler for the given channel
 	 * 
-	 * @param channelId the channel to create a track scheduler for
+	 * @param guildId the channel to create a track scheduler for
 	 */
-	public TrackScheduler(long channelId) {
-		this.player = PlayerManager.createPlayer();
-		this.player.setVolume(DEFAULT_VOLUME);
-		this.channelId = channelId;
+	public TrackScheduler(long guildId, AudioPlayer player) {
+		this.player = player;
 		// add this as a listener so we can listen for tracks loading/ending
 		player.addListener(this);
-		schedulerMap.put(channelId, this);
 	}
 
 	/**
@@ -284,11 +247,6 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 */
 	public AudioPlayer getPlayer() {
 		return player;
-	}
-
-	@Override
-	public String toString() {
-		return "Scheduler channel id: " + this.channelId;
 	}
 
 }

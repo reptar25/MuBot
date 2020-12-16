@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -42,7 +43,7 @@ public class VolumeCommand extends Command {
 				return CommandResponse
 						.create(sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
 			} else if (params[0].equalsIgnoreCase("reset")) {
-				scheduler.getPlayer().setVolume(TrackScheduler.DEFAULT_VOLUME);
+				scheduler.getPlayer().setVolume(GuildMusicManager.DEFAULT_VOLUME);
 				return CommandResponse.create(sb.append("Volume reset to default").toString());
 			}
 

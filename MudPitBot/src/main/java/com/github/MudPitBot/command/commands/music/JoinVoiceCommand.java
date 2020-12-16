@@ -9,8 +9,8 @@ import java.util.Optional;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.exceptions.CommandException;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.LavaPlayerAudioProvider;
-import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -24,6 +24,7 @@ import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+
 public class JoinVoiceCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(JoinVoiceCommand.class);
@@ -61,7 +62,7 @@ public class JoinVoiceCommand extends Command {
 		Mono<Void> disconnect = getBotVoiceChannelId.filter(channelId -> !channelId.equals(channel.getId()))
 				.flatMap(botVoiceChannelId -> {
 					return channel.getGuild().flatMap(Guild::getVoiceConnection).flatMap(botVoiceConnection -> {
-						TrackScheduler.removeFromMap(botVoiceChannelId.asLong());
+						// GuildMusicManager.removeFromMap(botVoiceChannelId.asLong());
 						return botVoiceConnection.disconnect();
 					});
 				});
@@ -74,8 +75,12 @@ public class JoinVoiceCommand extends Command {
 			return Mono.just(channel.getId());
 		}).flatMap(channelId -> {
 
-			TrackScheduler scheduler = new TrackScheduler(channelId.asLong());
-			return channel.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(scheduler.getPlayer())))
+			if (!GuildMusicManager.containsTrackScheduler(channel.getGuildId().asLong()))
+				GuildMusicManager.createTrackScheduler(channel.getGuildId().asLong());
+
+			return channel
+					.join(spec -> spec.setProvider(new LavaPlayerAudioProvider(
+							GuildMusicManager.getScheduler(channel.getGuildId().asLong()).getPlayer())))
 					.doOnNext(vc -> {
 						// subscribe to connected/disconnected events
 						vc.onConnectOrDisconnect().subscribe(newState -> {
@@ -86,7 +91,7 @@ public class JoinVoiceCommand extends Command {
 								// This doesn't ever seem to happen when the bot
 								// disconnects, though, so also remove it from map
 								// during leave command
-								TrackScheduler.removeFromMap(channelId.asLong());
+								GuildMusicManager.removeFromMap(channel.getGuildId().asLong());
 								LOGGER.info("Bot disconnected from channel with id " + channelId.asLong());
 							}
 						});

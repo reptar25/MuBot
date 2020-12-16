@@ -1,5 +1,6 @@
 package com.github.MudPitBot.command;
 
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.object.entity.channel.VoiceChannel;
@@ -39,7 +40,7 @@ public abstract class Command implements CommandInterface {
 	private static final int RETRY_AMOUNT = 100;
 
 	protected static Mono<TrackScheduler> getScheduler(VoiceChannel channel) {
-		return Mono.justOrEmpty(TrackScheduler.getScheduler(channel.getId().asLong())).repeatWhenEmpty(RETRY_AMOUNT,
+		return Mono.justOrEmpty(GuildMusicManager.getScheduler(channel.getGuildId().asLong())).repeatWhenEmpty(RETRY_AMOUNT,
 				Flux::repeat);
 	}
 

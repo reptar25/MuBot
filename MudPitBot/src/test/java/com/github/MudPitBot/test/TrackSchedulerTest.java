@@ -2,7 +2,7 @@ package com.github.MudPitBot.test;
 
 import org.mockito.Mock;
 
-import com.github.MudPitBot.music.PlayerManager;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -17,9 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TrackSchedulerTest {
-
-	@Mock
-	static PlayerManager mockPlayerManager = mock(PlayerManager.class);
 
 	@Mock
 	static AudioPlayer mockPlayer = mock(AudioPlayer.class);
@@ -38,7 +35,7 @@ public class TrackSchedulerTest {
 	@BeforeEach
 	void createTrackScheduler() {
 		// when(mockPlayerManager.getPlayer()).thenReturn(mockPlayer);
-		scheduler = new TrackScheduler(mockSnowflake.asLong());
+		scheduler = GuildMusicManager.createTrackScheduler(mockSnowflake.asLong());
 	}
 
 	@Test
