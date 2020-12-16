@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.general;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;

@@ -3,7 +3,7 @@ package com.github.MudPitBot.test;
 import org.mockito.Mock;
 
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.impl.*;
+import com.github.MudPitBot.command.commands.general.*;
 import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.common.util.Snowflake;

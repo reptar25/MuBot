@@ -1,11 +1,14 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.CommandUtil.requireVoiceChannel;
 
 import java.time.Duration;
 import java.util.Optional;
 
 import com.github.MudPitBot.command.Command;
-import com.github.MudPitBot.command.CommandException;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.exceptions.CommandException;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.TrackScheduler;
 
@@ -21,7 +24,6 @@ import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
-
 public class JoinVoiceCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(JoinVoiceCommand.class);
@@ -66,7 +68,8 @@ public class JoinVoiceCommand extends Command {
 
 		Mono<VoiceConnection> joinChannel = getBotVoiceChannelId.flatMap(id -> {
 			if (id.equals(channel.getId()))
-				return Mono.error(new CommandException("I'm already in your voice channel"));
+				return Mono.error(new CommandException("Bot already connected to channel",
+						"I'm already connected your voice channel"));
 
 			return Mono.just(channel.getId());
 		}).flatMap(channelId -> {

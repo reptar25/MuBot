@@ -1,4 +1,6 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -6,33 +8,32 @@ import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+public class RewindCommand extends Command {
 
-public class SeekCommand extends Command {
-
-	public SeekCommand() {
-		super("seek");
+	public RewindCommand() {
+		super("rewind");
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return requireSameVoiceChannel(event).flatMap(channel -> {
 			return getScheduler(channel).flatMap(scheduler -> {
-				return seek(scheduler, params);
+				return rewind(scheduler, params);
 			});
 		});
 	}
 
 	/**
 	 * @param event  The message event
-	 * @param params The position to move the current song to in seconds
+	 * @param params The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public Mono<CommandResponse> seek(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> rewind(TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			if (params.length > 0) {
 				try {
-					int positionInSeconds = Integer.parseInt(params[0]);
-					scheduler.seek(positionInSeconds);
+					int amountInSeconds = Integer.parseInt(params[0]);
+					scheduler.rewind(amountInSeconds);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

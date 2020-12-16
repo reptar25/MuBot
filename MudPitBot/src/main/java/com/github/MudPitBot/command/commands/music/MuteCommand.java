@@ -1,11 +1,14 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.CommandUtil.requireVoiceChannel;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.misc.MuteHelper;
+import com.github.MudPitBot.command.util.MuteHelper;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;

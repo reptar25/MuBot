@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.general;
 
 import java.util.Map.Entry;
 import java.util.Set;

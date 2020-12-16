@@ -1,4 +1,6 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -6,34 +8,31 @@ import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+public class PauseCommand extends Command {
 
-public class ShuffleCommand extends Command {
-
-	public ShuffleCommand() {
-		super("shuffle");
+	public PauseCommand() {
+		super("pause");
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return requireSameVoiceChannel(event).flatMap(channel -> {
 			return getScheduler(channel).flatMap(scheduler -> {
-				return shuffleQueue(scheduler);
+				return pause(scheduler);
 			});
 		});
 	}
 
 	/**
-	 * Shuffles the songs currently in the queue
+	 * Pauses/unpauses the player
 	 * 
 	 * @param event The message event
 	 * @return null
 	 */
-	public Mono<CommandResponse> shuffleQueue(TrackScheduler scheduler) {
-		if (scheduler != null) {
-			scheduler.shuffleQueue();
-			return CommandResponse.create("Queue shuffled");
-		}
+	public Mono<CommandResponse> pause(TrackScheduler scheduler) {
+		if (scheduler != null)
+			scheduler.pause(!scheduler.isPaused());
+
 		return CommandResponse.empty();
 	}
-
 }

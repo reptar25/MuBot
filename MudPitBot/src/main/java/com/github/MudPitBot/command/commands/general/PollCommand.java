@@ -1,10 +1,10 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.general;
 
 import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.misc.Poll;
+import com.github.MudPitBot.command.util.Poll;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;

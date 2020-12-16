@@ -1,4 +1,7 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -10,7 +13,6 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
-
 public class PlayCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(PlayCommand.class);

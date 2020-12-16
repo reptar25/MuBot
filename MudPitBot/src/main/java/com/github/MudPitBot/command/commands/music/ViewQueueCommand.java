@@ -1,4 +1,6 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import java.util.List;
 
@@ -9,7 +11,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
-
 public class ViewQueueCommand extends Command {
 
 	public ViewQueueCommand() {

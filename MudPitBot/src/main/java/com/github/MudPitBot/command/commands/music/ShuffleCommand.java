@@ -1,4 +1,6 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -6,35 +8,32 @@ import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+public class ShuffleCommand extends Command {
 
-public class SkipCommand extends Command {
-
-	public SkipCommand() {
-		super("skip");
+	public ShuffleCommand() {
+		super("shuffle");
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return requireSameVoiceChannel(event).flatMap(channel -> {
 			return getScheduler(channel).flatMap(scheduler -> {
-				return skip(scheduler);
+				return shuffleQueue(scheduler);
 			});
 		});
 	}
 
 	/**
-	 * Stops the current song and plays the next in queue if there is any
+	 * Shuffles the songs currently in the queue
 	 * 
 	 * @param event The message event
-	 * @return The message event
+	 * @return null
 	 */
-	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
+	public Mono<CommandResponse> shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
-			StringBuilder sb = new StringBuilder("Skipping ").append(scheduler.getNowPlaying().getInfo().title);
-			CommandResponse.create(sb.toString());
-			scheduler.nextTrack();
+			scheduler.shuffleQueue();
+			return CommandResponse.create("Queue shuffled");
 		}
-
 		return CommandResponse.empty();
 	}
 

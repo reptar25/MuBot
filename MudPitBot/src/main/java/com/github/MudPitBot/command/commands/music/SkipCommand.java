@@ -1,4 +1,6 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.music;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -6,35 +8,32 @@ import com.github.MudPitBot.sound.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+public class SkipCommand extends Command {
 
-public class ClearCommand extends Command {
-
-	public ClearCommand() {
-		super("clear");
+	public SkipCommand() {
+		super("skip");
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
 		return requireSameVoiceChannel(event).flatMap(channel -> {
 			return getScheduler(channel).flatMap(scheduler -> {
-				return clearQueue(scheduler);
+				return skip(scheduler);
 			});
 		});
-		// getScheduler(event).flatMap(scheduler -> return
-		// Mono.just(clearQueue(scheduler));
-		// return clearQueue(getScheduler(event));
 	}
 
 	/**
-	 * Clears the current queue of all objects
+	 * Stops the current song and plays the next in queue if there is any
 	 * 
 	 * @param event The message event
-	 * @return "Queue cleared" if successful, null if not
+	 * @return The message event
 	 */
-	public Mono<CommandResponse> clearQueue(TrackScheduler scheduler) {
+	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
-			scheduler.clearQueue();
-			return CommandResponse.create("Queue cleared");
+			StringBuilder sb = new StringBuilder("Skipping ").append(scheduler.getNowPlaying().getInfo().title);
+			CommandResponse.create(sb.toString());
+			scheduler.nextTrack();
 		}
 
 		return CommandResponse.empty();

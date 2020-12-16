@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.impl;
+package com.github.MudPitBot.command.commands.general;
 
 import java.util.Random;
 import java.util.regex.Pattern;

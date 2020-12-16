@@ -1,10 +1,12 @@
 package com.github.MudPitBot.command;
 
+import static com.github.MudPitBot.command.util.CommandUtil.sendReply;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map.Entry;
 
-import com.github.MudPitBot.command.exceptions.*;
+import com.github.MudPitBot.command.exceptions.CommandException;
 import com.github.MudPitBot.sound.LavaPlayerAudioProvider;
 import com.github.MudPitBot.sound.TrackScheduler;
 
@@ -14,11 +16,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
-import discord4j.core.object.entity.channel.GuildChannel;
-import discord4j.core.object.entity.channel.MessageChannel;
-import discord4j.core.object.entity.channel.PrivateChannel;
-import discord4j.rest.util.Permission;
-import discord4j.rest.util.PermissionSet;
 import discord4j.voice.VoiceConnection.State;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -50,14 +47,14 @@ public class CommandClient {
 	private CommandClient(GatewayDiscordClient client) {
 		this.client = client;
 
-		setupListener();
+		setupListeners();
 		LOGGER.info(("Command Client created."));
 	}
 
 	/*
-	 * Sets up a listener on the event dispatcher.
+	 * Sets up a listeners on the event dispatcher.
 	 */
-	private void setupListener() {
+	private void setupListeners() {
 		/*
 		 * Add listener for new messages being sent. Whenever a messaged is typed in
 		 * chat that the bot is able to see it should filter through this method.
@@ -111,6 +108,7 @@ public class CommandClient {
 					// matching command found, so process and execute that command
 					// copy removes the command itself from the parameters
 					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
+					// add the command process to the list to be executed
 					// logs the time taken to execute the command
 					commandList.add(processCommand(event, entry.getValue(), commandParams)
 							.defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
@@ -127,17 +125,24 @@ public class CommandClient {
 		Flux.fromIterable(commandList).subscribe(mono -> {
 			mono.onErrorResume(CommandException.class, error -> {
 				LOGGER.error(error.getMessage());
-				// SendMessagesException automatically get sent as private messages to the user
-				// who used
-				// the commands
-				if (error instanceof SendMessagesException)
-					sendReply(event, CommandResponse.createFlat(error.getMessage())).subscribe();
+
+				// Send errors back as a reply to the user who used the command
+				sendReply(event, CommandResponse.createFlat(error.getUserFriendlyMessage())).subscribe();
 
 				return Mono.empty();
-			}).doOnError(error -> LOGGER.error(error.getMessage(), error)).subscribe();
+			}).doOnError(error -> LOGGER.error(error.getMessage(), error)).block(); // block here so that we ensure the
+																					// commands are done sequentially
 		});
 	}
 
+	/**
+	 * Processes the given command
+	 * 
+	 * @param event   the message event
+	 * @param command the command to process
+	 * @param params  the parameters of the command
+	 * @return the response to the command
+	 */
 	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] params) {
 
 		// commands will return any string that the bot should send back as a message to
@@ -184,50 +189,6 @@ public class CommandClient {
 					.doOnNext(TupleUtils.consumer(
 							(elapsed, response) -> LOGGER.info("ReadyEvent took {} ms to be processed", elapsed)))
 					.subscribe();
-		});
-	}
-
-	// TODO: Move this to a util class?
-
-	public static Mono<CommandResponse> sendReply(MessageCreateEvent event, CommandResponse response) {
-		// send reply, on CommandException error send the message to the member in a
-		// private message
-		return sendReply(event.getMessage().getChannel(), response).onErrorResume(CommandException.class, error -> {
-			return Mono.justOrEmpty(event.getMember()).flatMap(member -> {
-				//
-				return sendPrivateReply(member.getPrivateChannel(), response);
-			});
-		});
-	}
-
-	public static Mono<CommandResponse> sendReply(Mono<MessageChannel> channelMono, CommandResponse response) {
-		return channelMono.flatMap(channel -> {
-			Mono<PermissionSet> permissions = Command.requireBotPermissions((GuildChannel) channel,
-					Permission.SEND_MESSAGES);
-			if (channel instanceof PrivateChannel)
-				permissions = Mono.just(PermissionSet.all());
-
-			return permissions.flatMap(ignored -> {
-				if (response.getSpec() != null) {
-					return channel.createMessage(response.getSpec()).flatMap(message -> {
-						// if the response contained a poll
-						if (response.getPoll() != null) {
-							// add reactions as vote tickers, number of reactions depends on number of
-							// answers
-							response.getPoll().addReactions(message);
-						}
-						return Mono.just(response);
-					});
-				}
-				return Mono.empty();
-			});
-		});
-	}
-
-	private static Mono<CommandResponse> sendPrivateReply(Mono<PrivateChannel> privateChannelMono,
-			CommandResponse response) {
-		return privateChannelMono.flatMap(privateChannel -> {
-			return privateChannel.createMessage(response.getSpec()).thenReturn(response);
 		});
 	}
 }
