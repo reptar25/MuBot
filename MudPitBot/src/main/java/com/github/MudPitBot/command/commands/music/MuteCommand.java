@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.command.util.MuteHelper;
 
 import discord4j.common.util.Snowflake;
@@ -50,7 +51,6 @@ public class MuteCommand extends Command {
 		 * gets the member's channel who sent the message, and then all the VoiceStates
 		 * connected to that channel. From there we can get the Member of the VoiceState
 		 */
-		StringBuilder sb = new StringBuilder();
 		final Snowflake guildId = channel.getGuildId();
 		final Snowflake id = channel.getId();
 		Flux<VoiceState> users = channel.getVoiceStates();
@@ -72,22 +72,22 @@ public class MuteCommand extends Command {
 			MuteHelper.mutedChannels.put(guildId, ids);
 		}
 
+		String response;
 		if (mute) {
 			users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
 				LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
 				return member.edit(spec -> spec.setMute(true));
 			}).subscribe();
-			sb.append("Muting ");
+			response = Emoji.MUTE + " Muting " + channel.getName() + " " + Emoji.MUTE;
 		} else {
 			users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
 				LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
 				return member.edit(spec -> spec.setMute(false));
 			}).subscribe();
-			sb.append("Unmuting ");
+			response = Emoji.SOUND + " Unmuting " + channel.getName() + " " + Emoji.SOUND;
 		}
-
-		sb.append(channel.getName());
-		return CommandResponse.create(sb.toString());
+		;
+		return CommandResponse.create(response);
 	}
 
 }

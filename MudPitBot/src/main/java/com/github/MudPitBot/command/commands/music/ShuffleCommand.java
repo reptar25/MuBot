@@ -4,10 +4,12 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+
 public class ShuffleCommand extends Command {
 
 	public ShuffleCommand() {
@@ -32,7 +34,7 @@ public class ShuffleCommand extends Command {
 	public Mono<CommandResponse> shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.shuffleQueue();
-			return CommandResponse.create("Queue shuffled");
+			return CommandResponse.create(Emoji.CHECK_MARK + " Queue shuffled " + Emoji.CHECK_MARK);
 		}
 		return CommandResponse.empty();
 	}

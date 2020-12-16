@@ -4,12 +4,14 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+
 public class StopCommand extends Command {
 
 	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
@@ -38,7 +40,7 @@ public class StopCommand extends Command {
 			scheduler.getPlayer().stopTrack();
 			scheduler.clearQueue();
 			LOGGER.info("Stopped music");
-			return CommandResponse.create("Player stopped");
+			return CommandResponse.create(Emoji.STOP_SIGN + " Player stopped " + Emoji.STOP_SIGN);
 		}
 
 		return CommandResponse.empty();

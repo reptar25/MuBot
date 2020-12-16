@@ -4,11 +4,13 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+
 public class RemoveCommand extends Command {
 
 	public RemoveCommand() {
@@ -31,7 +33,8 @@ public class RemoveCommand extends Command {
 					int index = Integer.parseInt(params[0]);
 					AudioTrack removed = scheduler.removeFromQueue(index - 1);
 					if (removed != null)
-						return CommandResponse.create("Removed \"" + removed.getInfo().title + "\" from the queue.");
+						return CommandResponse.create(Emoji.RED_X + " Removed \"" + removed.getInfo().title
+								+ "\" from the queue " + Emoji.RED_X);
 					else
 						return CommandResponse.empty();
 				} catch (NumberFormatException ignored) {

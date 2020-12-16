@@ -26,6 +26,15 @@ public abstract class Emoji {
 	public static final String I_PLAIN = ":regional_indicator_i:";
 	public static final String J_PLAIN = ":regional_indicator_j:";
 
+	public static final String NEXT_TRACK = ":next_track:";
+	public static final String STOP_SIGN = ":stop_sign:";
+	public static final String CHECK_MARK = ":white_check_mark:";
+	public static final String NO_ENTRY = ":no_entry_sign:";
+	public static final String MUTE = ":mute:";
+	public static final String SOUND = ":sound:";
+	public static final String RED_X = ":x:";
+	public static final String DICE = ":game_die:";
+
 	public static final ReactionEmoji.Unicode getUnicodeFromNum(int num) {
 
 		switch (num) {

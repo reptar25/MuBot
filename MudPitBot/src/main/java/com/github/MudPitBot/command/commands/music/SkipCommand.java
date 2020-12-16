@@ -4,6 +4,7 @@ import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -33,7 +34,8 @@ public class SkipCommand extends Command {
 	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			if (scheduler.getNowPlaying() != null) {
-				StringBuilder sb = new StringBuilder("Skipping ").append(scheduler.getNowPlaying().getInfo().title);
+				StringBuilder sb = new StringBuilder().append(Emoji.NEXT_TRACK).append(" Skipping \"")
+						.append(scheduler.getNowPlaying().getInfo().title).append("\" ").append(Emoji.NEXT_TRACK);
 				scheduler.nextTrack();
 				return CommandResponse.create(sb.toString());
 			} else {
