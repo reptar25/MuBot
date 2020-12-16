@@ -2,15 +2,21 @@ package com.github.MudPitBot.music;
 
 import java.util.HashMap;
 
+import com.github.MudPitBot.command.util.SoundCloudHtmlLoader;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
+/**
+ * Manages all of the TrackSchedulers for each guild
+ */
 public class GuildMusicManager {
 
 	private static final Logger LOGGER = Loggers.getLogger(GuildMusicManager.class);
@@ -27,6 +33,8 @@ public class GuildMusicManager {
 	static {
 		// Creates AudioPlayer instances and translates URLs to AudioTrack instances
 		playerManager = new DefaultAudioPlayerManager();
+		playerManager.registerSourceManager(
+				SoundCloudAudioSourceManager.builder().withHtmlDataLoader(new SoundCloudHtmlLoader()).build());
 		// This is an optimization strategy that Discord4J can utilize. It is not
 		// important to understand
 		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
@@ -34,8 +42,8 @@ public class GuildMusicManager {
 		AudioSourceManagers.registerRemoteSources(playerManager);
 	}
 
-	public static void loadItem(String identifier, TrackScheduler resultHandler) {
-		playerManager.loadItem(identifier, resultHandler);
+	public static void loadItem(String identifier, TrackScheduler scheduler, MessageCreateEvent event) {
+		playerManager.loadItem(identifier, new TrackLoadResultHandler(scheduler, event));
 	}
 
 	public static TrackScheduler createTrackScheduler(long guildId) {

@@ -7,18 +7,15 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public final class TrackScheduler extends AudioEventAdapter implements AudioLoadResultHandler {
+public final class TrackScheduler extends AudioEventAdapter {
 
 	private static final Logger LOGGER = Loggers.getLogger(TrackScheduler.class);
 
@@ -41,8 +38,9 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 	 * Adds a track to the queue to be played
 	 * 
 	 * @param track the track to queue
+	 * @return
 	 */
-	public void queue(AudioTrack track) {
+	public String queue(AudioTrack track) {
 		// Calling startTrack with the noInterrupt set to true will start the track only
 		// if nothing is currently playing. If
 		// something is playing, it returns false and does nothing. In that case the
@@ -51,35 +49,9 @@ public final class TrackScheduler extends AudioEventAdapter implements AudioLoad
 		if (!player.startTrack(track, true)) {
 			queue.offer(track);
 			LOGGER.info("Track added to the queue: " + queue.size());
+			return "New track added to the queue (#" + getQueue().size() + ")";
 		}
-	}
-
-	@Override
-	public void trackLoaded(final AudioTrack track) {
-		// LavaPlayer found an audio source for us to play
-		queue(track);
-	}
-
-	@Override
-	public void playlistLoaded(final AudioPlaylist playlist) {
-		// LavaPlayer found multiple AudioTracks from some playlist
-		LOGGER.info("Playlist loaded");
-
-		for (AudioTrack track : playlist.getTracks()) {
-			queue(track);
-		}
-	}
-
-	@Override
-	public void noMatches() {
-		// LavaPlayer did not find any audio to extract
-		LOGGER.info("Did not find any audio to extract");
-	}
-
-	@Override
-	public void loadFailed(final FriendlyException exception) {
-		// LavaPlayer could not parse an audio source for some reason
-		LOGGER.info("Could not parse an audio source for some reason");
+		return "";
 	}
 
 	/**

@@ -27,7 +27,7 @@ public class PlayCommand extends Command {
 		return requireSameVoiceChannel(event).flatMap(channel -> {
 			return requireBotPermissions(channel, Permission.SPEAK).flatMap(ignored -> {
 				return getScheduler(channel).flatMap(scheduler -> {
-					return play(scheduler, params);
+					return play(event, scheduler, params);
 				});
 			});
 		});
@@ -40,7 +40,7 @@ public class PlayCommand extends Command {
 	 * @param params The link of the audio
 	 * @return null
 	 */
-	public Mono<CommandResponse> play(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> play(MessageCreateEvent event, TrackScheduler scheduler, String[] params) {
 		if (scheduler != null && params != null) {
 			// unpause
 			if (params.length == 0 || params[0].isEmpty()) {
@@ -53,11 +53,11 @@ public class PlayCommand extends Command {
 				// LOGGER.error("Too many or few params for play");
 				return CommandResponse.empty();
 			}
-			GuildMusicManager.loadItem(params[0], scheduler);
-			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
-				return CommandResponse
-						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");
-			}
+			GuildMusicManager.loadItem(params[0], scheduler, event);
+//			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
+//				return CommandResponse
+//						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");
+//			}
 			LOGGER.info("Loaded music item: " + params[0]);
 		}
 		return CommandResponse.empty();

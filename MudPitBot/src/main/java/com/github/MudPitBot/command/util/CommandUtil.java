@@ -82,14 +82,10 @@ public final class CommandUtil {
 		return Mono.justOrEmpty(event.getMember())
 				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
 						"You can't use this command in a private message")))
-				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty())
-				.flatMap(s -> {
-					if (s.isPresent())
-						return Mono.just(s.get());
-
-					return Mono.error(new CommandException("Voice command used without voice channel",
-							"You have to be in a voice channel to use this command"));
-				}).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
+				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+				.switchIfEmpty(Mono.error(new CommandException("Voice command used without voice channel",
+						"You have to be in a voice channel to use this command")))
+				.flatMap(Mono::justOrEmpty).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
 	}
 
 	/**
@@ -99,7 +95,6 @@ public final class CommandUtil {
 	 *         do not share a voice channel
 	 */
 	public static Mono<VoiceChannel> requireSameVoiceChannel(MessageCreateEvent event) {
-		Mono<MessageChannel> getMessageChannel = event.getMessage().getChannel();
 		// id of the bot's voice channel id or empty
 		final Mono<Optional<Snowflake>> getBotVoiceChannelId = event.getClient().getSelf().flatMap(user -> {
 			if (event.getGuildId().isPresent())
@@ -115,15 +110,9 @@ public final class CommandUtil {
 		return Mono.justOrEmpty(event.getMember())
 				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
 						"You can't use this command in a private message")))
-				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId, getMessageChannel).map(tuple -> {
+				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId).map(tuple -> {
 					final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
 					final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
-					final MessageChannel channel = tuple.getT3();
-
-					if (channel instanceof PrivateChannel) {
-						throw new CommandException("Voice command in private message",
-								"You can't use this command in a private message");
-					}
 
 					// If the user and the bot are not in a voice channel
 					if (botVoiceChannelId.isEmpty() || userVoiceChannelId.isEmpty()) {

@@ -43,15 +43,6 @@ public class TrackSchedulerTest {
 		scheduler.queue(mockTrack);
 	}
 
-	@Test
-	void testTrackLoaded() {
-		scheduler.trackLoaded(mockTrack);
-	}
-
-	@Test
-	void testPlaylistLoaded() {
-		scheduler.playlistLoaded(mockPlaylist);
-	}
 
 	@Test
 	void testGetQueue() {

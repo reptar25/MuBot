@@ -3,18 +3,20 @@ package com.github.MudPitBot.command.commands.music.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.commands.music.*;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+
 public class CommandTests {
+
+	@Mock
+	MessageCreateEvent eventMock = mock(MessageCreateEvent.class);
 
 	TrackScheduler scheduler = GuildMusicManager.createTrackScheduler(1l);
 
@@ -50,7 +52,7 @@ public class CommandTests {
 	@Test
 	void playTest() {
 		String[] args = { "1" };
-		CommandResponse response = new PlayCommand().play(scheduler, args).block();
+		CommandResponse response = new PlayCommand().play(eventMock, scheduler, args).block();
 
 		assertEquals(response, CommandResponse.emptyResponse());
 	}
