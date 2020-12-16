@@ -39,9 +39,9 @@ public final class CommandUtil {
 	private static Mono<CommandResponse> sendReply(Optional<Member> memberOpt, Mono<MessageChannel> channelMono,
 			CommandResponse response) {
 		return channelMono.flatMap(channel -> {
-			Mono<PermissionSet> permissions = requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
-			if (channel instanceof PrivateChannel)
-				permissions = Mono.just(PermissionSet.all());
+			Mono<PermissionSet> permissions = Mono.just(PermissionSet.all());
+			if (!(channel instanceof PrivateChannel))
+				permissions = requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
 
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {
@@ -112,31 +112,34 @@ public final class CommandUtil {
 		final Mono<Optional<Snowflake>> getUserVoiceChannelId = Mono.justOrEmpty(event.getMember())
 				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty());
 
-		return Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId, getMessageChannel).map(tuple -> {
-			final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
-			final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
-			final MessageChannel channel = tuple.getT3();
+		return Mono.justOrEmpty(event.getMember())
+				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
+						"You can't use this command in a private message")))
+				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId, getMessageChannel).map(tuple -> {
+					final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
+					final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
+					final MessageChannel channel = tuple.getT3();
 
-			if (channel instanceof PrivateChannel) {
-				throw new CommandException("User sent voice command in private message",
-						"You can't use this command in a private message");
-			}
+					if (channel instanceof PrivateChannel) {
+						throw new CommandException("Voice command in private message",
+								"You can't use this command in a private message");
+					}
 
-			// If the user and the bot are not in a voice channel
-			if (botVoiceChannelId.isEmpty() || userVoiceChannelId.isEmpty()) {
-				throw new CommandException("User not in voice channel",
-						"You have to be in the a voice channel as the bot to use this command");
-			}
+					// If the user and the bot are not in a voice channel
+					if (botVoiceChannelId.isEmpty() || userVoiceChannelId.isEmpty()) {
+						throw new CommandException("User not in voice channel",
+								"You have to be in the a voice channel as the bot to use this command");
+					}
 
-			// If the user and the bot are not in the same voice channel
-			if (botVoiceChannelId.isPresent()
-					&& !userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
-				throw new CommandException("User and bot not in same channel",
-						"You have to be in the same voice channel as the bot to use this command");
-			}
+					// If the user and the bot are not in the same voice channel
+					if (botVoiceChannelId.isPresent()
+							&& !userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
+						throw new CommandException("User and bot not in same channel",
+								"You have to be in the same voice channel as the bot to use this command");
+					}
 
-			return userVoiceChannelId.get();
-		}).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
+					return userVoiceChannelId.get();
+				})).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
 	}
 
 	/**
