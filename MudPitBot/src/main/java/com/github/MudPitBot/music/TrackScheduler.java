@@ -51,8 +51,8 @@ public final class TrackScheduler extends AudioEventAdapter {
 		if (!player.startTrack(track, true)) {
 			queue.offer(track);
 			LOGGER.info("Track added to the queue: " + queue.size());
-			return Emoji.MEMO + " New track added to the queue (#" + Emoji.numToEmoji(getQueue().size()) + ") "
-					+ Emoji.MEMO;
+			return Emoji.CHECK_MARK + " \"" + track.getInfo().title + "\" by " + track.getInfo().author
+					+ " was added to the queue (" + Emoji.numToEmoji(getQueue().size()) + ") " + Emoji.CHECK_MARK;
 		}
 		return Emoji.NOTES + " Now playing " + track.getInfo().title + " by " + track.getInfo().author + " "
 				+ Emoji.NOTES;

@@ -39,7 +39,7 @@ public class TrackLoadResultHandler implements AudioLoadResultHandler {
 		LOGGER.info("Playlist loaded");
 		CommandUtil
 				.sendReply(event, CommandResponse.createFlat(Emoji.CHECK_MARK + " Playlist with "
-						+ Emoji.numToEmoji(playlist.getTracks().size()) + " songs added to queue" + Emoji.CHECK_MARK))
+						+ Emoji.numToEmoji(playlist.getTracks().size()) + " songs added to queue " + Emoji.CHECK_MARK))
 				.subscribe();
 
 		for (AudioTrack track : playlist.getTracks()) {

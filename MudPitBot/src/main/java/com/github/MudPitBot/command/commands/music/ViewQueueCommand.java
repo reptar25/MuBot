@@ -12,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+
 public class ViewQueueCommand extends Command {
 
 	public ViewQueueCommand() {
@@ -41,11 +42,11 @@ public class ViewQueueCommand extends Command {
 			// if the queue is not empty
 			if (queue.size() > 0) {
 				// print total number of songs
-				sb.append(queue.size()).append(" songs in queue: ").append("\n");
+				sb.append(Emoji.numToEmoji(queue.size())).append(" songs are in the queue: ").append("\n\n");
 				for (int i = 0; i < queue.size(); i++) {
 					AudioTrack track = queue.get(i);
 					// print title and author of song on its own line
-					sb.append(Emoji.numToEmoji(i + 1)).append(" \"").append(track.getInfo().title).append("\"")
+					sb.append(Emoji.numToEmoji(i + 1)).append(" - \"").append(track.getInfo().title).append("\"")
 							.append(" by ").append(track.getInfo().author).append("\n");
 				}
 			} else {
