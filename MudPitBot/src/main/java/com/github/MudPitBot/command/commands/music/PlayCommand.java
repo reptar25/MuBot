@@ -49,10 +49,14 @@ public class PlayCommand extends Command {
 				return CommandResponse.empty();
 			}
 
-			if (params.length <= 0 || params.length > 1 || params[0].isEmpty()) {
-				// LOGGER.error("Too many or few params for play");
+			if (params.length <= 0 || params[0].isEmpty()) {
 				return CommandResponse.empty();
 			}
+
+			// if its a search recombine the params that were split by space
+			if (params[0].startsWith("ytsearch:"))
+				params[0] = recombineParams(params);
+
 			GuildMusicManager.loadItem(params[0], scheduler, event);
 //			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
 //				return CommandResponse
@@ -61,6 +65,14 @@ public class PlayCommand extends Command {
 			LOGGER.info("Loaded music item: " + params[0]);
 		}
 		return CommandResponse.empty();
+	}
+
+	private String recombineParams(String[] params) {
+		StringBuilder sb = new StringBuilder();
+		for (String param : params) {
+			sb.append(param.trim()).append(" ");
+		}
+		return sb.toString();
 	}
 
 }
