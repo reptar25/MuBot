@@ -23,6 +23,7 @@ public final class TrackScheduler extends AudioEventAdapter {
 	// Queue of songs for this scheduler
 	private BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<AudioTrack>();
 	private final AudioPlayer player;
+	private boolean repeat = false;
 
 	/**
 	 * Creates a track scheduler for the given channel
@@ -211,6 +212,11 @@ public final class TrackScheduler extends AudioEventAdapter {
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 
 		LOGGER.info("TRACK ENDED");
+		if (repeat) {
+			player.startTrack(track.makeClone(), false);
+			return;
+		}
+
 		if (endReason != AudioTrackEndReason.STOPPED && endReason.mayStartNext
 				&& track.getInfo().length == Long.MAX_VALUE) {
 			// Live stream somehow ended, restart it again
@@ -231,6 +237,14 @@ public final class TrackScheduler extends AudioEventAdapter {
 	 */
 	public AudioPlayer getPlayer() {
 		return player;
+	}
+
+	public boolean repeatEnabled() {
+		return repeat;
+	}
+
+	public void setRepeat(boolean repeat) {
+		this.repeat = repeat;
 	}
 
 }
