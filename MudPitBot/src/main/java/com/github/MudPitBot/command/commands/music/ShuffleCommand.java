@@ -34,7 +34,7 @@ public class ShuffleCommand extends Command {
 	public Mono<CommandResponse> shuffleQueue(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			scheduler.shuffleQueue();
-			return CommandResponse.create(Emoji.CHECK_MARK + " Queue shuffled " + Emoji.CHECK_MARK);
+			return CommandResponse.create(Emoji.SHUFFLE + " Queue shuffled " + Emoji.SHUFFLE);
 		}
 		return CommandResponse.empty();
 	}

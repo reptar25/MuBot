@@ -67,6 +67,8 @@ public abstract class Emoji {
 	public static final String MEMO = ":memo:";
 	public static final String NOTES = ":notes:";
 	public static final String LOOP = ":loop:";
+	public static final String SHUFFLE = ":twisted_rightwards_arrows:";
+	public static final String REPEAT = ":repeat:";
 
 	public static final String numToEmoji(int num) {
 		return numToEmoji(Integer.toString(num));
