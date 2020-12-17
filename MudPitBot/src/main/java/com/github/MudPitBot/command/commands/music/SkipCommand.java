@@ -34,10 +34,10 @@ public class SkipCommand extends Command {
 	public Mono<CommandResponse> skip(TrackScheduler scheduler) {
 		if (scheduler != null) {
 			if (scheduler.getNowPlaying() != null) {
-				StringBuilder sb = new StringBuilder().append(Emoji.NEXT_TRACK).append(" Skipping \"")
-						.append(scheduler.getNowPlaying().getInfo().title).append("\" ").append(Emoji.NEXT_TRACK);
+				String response = Emoji.NEXT_TRACK + " Skipping \"" + scheduler.getNowPlaying().getInfo().title
+						+ "\" by " + scheduler.getNowPlaying().getInfo().author + " " + Emoji.NEXT_TRACK;
 				scheduler.nextTrack();
-				return CommandResponse.create(sb.toString());
+				return CommandResponse.create(response);
 			} else {
 				return CommandResponse.create("No song is currently playing");
 			}
