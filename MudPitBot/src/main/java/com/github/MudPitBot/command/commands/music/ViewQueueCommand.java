@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -44,7 +45,7 @@ public class ViewQueueCommand extends Command {
 				for (int i = 0; i < queue.size(); i++) {
 					AudioTrack track = queue.get(i);
 					// print title and author of song on its own line
-					sb.append("(#").append(i + 1).append(")").append("\"").append(track.getInfo().title).append("\"")
+					sb.append(Emoji.numToEmoji(i + 1)).append(" \"").append(track.getInfo().title).append("\"")
 							.append(" by ").append(track.getInfo().author).append("\n");
 				}
 			} else {

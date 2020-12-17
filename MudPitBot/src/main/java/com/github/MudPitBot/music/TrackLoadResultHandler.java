@@ -2,6 +2,7 @@ package com.github.MudPitBot.music;
 
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.util.CommandUtil;
+import com.github.MudPitBot.command.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -36,11 +37,8 @@ public class TrackLoadResultHandler implements AudioLoadResultHandler {
 	public void playlistLoaded(final AudioPlaylist playlist) {
 		// LavaPlayer found multiple AudioTracks from some playlist
 		LOGGER.info("Playlist loaded");
-		CommandUtil
-				.sendReply(event,
-						CommandResponse
-								.createFlat("Playlist with " + playlist.getTracks().size() + " songs added to queue"))
-				.subscribe();
+		CommandUtil.sendReply(event, CommandResponse.createFlat(Emoji.CHECK_MARK + " Playlist with "
+				+ playlist.getTracks().size() + " songs added to queue" + Emoji.CHECK_MARK)).subscribe();
 
 		for (AudioTrack track : playlist.getTracks()) {
 			scheduler.queue(track);
@@ -51,15 +49,16 @@ public class TrackLoadResultHandler implements AudioLoadResultHandler {
 	public void noMatches() {
 		// LavaPlayer did not find any audio to extract
 		LOGGER.info("Did not find any audio to extract");
-		CommandUtil.sendReply(event,
-				CommandResponse.createFlat("Problem loading track, did not find any audio to extract"));
+		CommandUtil.sendReply(event, CommandResponse.createFlat(
+				Emoji.NO_ENTRY + " Problem loading track, did not find any audio to extract " + Emoji.NO_ENTRY)).subscribe();
 	}
 
 	@Override
 	public void loadFailed(final FriendlyException exception) {
 		// LavaPlayer could not parse an audio source for some reason
 		LOGGER.error("Error loading audio track: " + exception.getMessage());
-		CommandUtil.sendReply(event, CommandResponse.createFlat("Could not parse this track for some reason"));
+		CommandUtil.sendReply(event, CommandResponse
+				.createFlat(Emoji.NO_ENTRY + " Could not parse this track for some reason " + Emoji.NO_ENTRY)).subscribe();
 	}
 
 }

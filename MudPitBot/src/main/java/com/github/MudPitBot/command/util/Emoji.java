@@ -1,5 +1,8 @@
 package com.github.MudPitBot.command.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import discord4j.core.object.reaction.ReactionEmoji;
 
 public abstract class Emoji {
@@ -26,6 +29,33 @@ public abstract class Emoji {
 	public static final String I_PLAIN = ":regional_indicator_i:";
 	public static final String J_PLAIN = ":regional_indicator_j:";
 
+	public static final String ZERO = ":zero:";
+	public static final String ONE = ":one:";
+	public static final String TWO = ":two:";
+	public static final String THREE = ":three:";
+	public static final String FOUR = ":four:";
+	public static final String FIVE = ":five:";
+	public static final String SIX = ":six:";
+	public static final String SEVEN = ":seven:";
+	public static final String EIGHT = ":eight:";
+	public static final String NINE = ":nine:";
+
+	private static final Map<Character, String> NUM_MAP;
+
+	static {
+		NUM_MAP = new HashMap<Character, String>();
+		NUM_MAP.put('0', ZERO);
+		NUM_MAP.put('1', ONE);
+		NUM_MAP.put('2', TWO);
+		NUM_MAP.put('3', THREE);
+		NUM_MAP.put('4', FOUR);
+		NUM_MAP.put('5', FIVE);
+		NUM_MAP.put('6', SIX);
+		NUM_MAP.put('7', SEVEN);
+		NUM_MAP.put('8', EIGHT);
+		NUM_MAP.put('9', NINE);
+	}
+
 	public static final String NEXT_TRACK = ":next_track:";
 	public static final String STOP_SIGN = ":stop_sign:";
 	public static final String CHECK_MARK = ":white_check_mark:";
@@ -34,6 +64,21 @@ public abstract class Emoji {
 	public static final String SOUND = ":sound:";
 	public static final String RED_X = ":x:";
 	public static final String DICE = ":game_die:";
+	public static final String MEMO = ":memo:";
+	public static final String NOTES = ":notes:";
+	public static final String LOOP = ":loop:";
+
+	public static final String numToEmoji(int num) {
+		return numToEmoji(Integer.toString(num));
+	}
+
+	public static final String numToEmoji(String num) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < num.length(); i++) {
+			sb.append(NUM_MAP.get(num.charAt(i)));
+		}
+		return sb.toString();
+	}
 
 	public static final ReactionEmoji.Unicode getUnicodeFromNum(int num) {
 
@@ -63,7 +108,7 @@ public abstract class Emoji {
 		return null;
 	}
 
-	public static final String getPlainFromNum(int num) {
+	public static final String getPlainLetterFromNum(int num) {
 		switch (num) {
 		case 0:
 			return A_PLAIN;

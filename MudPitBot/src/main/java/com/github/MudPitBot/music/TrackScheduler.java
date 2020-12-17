@@ -7,6 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.github.MudPitBot.command.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -49,9 +50,11 @@ public final class TrackScheduler extends AudioEventAdapter {
 		if (!player.startTrack(track, true)) {
 			queue.offer(track);
 			LOGGER.info("Track added to the queue: " + queue.size());
-			return "New track added to the queue (#" + getQueue().size() + ")";
+			return Emoji.MEMO + " New track added to the queue (#" + Emoji.numToEmoji(getQueue().size()) + ") "
+					+ Emoji.MEMO;
 		}
-		return "";
+		return Emoji.NOTES + " Now playing " + track.getInfo().title + " by " + track.getInfo().author + " "
+				+ Emoji.NOTES;
 	}
 
 	/**

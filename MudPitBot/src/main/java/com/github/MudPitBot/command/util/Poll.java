@@ -114,7 +114,7 @@ public final class Poll {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < answers.size(); i++) {
 			String answer = answers.get(i);
-			sb.append(Emoji.getPlainFromNum(i)).append(" ").append(answer).append("\r\n\n");
+			sb.append(Emoji.getPlainLetterFromNum(i)).append(" ").append(answer).append("\r\n\n");
 		}
 
 		description = sb.toString();
