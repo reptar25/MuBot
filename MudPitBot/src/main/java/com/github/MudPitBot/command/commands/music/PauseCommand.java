@@ -8,6 +8,7 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+
 public class PauseCommand extends Command {
 
 	public PauseCommand() {
@@ -16,11 +17,8 @@ public class PauseCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return pause(scheduler);
-			});
-		});
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> pause(scheduler));
 	}
 
 	/**

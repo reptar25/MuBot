@@ -24,13 +24,9 @@ public class PlayCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return requireBotPermissions(channel, Permission.SPEAK).flatMap(ignored -> {
-				return getScheduler(channel).flatMap(scheduler -> {
-					return play(event, scheduler, params);
-				});
-			});
-		});
+		return requireSameVoiceChannel(event)
+				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK).thenReturn(channel))
+				.flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> play(event, scheduler, params));
 	}
 
 	/**

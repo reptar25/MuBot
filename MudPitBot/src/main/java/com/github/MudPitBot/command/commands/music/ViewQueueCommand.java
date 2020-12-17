@@ -21,11 +21,8 @@ public class ViewQueueCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return viewQueue(scheduler);
-			});
-		});
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> viewQueue(scheduler));
 	}
 
 	/**

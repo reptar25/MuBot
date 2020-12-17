@@ -18,11 +18,8 @@ public class SkipCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return skip(scheduler);
-			});
-		});
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> skip(scheduler));
 	}
 
 	/**

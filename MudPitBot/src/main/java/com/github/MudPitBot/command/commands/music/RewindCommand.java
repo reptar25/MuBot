@@ -8,6 +8,7 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+
 public class RewindCommand extends Command {
 
 	public RewindCommand() {
@@ -16,11 +17,8 @@ public class RewindCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return rewind(scheduler, params);
-			});
-		});
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> rewind(scheduler, params));
 	}
 
 	/**

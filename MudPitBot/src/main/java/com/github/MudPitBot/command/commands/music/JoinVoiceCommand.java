@@ -52,19 +52,13 @@ public class JoinVoiceCommand extends Command {
 
 		final Mono<Snowflake> getBotVoiceChannelId = channel.getClient().getSelf()
 				.flatMap(user -> user.asMember(channel.getGuildId())).flatMap(Member::getVoiceState)
-				.map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty()).flatMap(s -> {
-					if (s.isPresent())
-						return Mono.just(s.get());
-					return Mono.empty();
-				}).flatMap(channel.getClient()::getChannelById).cast(VoiceChannel.class).map(VoiceChannel::getId)
+				.map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty()).flatMap(s -> Mono.justOrEmpty(s))
+				.flatMap(channel.getClient()::getChannelById).cast(VoiceChannel.class).map(VoiceChannel::getId)
 				.defaultIfEmpty(Snowflake.of(-1l));
 
 		Mono<Void> disconnect = getBotVoiceChannelId.filter(channelId -> !channelId.equals(channel.getId()))
-				.flatMap(botVoiceChannelId -> {
-					return channel.getGuild().flatMap(Guild::getVoiceConnection).flatMap(botVoiceConnection -> {
-						return botVoiceConnection.disconnect();
-					});
-				});
+				.flatMap(botVoiceChannelId -> channel.getGuild()).flatMap(Guild::getVoiceConnection)
+				.flatMap(botVoiceConnection -> botVoiceConnection.disconnect());
 
 		Mono<VoiceConnection> joinChannel = getBotVoiceChannelId.flatMap(id -> {
 			if (id.equals(channel.getId()))

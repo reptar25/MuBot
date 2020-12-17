@@ -17,14 +17,7 @@ public class ClearCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return clearQueue(scheduler);
-			});
-		});
-		// getScheduler(event).flatMap(scheduler -> return
-		// Mono.just(clearQueue(scheduler));
-		// return clearQueue(getScheduler(event));
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> clearQueue(scheduler));
 	}
 
 	/**

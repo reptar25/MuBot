@@ -72,33 +72,29 @@ public class MuteHelper {
 	 * @return
 	 */
 	private Mono<Void> muteOnJoin(VoiceState voiceState) {
-
-		Mono<Snowflake> getCurrentChannelId = voiceState.getChannel().map(VoiceChannel::getId);
-
-		return voiceState.getChannel().flatMap(voiceChannel -> {
-			return CommandUtil.requireBotPermissions(voiceChannel, Permission.MUTE_MEMBERS)
-					.flatMap(ignored -> getCurrentChannelId).flatMap(currentChannelId -> {
-						// if user join same channel as mute channel
-						if (MuteHelper.mutedChannels.containsKey(voiceState.getGuildId())) {
-							if (MuteHelper.mutedChannels.get(voiceState.getGuildId()).contains(currentChannelId)) {
-								// mute the member that just joined
-								return muteUser(voiceState.getMember());
-							} else {
-								return unmuteUser(voiceState.getMember(), voiceState.getGuild());
-							}
-						}
-						// if user joined another channel, make sure they arent muted still
-						else {
-							// We cant unmute a users when they leave because the Discord api doesnt allow
-							// modifying a user's server mute if that user isn't in a voice channel. So if
-							// that person disconnects from voice then we can't unmute them. For now we just
-							// check if it's a non-muted channel when they join and unmute them then. This
-							// has the side effect of users staying muted if they are muted by the bot and
-							// leave, but rejoin a voice channel when the bot is not running
+		return voiceState.getChannel()
+				.flatMap(voiceChannel -> CommandUtil.requireBotPermissions(voiceChannel, Permission.MUTE_MEMBERS))
+				.flatMap(ignored -> voiceState.getChannel().map(VoiceChannel::getId)).flatMap(currentChannelId -> {
+					// if user join same channel as mute channel
+					if (MuteHelper.mutedChannels.containsKey(voiceState.getGuildId())) {
+						if (MuteHelper.mutedChannels.get(voiceState.getGuildId()).contains(currentChannelId)) {
+							// mute the member that just joined
+							return muteUser(voiceState.getMember());
+						} else {
 							return unmuteUser(voiceState.getMember(), voiceState.getGuild());
 						}
-					});
-		});
+					}
+					// if user joined another channel, make sure they arent muted still
+					else {
+						// We cant unmute a users when they leave because the Discord api doesnt allow
+						// modifying a user's server mute if that user isn't in a voice channel. So if
+						// that person disconnects from voice then we can't unmute them. For now we just
+						// check if it's a non-muted channel when they join and unmute them then. This
+						// has the side effect of users staying muted if they are muted by the bot and
+						// leave, but rejoin a voice channel when the bot is not running
+						return unmuteUser(voiceState.getMember(), voiceState.getGuild());
+					}
+				});
 	}
 
 	/**

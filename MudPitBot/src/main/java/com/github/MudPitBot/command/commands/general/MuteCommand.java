@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.commands.music;
+package com.github.MudPitBot.command.commands.general;
 
 import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
 import static com.github.MudPitBot.command.util.CommandUtil.requireVoiceChannel;
@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.commands.music.StopCommand;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.command.util.MuteHelper;
 
@@ -32,11 +33,8 @@ public class MuteCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireVoiceChannel(event).flatMap(channel -> {
-			return requireBotPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> {
-				return mute(channel);
-			});
-		});
+		return requireVoiceChannel(event).flatMap(
+				channel -> requireBotPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
 	}
 
 	/**

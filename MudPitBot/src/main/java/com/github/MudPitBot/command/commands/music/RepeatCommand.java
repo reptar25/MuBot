@@ -18,14 +18,11 @@ public class RepeatCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return loop(scheduler);
-			});
-		});
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> repeat(scheduler));
 	}
 
-	private Mono<CommandResponse> loop(TrackScheduler scheduler) {
+	private Mono<CommandResponse> repeat(TrackScheduler scheduler) {
 		boolean repeatEnabled = scheduler.repeatEnabled();
 		String response;
 

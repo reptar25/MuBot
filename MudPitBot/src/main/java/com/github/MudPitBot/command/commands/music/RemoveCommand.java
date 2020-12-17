@@ -19,11 +19,8 @@ public class RemoveCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return remove(scheduler, params);
-			});
-		});
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> remove(scheduler, params));
 	}
 
 	public Mono<CommandResponse> remove(TrackScheduler scheduler, String[] params) {
