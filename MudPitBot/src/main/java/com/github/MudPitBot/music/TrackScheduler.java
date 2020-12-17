@@ -211,23 +211,21 @@ public final class TrackScheduler extends AudioEventAdapter {
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 
-		LOGGER.info("TRACK ENDED");
-		if (repeat) {
-			player.startTrack(track.makeClone(), false);
-			return;
-		}
-
-		if (endReason != AudioTrackEndReason.STOPPED && endReason.mayStartNext
-				&& track.getInfo().length == Long.MAX_VALUE) {
-			// Live stream somehow ended, restart it again
-			LOGGER.error("Live stream track ended, restarting track");
-			player.startTrack(track.makeClone(), false);
-			return;
-		}
-
 		// Only start the next track if the end reason is suitable for it (FINISHED or
 		// LOAD_FAILED)
 		if (endReason.mayStartNext) {
+
+			if (endReason != AudioTrackEndReason.STOPPED) {
+				if (repeat) {
+					player.startTrack(track.makeClone(), false);
+					return;
+				} else if (track.getInfo().length == Long.MAX_VALUE) {
+					LOGGER.error("Live stream track ended, restarting track");
+					player.startTrack(track.makeClone(), false);
+					return;
+				}
+			}
+
 			nextTrack();
 		}
 	}
