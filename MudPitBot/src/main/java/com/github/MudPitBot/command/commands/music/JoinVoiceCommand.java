@@ -35,11 +35,9 @@ public class JoinVoiceCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireVoiceChannel(event).flatMap(voiceChannel -> {
-			return requireBotPermissions(voiceChannel, Permission.CONNECT, Permission.VIEW_CHANNEL).flatMap(ignored -> {
-				return join(voiceChannel);
-			});
-		});
+		return requireVoiceChannel(event)
+				.flatMap(channel -> requireBotPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
+						.flatMap(ignored -> join(channel)));
 	}
 
 	/**
