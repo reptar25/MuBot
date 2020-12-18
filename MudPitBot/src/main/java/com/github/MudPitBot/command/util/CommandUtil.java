@@ -51,6 +51,8 @@ public final class CommandUtil {
 							// add reactions as vote tickers, number of reactions depends on number of
 							// answers
 							response.getPoll().addReactions(message);
+						} else if (response.getPaginator() != null) {
+							response.getPaginator().addReactions(message);
 						}
 						return Mono.just(response);
 					});

@@ -102,12 +102,12 @@ public class CommandTests {
 		assertEquals(response.getContent(), "Player stopped");
 	}
 
-	@Test
-	void viewQueueTest() {
-		CommandResponse response = new ViewQueueCommand().viewQueue(scheduler).block();
-
-		assertEquals(response.getContent(), "The queue is empty");
-	}
+//	@Test
+//	void viewQueueTest() {
+//		CommandResponse response = new ViewQueueCommand().viewQueue(scheduler).block();
+//
+//		assertEquals(response.getContent(), "The queue is empty");
+//	}
 
 	@Test
 	void volumeTest() {

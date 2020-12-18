@@ -18,6 +18,9 @@ public abstract class Emoji {
 	public static final ReactionEmoji.Unicode I = ReactionEmoji.unicode("\uD83C\uDDEE");
 	public static final ReactionEmoji.Unicode J = ReactionEmoji.unicode("\uD83C\uDDEF");
 
+	public static final ReactionEmoji.Unicode LEFT_REACTION = ReactionEmoji.unicode("\u25C0");
+	public static final ReactionEmoji.Unicode RIGHT_REACTION = ReactionEmoji.unicode("\u25B6");
+
 	public static final String A_PLAIN = ":regional_indicator_a:";
 	public static final String B_PLAIN = ":regional_indicator_b:";
 	public static final String C_PLAIN = ":regional_indicator_c:";
@@ -69,6 +72,8 @@ public abstract class Emoji {
 	public static final String LOOP = ":loop:";
 	public static final String SHUFFLE = ":twisted_rightwards_arrows:";
 	public static final String REPEAT = ":repeat:";
+	public static final String LEFT = ":arrow_left:";
+	public static final String RIGHT = ":arrow_right:";
 
 	public static final String numToEmoji(int num) {
 		return numToEmoji(Integer.toString(num));
@@ -105,9 +110,11 @@ public abstract class Emoji {
 			return I;
 		case 9:
 			return J;
+		default:
+			;
 		}
 
-		return null;
+		throw new IllegalArgumentException("No unicode character found for " + num);
 	}
 
 	public static final String getPlainLetterFromNum(int num) {
@@ -132,8 +139,10 @@ public abstract class Emoji {
 			return I_PLAIN;
 		case 9:
 			return J_PLAIN;
+		default:
+			;
 		}
-		return null;
+		throw new IllegalArgumentException("No plain letter found for " + num);
 	}
 
 }
