@@ -67,7 +67,7 @@ public class Paginator {
 
 	private void addReactionListener(Message message) {
 		message.getClient().on(ReactionAddEvent.class).filter(e -> e.getMessageId() != message.getId())
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false)).take(Duration.ofMinutes(1))
+				.filter(e -> !e.getMember().map(Member::isBot).orElse(false)).take(Duration.ofMinutes(5))
 				.doOnTerminate(() -> message.removeAllReactions().subscribe()).subscribe(event -> {
 
 					if (event.getEmoji().asUnicodeEmoji().isEmpty())
