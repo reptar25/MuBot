@@ -117,6 +117,8 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	}
 
 	private void loadSelection(int selection) {
+		if (selection < 1)
+			return;
 		LOGGER.info("Selected track: " + selection);
 		String queueResponse = scheduler.queue(results.get(selection - 1));
 		message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).subscribe();
