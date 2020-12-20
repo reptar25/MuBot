@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.github.MudPitBot.command.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
@@ -74,6 +75,21 @@ public final class TrackScheduler extends AudioEventAdapter {
 	 */
 	public void clearQueue() {
 		queue.clear();
+	}
+
+	/**
+	 * Skips to the element number in the queue
+	 * 
+	 * @param elementNumber
+	 */
+	public String skipQueue(int elementNumber) {
+		if (elementNumber > queue.size())
+			return "";
+
+		queue = queue.stream().skip(elementNumber - 1).collect(Collectors.toCollection(LinkedBlockingQueue::new));
+		String ret = CommandUtil.trackInfoString(queue.peek());
+		nextTrack();
+		return ret;
 	}
 
 	/**

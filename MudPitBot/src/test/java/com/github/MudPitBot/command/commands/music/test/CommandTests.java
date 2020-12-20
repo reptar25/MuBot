@@ -88,12 +88,12 @@ public class CommandTests {
 		assertEquals(response.getContent(), "Queue shuffled");
 	}
 
-	@Test
-	void skipTest() {
-		CommandResponse response = new SkipCommand().skip(scheduler).block();
-
-		assertEquals(response.getContent(), "No song is currently playing");
-	}
+//	@Test
+//	void skipTest() {
+//		CommandResponse response = new SkipCommand().skip(scheduler).block();
+//
+//		assertEquals(response.getContent(), "No song is currently playing");
+//	}
 
 	@Test
 	void stopTest() {
