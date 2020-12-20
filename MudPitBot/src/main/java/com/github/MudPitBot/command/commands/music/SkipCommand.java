@@ -24,7 +24,7 @@ public class SkipCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
-				.flatMap(scheduler -> skip(scheduler, args[0]));
+				.flatMap(scheduler -> skip(scheduler, args));
 	}
 
 	/**
@@ -33,13 +33,13 @@ public class SkipCommand extends Command {
 	 * @param event The message event
 	 * @return The message event
 	 */
-	public Mono<CommandResponse> skip(TrackScheduler scheduler, String args) {
+	public Mono<CommandResponse> skip(TrackScheduler scheduler, String[] args) {
 		if (scheduler != null) {
 			if (scheduler.getNowPlaying() != null) {
 
-				if (!args.isBlank()) {
+				if (args != null && args.length > 0 && !args[0].isBlank()) {
 					try {
-						int element = Integer.parseInt(args);
+						int element = Integer.parseInt(args[0]);
 						return CommandResponse.create(Emoji.NEXT_TRACK + " Skipping to " + scheduler.skipQueue(element)
 								+ " " + Emoji.NEXT_TRACK);
 					} catch (NumberFormatException ignored) {
