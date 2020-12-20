@@ -1,7 +1,7 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.util.CommandUtil.requireVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.CommandUtil.requireVoiceChannel;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -34,7 +34,7 @@ public class JoinVoiceCommand extends Command {
 	};
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
 						.flatMap(ignored -> join(channel)));

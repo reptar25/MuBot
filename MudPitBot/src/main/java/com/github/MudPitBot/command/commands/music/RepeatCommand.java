@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -17,7 +17,7 @@ public class RepeatCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
 				.flatMap(scheduler -> repeat(scheduler));
 	}

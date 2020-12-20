@@ -19,23 +19,23 @@ public class RollCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return roll(params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
+		return roll(args);
 	}
 
 	/**
 	 * Bot rolls dice and returns results
 	 * 
-	 * @param params The number and type of dice to roll, eg "1d20"
+	 * @param args The number and type of dice to roll, eg "1d20"
 	 * @return The results of the dice roll
 	 */
-	public Mono<CommandResponse> roll(String[] params) {
+	public Mono<CommandResponse> roll(String[] args) {
 
-		if (params == null || params.length <= 0) {
+		if (args == null || args.length <= 0) {
 			return CommandResponse.empty();
 		}
 
-		String dice = params[0];
+		String dice = args[0];
 
 		// only roll if 2nd part of command matches the reg ex
 		if (Pattern.matches("[1-9][0-9]*[Dd][1-9][0-9]*", dice)) {

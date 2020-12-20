@@ -1,19 +1,25 @@
-package com.github.MudPitBot.command.util;
+package com.github.MudPitBot.command.menu;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.function.Consumer;
+
+import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
+import discord4j.rest.util.Color;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 /**
  * Data class for polls.
  */
-public final class Poll {
+public final class PollMenu extends Menu {
 
 	/**
 	 * Builder for polls. Not really needed now, but can be used to expand polls
@@ -22,7 +28,7 @@ public final class Poll {
 //	public static class Builder {
 //
 //		private MessageCreateEvent event;
-//		private String[] params;
+//		private String[] args;
 //		private String footer;
 //		private String footerURL;
 //		private String title;
@@ -38,8 +44,8 @@ public final class Poll {
 //		}
 //	}
 
-	private static final Logger LOGGER = Loggers.getLogger(Poll.class);
-	private String[] params;
+	private static final Logger LOGGER = Loggers.getLogger(PollMenu.class);
+	private String[] args;
 	private Member member;
 	private String footer;
 	private String footerURL;
@@ -56,21 +62,27 @@ public final class Poll {
 //		this.description = builder.description;
 //	}
 
-	public Poll(String[] params, Member member) {
-		this.params = params;
+	public PollMenu(String[] args, Member member) {
+		this.args = args;
 		this.member = member;
 		createPoll();
 	}
 
-	public void addReactions(Message message) {
-		for (int i = 0; i < getAnswers().size(); i++) {
+	@Override
+	public void setMessage(Message message) {
+		super.setMessage(message);
+		addReactions();
+	}
+
+	private void addReactions() {
+		for (int i = 0; i < answers.size(); i++) {
 			message.addReaction(Emoji.getUnicodeFromNum(i)).subscribe();
 		}
 	}
 
 	private void createPoll() {
 
-		createAnswers(params);
+		createAnswers(args);
 
 		if (answers.isEmpty())
 			return;
@@ -80,18 +92,18 @@ public final class Poll {
 		createDescription();
 	}
 
-	private void createAnswers(String[] params) {
+	private void createAnswers(String[] args) {
 		// String[] splitCommand = command.split(" \"");
 
-		if (params == null || params.length < 3) {
+		if (args == null || args.length < 3) {
 			LOGGER.info("Not enough arguments for poll command");
 			return;
 		}
 
-		title = params[0];
+		title = args[0];
 
-		for (int i = 1; i < params.length; i++) {
-			answers.add(params[i]);
+		for (int i = 1; i < args.length; i++) {
+			answers.add(args[i]);
 		}
 	}
 
@@ -120,29 +132,18 @@ public final class Poll {
 		description = sb.toString();
 	}
 
-	public String getFooter() {
-		return footer;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public ArrayList<String> getAnswers() {
-		return answers;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public String getFooterURL() {
-		return footerURL;
-	}
-
 	@Override
 	public String toString() {
 		return title + " " + description + " " + answers;
+	}
+
+	@Override
+	public Consumer<? super MessageCreateSpec> createMessage() {
+		return spec -> spec.setEmbed(createEmbed()).setContent("**" + title + "**");
+	}
+
+	private Consumer<? super EmbedCreateSpec> createEmbed() {
+		return embed -> embed.setColor(Color.of(23, 53, 77)).setFooter(footer, footerURL).setDescription(description);
 	}
 
 }

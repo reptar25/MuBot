@@ -2,8 +2,8 @@ package com.github.MudPitBot.command;
 
 import java.util.function.Consumer;
 
-import com.github.MudPitBot.command.util.Paginator;
-import com.github.MudPitBot.command.util.Poll;
+import com.github.MudPitBot.command.menu.Menu;
+import com.github.MudPitBot.command.menu.PollMenu;
 
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.MessageCreateSpec;
@@ -13,8 +13,8 @@ public class CommandResponse {
 
 	private String content;
 	private Consumer<? super MessageCreateSpec> spec;
-	private Poll poll;
-	private Paginator paginator;
+	private PollMenu poll;
+	private Menu menu;
 
 	// empty constructor
 	private CommandResponse() {
@@ -44,14 +44,14 @@ public class CommandResponse {
 		this.content = b.content;
 		this.spec = b.spec;
 		this.poll = b.poll;
-		this.paginator = b.paginator;
+		this.menu = b.menu;
 	}
 
 	public Consumer<? super MessageCreateSpec> getSpec() {
 		return spec;
 	}
 
-	public Poll getPoll() {
+	public PollMenu getPoll() {
 		return poll;
 	}
 
@@ -59,11 +59,11 @@ public class CommandResponse {
 		return content;
 	}
 
-	public Paginator getPaginator() {
-		return paginator;
+	public Menu getMenu() {
+		return menu;
 	}
 
-	public CommandResponse withPoll(Poll poll) {
+	public CommandResponse withPoll(PollMenu poll) {
 		this.poll = poll;
 		return this;
 	}
@@ -86,11 +86,11 @@ public class CommandResponse {
 		return Mono.just(new CommandResponse(content));
 	}
 
-	public static Mono<CommandResponse> create(String content, Poll p) {
+	public static Mono<CommandResponse> create(String content, PollMenu p) {
 		return Mono.just(new CommandResponse(content).withPoll(p));
 	}
 
-	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec, Poll p) {
+	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec, PollMenu p) {
 		return Mono.just(new CommandResponse(spec).withPoll(p));
 	}
 
@@ -101,8 +101,8 @@ public class CommandResponse {
 	public static class Builder {
 		private String content;
 		private Consumer<? super MessageCreateSpec> spec;
-		private Poll poll;
-		private Paginator paginator;
+		private PollMenu poll;
+		private Menu menu;
 
 		public Builder withContent(String content) {
 			this.content = content;
@@ -115,13 +115,13 @@ public class CommandResponse {
 			return this;
 		}
 
-		public Builder withPoll(Poll poll) {
+		public Builder withPoll(PollMenu poll) {
 			this.poll = poll;
 			return this;
 		}
 
-		public Builder withPaginator(Paginator paginator) {
-			this.paginator = paginator;
+		public Builder withMenu(Menu menu) {
+			this.menu = menu;
 			return this;
 		}
 

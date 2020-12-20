@@ -1,11 +1,12 @@
-package com.github.MudPitBot.command.util;
+package com.github.MudPitBot.command;
 
+import java.time.Duration;
 import java.util.Optional;
 
-import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.exceptions.BotPermissionException;
 import com.github.MudPitBot.command.exceptions.CommandException;
 import com.github.MudPitBot.command.exceptions.SendMessagesException;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -39,31 +40,24 @@ public final class CommandUtil {
 	private static Mono<CommandResponse> sendReply(Optional<Member> memberOpt, Mono<MessageChannel> channelMono,
 			CommandResponse response) {
 		return channelMono.flatMap(channel -> {
-			Mono<PermissionSet> permissions = Mono.just(PermissionSet.all());
-			if (!(channel instanceof PrivateChannel))
-				permissions = requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
+			Mono<PermissionSet> permissions = channel instanceof PrivateChannel ? Mono.just(PermissionSet.all())
+					: requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
 
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {
 					return channel.createMessage(response.getSpec()).flatMap(message -> {
-						// if the response contained a poll
-						if (response.getPoll() != null) {
-							// add reactions as vote tickers, number of reactions depends on number of
-							// answers
-							response.getPoll().addReactions(message);
-						} else if (response.getPaginator() != null) {
-							response.getPaginator().addReactions(message);
+						// if the response contains a menu
+						if (response.getMenu() != null) {
+							// set message on the menu
+							response.getMenu().setMessage(message);
 						}
 						return Mono.just(response);
 					});
 				}
 				return Mono.empty();
 			});
-		}).onErrorResume(SendMessagesException.class, ignored -> {
-			return Mono.justOrEmpty(memberOpt).flatMap(member -> {
-				return sendPrivateReply(member.getPrivateChannel(), response);
-			});
-		});
+		}).onErrorResume(SendMessagesException.class, ignored -> Mono.justOrEmpty(memberOpt)
+				.flatMap(member -> sendPrivateReply(member.getPrivateChannel(), response)));
 	}
 
 	private static Mono<CommandResponse> sendPrivateReply(Mono<PrivateChannel> privateChannelMono,
@@ -119,7 +113,7 @@ public final class CommandUtil {
 					// If the user and the bot are not in a voice channel
 					if (botVoiceChannelId.isEmpty() || userVoiceChannelId.isEmpty()) {
 						throw new CommandException("User not in voice channel",
-								"You have to be in the a voice channel as the bot to use this command");
+								"You have to be in the same voice channel as the bot to use this command\"");
 					}
 
 					// If the user and the bot are not in the same voice channel
@@ -178,6 +172,39 @@ public final class CommandUtil {
 			}
 			return Mono.just(permissions);
 		});
+	}
+
+	/**
+	 * Convert milliseconds to hours:minutes:seconds format
+	 * 
+	 * @param millis the time in milliseconds
+	 * @return a String of the millisecond time in hours:minutes:seconds
+	 */
+	public static String convertMillisToTime(long millis) {
+		StringBuilder sb = new StringBuilder();
+		Duration duration = Duration.ofMillis(millis);
+		String minuteFormat = "%d";
+		String secondFormat = "%d";
+
+		if (duration.toHoursPart() > 0) {
+			sb.append(String.format("%d", duration.toHoursPart())).append(":");
+			minuteFormat = "%02d";
+		}
+
+		if (duration.toMinutesPart() > 0) {
+			sb.append(String.format(minuteFormat, duration.toMinutesPart())).append(":");
+			secondFormat = "%02d";
+		}
+
+		if (duration.toSecondsPart() > 0) {
+			sb.append(String.format(secondFormat, duration.toSecondsPart()));
+		}
+
+		return sb.toString();
+	}
+
+	public static String trackInfoString(AudioTrack track) {
+		return "**" + track.getInfo().title + "** by " + track.getInfo().author;
 	}
 
 }

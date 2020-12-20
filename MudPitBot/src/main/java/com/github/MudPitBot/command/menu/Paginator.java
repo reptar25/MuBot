@@ -1,35 +1,35 @@
-package com.github.MudPitBot.command.util;
+package com.github.MudPitBot.command.menu;
 
 import java.time.Duration;
 import java.util.function.Consumer;
 
+import com.github.MudPitBot.command.util.Emoji;
+
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
-import discord4j.rest.util.Color;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class Paginator {
+public class Paginator extends Menu {
 
 	private static final Logger LOGGER = Loggers.getLogger(Paginator.class);
 
+	int itemsPerPage;
+	String content;
+	String[] entries;
+
 	int currentPageNum = 1;
 	int totalPages;
-	int itemsPerPage;
-	String[] entries;
-	MessageChannel channel;
-
-	String content;
 	String description;
+
+	Duration timeout = Duration.ofMinutes(5);
 
 	private Paginator(Builder b) {
 		this.itemsPerPage = b.itemsPerPage;
 		this.content = b.content;
-		this.description = b.description;
 		this.entries = b.entries;
 
 		this.totalPages = (int) Math.ceil((double) entries.length / itemsPerPage);
@@ -37,10 +37,7 @@ public class Paginator {
 
 	private Consumer<? super EmbedCreateSpec> createEmbed() {
 		buildDescription();
-		Consumer<? super EmbedCreateSpec> spec = embed -> embed.setDescription(description)
-				.setFooter("Page " + currentPageNum + "/" + totalPages, null).setColor(Color.of(23, 53, 77));
-
-		return spec;
+		return embed -> embed.setDescription(description).setFooter("Page " + currentPageNum + "/" + totalPages, null);
 	}
 
 	public Consumer<? super MessageCreateSpec> createMessage() {
@@ -58,7 +55,13 @@ public class Paginator {
 		description = sb.toString();
 	}
 
-	public void addReactions(Message message) {
+	@Override
+	public void setMessage(Message message) {
+		super.setMessage(message);
+		addReactions();
+	}
+
+	private void addReactions() {
 		message.addReaction(Emoji.LEFT_REACTION).subscribe();
 		message.addReaction(Emoji.RIGHT_REACTION).subscribe();
 
@@ -67,7 +70,7 @@ public class Paginator {
 
 	private void addReactionListener(Message message) {
 		message.getClient().on(ReactionAddEvent.class).filter(e -> e.getMessageId() != message.getId())
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false)).take(Duration.ofMinutes(5))
+				.filter(e -> !e.getMember().map(Member::isBot).orElse(false)).take(timeout)
 				.doOnTerminate(() -> message.removeAllReactions().subscribe()).subscribe(event -> {
 
 					if (event.getEmoji().asUnicodeEmoji().isEmpty())
@@ -91,7 +94,6 @@ public class Paginator {
 	public static class Builder {
 		private int itemsPerPage = 10;
 		String content = "";
-		String description = "";
 		String[] entries;
 
 		public Builder withItemsPerPage(int itemsPerPage) {
@@ -101,11 +103,6 @@ public class Paginator {
 
 		public Builder withMessageContent(String content) {
 			this.content = content;
-			return this;
-		}
-
-		public Builder withDescription(String description) {
-			this.description = description;
 			return this;
 		}
 

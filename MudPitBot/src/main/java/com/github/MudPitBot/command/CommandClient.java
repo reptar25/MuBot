@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command;
 
-import static com.github.MudPitBot.command.util.CommandUtil.sendReply;
+import static com.github.MudPitBot.command.CommandUtil.sendReply;
 
 import java.util.Arrays;
 import java.util.Map.Entry;
@@ -107,10 +107,10 @@ public class CommandClient {
 
 					// matching command found, so process and execute that command
 					// copy removes the command itself from the parameters
-					String[] commandParams = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
+					String[] commandArgs = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 					// merge the commands from the message into one mono so they are done
 					// sequentially
-					commandList = commandList.then(processCommand(event, entry.getValue(), commandParams)
+					commandList = commandList.then(processCommand(event, entry.getValue(), commandArgs)
 							.onErrorResume(CommandException.class, error -> {
 								LOGGER.error(error.getMessage());
 
@@ -140,15 +140,15 @@ public class CommandClient {
 	 * 
 	 * @param event   the message event
 	 * @param command the command to process
-	 * @param params  the parameters of the command
+	 * @param args  the parameters of the command
 	 * @return the response to the command
 	 */
-	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] params) {
+	private Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] args) {
 
 		// commands will return any string that the bot should send back as a message to
 		// the command
-		// CommandResponse response = executor.executeCommand(command, event, params);
-		return executor.executeCommand(command, event, params).flatMap(response -> {
+		// CommandResponse response = executor.executeCommand(command, event, args);
+		return executor.executeCommand(command, event, args).flatMap(response -> {
 			if (response.getSpec() == null)
 				return CommandResponse.empty();
 

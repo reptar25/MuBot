@@ -11,8 +11,8 @@ import reactor.core.publisher.Mono;
  */
 public class CommandExecutor {
 
-	public Mono<CommandResponse> executeCommand(Command command, MessageCreateEvent event, String[] params) {
-		return command.execute(event, params);
+	public Mono<CommandResponse> executeCommand(Command command, MessageCreateEvent event, String[] args) {
+		return command.execute(event, args);
 	}
 
 }

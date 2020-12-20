@@ -93,17 +93,4 @@ class CommandTests {
 		assertTrue(response.getContent().startsWith("Available commands"));
 	}
 
-	@Test
-	void pollTest() {
-		String[] args = { "\"Question\"", "\"Answer 1\"", "\"Answer 2\"", "\"Answer 3\"" };
-		when(mockEvent.getMember()).thenReturn(Optional.of(mockMember));
-		when(mockMember.getUsername()).thenReturn("Test Username");
-		CommandResponse response = new PollCommand().execute(mockEvent, args).block();
-
-		assertTrue(response.getPoll().getTitle().equals("Question"));
-		assertTrue(response.getPoll().getAnswers().get(0).equals("Answer 1"));
-		assertTrue(response.getPoll().getAnswers().get(1).equals("Answer 2"));
-		assertTrue(response.getPoll().getAnswers().get(2).equals("Answer 3"));
-	}
-
 }

@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import java.util.regex.Pattern;
 
@@ -19,9 +19,9 @@ public class VolumeCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
-				.flatMap(scheduler -> volume(scheduler, params));
+				.flatMap(scheduler -> volume(scheduler, args));
 	}
 
 	/**
@@ -29,23 +29,23 @@ public class VolumeCommand extends Command {
 	 * {@link com.sedmelluq.discord.lavaplayer.player.AudioPlayer}
 	 * 
 	 * @param event  The message event
-	 * @param params The new volume setting
+	 * @param args The new volume setting
 	 * @return Responds with new volume setting
 	 */
-	public Mono<CommandResponse> volume(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null && params != null) {
+	public Mono<CommandResponse> volume(TrackScheduler scheduler, String[] args) {
+		if (scheduler != null && args != null) {
 
 			StringBuilder sb = new StringBuilder();
-			if (params.length == 0) {
+			if (args.length == 0) {
 				return CommandResponse
 						.create(sb.append("Volume is currently " + scheduler.getPlayer().getVolume()).toString());
-			} else if (params[0].equalsIgnoreCase("reset")) {
+			} else if (args[0].equalsIgnoreCase("reset")) {
 				scheduler.getPlayer().setVolume(GuildMusicManager.DEFAULT_VOLUME);
 				return CommandResponse.create(sb.append("Volume reset to default").toString());
 			}
 
-			if (Pattern.matches("^[1-9][0-9]?$|^100$", params[0])) {
-				int volume = Integer.parseInt(params[0]);
+			if (Pattern.matches("^[1-9][0-9]?$|^100$", args[0])) {
+				int volume = Integer.parseInt(args[0]);
 				sb.append("Changing volume from ").append(scheduler.getPlayer().getVolume()).append(" to ")
 						.append(volume);
 				scheduler.getPlayer().setVolume(volume);

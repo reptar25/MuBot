@@ -1,7 +1,7 @@
 package com.github.MudPitBot.command.commands.general;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.util.CommandUtil.requireVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.CommandUtil.requireVoiceChannel;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -32,7 +32,7 @@ public class MuteCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event).flatMap(
 				channel -> requireBotPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
 	}

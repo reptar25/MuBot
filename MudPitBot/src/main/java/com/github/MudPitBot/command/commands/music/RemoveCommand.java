@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -18,16 +18,16 @@ public class RemoveCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
-				.flatMap(scheduler -> remove(scheduler, params));
+				.flatMap(scheduler -> remove(scheduler, args));
 	}
 
-	public Mono<CommandResponse> remove(TrackScheduler scheduler, String[] params) {
+	public Mono<CommandResponse> remove(TrackScheduler scheduler, String[] args) {
 		if (scheduler != null) {
-			if (params != null && params.length >= 1) {
+			if (args != null && args.length >= 1) {
 				try {
-					int index = Integer.parseInt(params[0]);
+					int index = Integer.parseInt(args[0]);
 					AudioTrack removed = scheduler.removeFromQueue(index - 1);
 					if (removed != null)
 						return CommandResponse.create(Emoji.RED_X + " Removed \"" + removed.getInfo().title

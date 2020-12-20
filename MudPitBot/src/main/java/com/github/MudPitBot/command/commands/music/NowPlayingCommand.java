@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -18,8 +18,9 @@ public class NowPlayingCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> nowPlaying(scheduler));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> nowPlaying(scheduler));
 	}
 
 	/**
@@ -33,7 +34,7 @@ public class NowPlayingCommand extends Command {
 			// get the track that's currently playing
 			AudioTrack track = scheduler.getNowPlaying();
 			if (track != null) {
-				String response = Emoji.NOTES + " Now playing \"" + track.getInfo().title + "\" by "
+				String response = Emoji.NOTES + " Now playing **" + track.getInfo().title + "** by "
 						+ track.getInfo().author + " " + Emoji.NOTES;
 				return CommandResponse.create(response);
 			}

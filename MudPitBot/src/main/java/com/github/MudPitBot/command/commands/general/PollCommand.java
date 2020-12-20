@@ -1,15 +1,11 @@
 package com.github.MudPitBot.command.commands.general;
 
-import java.util.function.Consumer;
-
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.util.Poll;
+import com.github.MudPitBot.command.menu.PollMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
-import discord4j.core.spec.MessageCreateSpec;
-import discord4j.rest.util.Color;
 import reactor.core.publisher.Mono;
 
 public class PollCommand extends Command {
@@ -19,31 +15,31 @@ public class PollCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return poll(pollParams(params), event.getMember().orElse(null));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
+		return poll(pollArgs(args), event.getMember().orElse(null));
 	}
 
 	/**
 	 * Converts regular command parameters to poll command parameters
 	 * 
-	 * @param params the original command parameters
+	 * @param args the original command parameters
 	 * @return the command parameters split by double quotes instead of spaces
 	 */
-	private String[] pollParams(String[] params) {
+	private String[] pollArgs(String[] args) {
 		StringBuilder sb = new StringBuilder();
 		// unsplit the parameters
-		for (String param : params) {
+		for (String param : args) {
 			sb.append(param).append(" ");
 		}
 		// now split the command by what's inside the quotes instead of by space
-		params = sb.toString().split(" (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+		args = sb.toString().split(" (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
 		// now remove the double quotes from each parameter
-		for (int i = 0; i < params.length; i++) {
-			params[i] = params[i].replaceAll("\"", "");
+		for (int i = 0; i < args.length; i++) {
+			args[i] = args[i].replaceAll("\"", "");
 		}
 
-		return params;
+		return args;
 	}
 
 	/**
@@ -55,22 +51,11 @@ public class PollCommand extends Command {
 	 * @return null
 	 * 
 	 */
-	public Mono<CommandResponse> poll(String[] params, Member member) {
+	public Mono<CommandResponse> poll(String[] args, Member member) {
 		// create a new poll object
-		Poll poll = new Poll(params, member);
+		PollMenu poll = new PollMenu(args, member);
 
-		// if the poll is invalid just stop
-		if (poll.getAnswers().size() <= 1) {
-			return CommandResponse.empty();
-		}
-
-		// create the embed to put the poll into
-		Consumer<? super MessageCreateSpec> spec = s1 -> s1
-				.setEmbed(s2 -> s2.setColor(Color.of(23, 53, 77)).setFooter(poll.getFooter(), poll.getFooterURL())
-						.setTitle(poll.getTitle()).setDescription(poll.getDescription()));
-
-		return CommandResponse.create(spec, poll);
-
+		return new CommandResponse.Builder().withCreateSpec(poll.createMessage()).withMenu(poll).build();
 	}
 
 }

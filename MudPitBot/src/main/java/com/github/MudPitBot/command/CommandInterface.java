@@ -8,6 +8,6 @@ import reactor.core.publisher.Mono;
  */
 public interface CommandInterface {
 
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params);
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args);
 	
 }

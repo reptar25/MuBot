@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -16,21 +16,21 @@ public class RewindCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
-				.flatMap(scheduler -> rewind(scheduler, params));
+				.flatMap(scheduler -> rewind(scheduler, args));
 	}
 
 	/**
 	 * @param event  The message event
-	 * @param params The amount of time in seconds to rewind
+	 * @param args The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public Mono<CommandResponse> rewind(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null && params != null) {
-			if (params.length > 0) {
+	public Mono<CommandResponse> rewind(TrackScheduler scheduler, String[] args) {
+		if (scheduler != null && args != null) {
+			if (args.length > 0) {
 				try {
-					int amountInSeconds = Integer.parseInt(params[0]);
+					int amountInSeconds = Integer.parseInt(args[0]);
 					scheduler.rewind(amountInSeconds);
 				} catch (Exception e) {
 					e.printStackTrace();

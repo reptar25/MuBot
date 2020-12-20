@@ -43,7 +43,8 @@ public class GuildMusicManager {
 	}
 
 	public static void loadItem(String identifier, TrackScheduler scheduler, MessageCreateEvent event) {
-		playerManager.loadItem(identifier, new TrackLoadResultHandler(scheduler, event));
+		playerManager.loadItemOrdered(event.getGuildId().get(), identifier,
+				new TrackLoadResultHandler(scheduler, event));
 	}
 
 	public static TrackScheduler createTrackScheduler(long guildId) {
@@ -81,6 +82,10 @@ public class GuildMusicManager {
 
 	public static boolean containsTrackScheduler(long guildId) {
 		return schedulerMap.containsKey(guildId);
+	}
+
+	public static AudioPlayerManager getPlayerManager() {
+		return playerManager;
 	}
 
 }
