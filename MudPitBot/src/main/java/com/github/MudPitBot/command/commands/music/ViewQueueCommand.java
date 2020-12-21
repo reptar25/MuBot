@@ -47,8 +47,9 @@ public class ViewQueueCommand extends Command {
 			if (queue.size() > 0) {
 				String[] queueEntries = new String[queue.size()];
 				// print total number of songs
-				paginatorBuilder.withMessageContent(CommandUtil.trackInfoString(scheduler.getNowPlaying()) + "\n"
-						+ "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
+				paginatorBuilder.withMessageContent(
+						"Currently playing: " + CommandUtil.trackInfoString(scheduler.getNowPlaying()) + "\n"
+								+ "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
 				for (int i = 0; i < queue.size(); i++) {
 					AudioTrack track = queue.get(i);
 					// print title and author of song on its own line
