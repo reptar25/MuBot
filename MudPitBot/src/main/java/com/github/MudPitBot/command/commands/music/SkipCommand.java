@@ -10,12 +10,8 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
 public class SkipCommand extends Command {
-
-	private static final Logger LOGGER = Loggers.getLogger(SkipCommand.class);
 
 	public SkipCommand() {
 		super("skip");
