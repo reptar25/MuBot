@@ -181,6 +181,38 @@ public final class CommandUtil {
 						exception = new SendMessagesException(
 								new StringBuilder("Bot missing ").append(permission).append(" for command").toString());
 						break;
+					case ADD_REACTIONS:
+						((BotPermissionException) exception).setUserFriendlyMessage(
+								sb.append(" add message reactions in ").append(channel.getName()).toString());
+						break;
+					case MANAGE_MESSAGES:
+						((BotPermissionException) exception).setUserFriendlyMessage(
+								sb.append(" manage messages in ").append(channel.getName()).toString());
+						break;
+					case ADMINISTRATOR:
+					case ATTACH_FILES:
+					case BAN_MEMBERS:
+					case CHANGE_NICKNAME:
+					case CREATE_INSTANT_INVITE:
+					case DEAFEN_MEMBERS:
+					case EMBED_LINKS:
+					case KICK_MEMBERS:
+					case MANAGE_CHANNELS:
+					case MANAGE_EMOJIS:
+					case MANAGE_GUILD:
+					case MANAGE_NICKNAMES:
+					case MANAGE_ROLES:
+					case MANAGE_WEBHOOKS:
+					case MENTION_EVERYONE:
+					case MOVE_MEMBERS:
+					case PRIORITY_SPEAKER:
+					case READ_MESSAGE_HISTORY:
+					case SEND_TTS_MESSAGES:
+					case STREAM:
+					case USE_EXTERNAL_EMOJIS:
+					case USE_VAD:
+					case VIEW_AUDIT_LOG:
+					case VIEW_GUILD_INSIGHTS:
 					default:
 						return Mono.error(new BotPermissionException(
 								sb.append(" do that in ").append(channel.getName()).toString()));
