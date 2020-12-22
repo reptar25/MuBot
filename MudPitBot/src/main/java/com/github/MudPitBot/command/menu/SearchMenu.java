@@ -30,7 +30,7 @@ import reactor.util.Loggers;
 public class SearchMenu extends Menu implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(SearchMenu.class);
-	private static final int RETRY_AMOUNT = Integer.MAX_VALUE - 1;
+	private static final int MAX_RETRIES = Integer.MAX_VALUE - 1;
 	private final Duration TIMEOUT = Duration.ofMinutes(5L);
 	private final int RESULT_LENGTH = 5;
 	private final String SEARCH_PREFIX = "ytsearch:";
@@ -39,6 +39,11 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	private List<AudioTrack> results;
 	private TrackScheduler scheduler;
 	private String identifier;
+	private Result searchResult;
+
+	private enum Result {
+		SINGLE, PLAYLIST, NO_MATCHES, FAILED
+	}
 
 	public SearchMenu(MessageCreateEvent event, TrackScheduler scheduler, String identifier) {
 		this.scheduler = scheduler;
@@ -47,7 +52,7 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	}
 
 	private void createResultsMessage() {
-		Mono.justOrEmpty(results).repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
+		Mono.justOrEmpty(results).repeatWhenEmpty(MAX_RETRIES, Flux::repeat)
 				.flatMap(ignored -> Mono.justOrEmpty(message).flatMap(message -> message.edit(
 						spec -> spec.setContent("Search resutls for **" + identifier + "**").setEmbed(createEmbed()))))
 				.subscribe();
@@ -79,12 +84,35 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		return spec;
 	}
 
-//	@Override
-//	public void setMessage(Message message) {
-//		super.setMessage(message);
-//
-//
-//	}
+	@Override
+	public void setMessage(Message message) {
+		super.setMessage(message);
+		Mono.justOrEmpty(searchResult).repeatWhenEmpty(MAX_RETRIES, Flux::repeat).flatMap(result -> {
+			switch (result) {
+			case PLAYLIST:
+				createResultsMessage();
+				addReactions();
+				break;
+			case SINGLE:
+				String queueResponse = scheduler.queue(results.get(0));
+				message.edit(spec -> spec.setContent(queueResponse)).subscribe();
+				break;
+			case NO_MATCHES:
+				message.edit(spec -> spec.setContent("No results found for " + identifier)).subscribe();
+				results = new ArrayList<AudioTrack>();
+				break;
+			case FAILED:
+				message.edit(spec -> spec.setContent("Something went wrong.")).subscribe();
+				results = new ArrayList<AudioTrack>();
+				break;
+			default:
+				break;
+
+			}
+			return Mono.empty();
+		}).subscribe();
+
+	}
 
 	private void addReactions() {
 		for (int i = 1; i <= results.size(); i++) {
@@ -122,6 +150,7 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		LOGGER.info("Selected track: " + selection);
 		String queueResponse = scheduler.queue(results.get(selection - 1));
 		message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).subscribe();
+
 		sub.subscription.dispose();
 		sub = null;
 	}
@@ -129,33 +158,30 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		LOGGER.info("Search loaded track: " + track.getInfo().title);
-		String queueResponse = scheduler.queue(track);
-		message.edit(spec -> spec.setContent(queueResponse)).subscribe();
+		searchResult = Result.SINGLE;
 		results = new ArrayList<AudioTrack>();
+		results.add(track);
+
+		searchResult = Result.SINGLE;
 	}
 
 	@Override
 	public void playlistLoaded(AudioPlaylist playlist) {
 		LOGGER.info("Search loaded playlist: " + playlist.getTracks().get(0).getInfo().title);
 		results = playlist.getTracks().stream().limit(RESULT_LENGTH).collect(Collectors.toList());
-
-		createResultsMessage();
-		addReactions();
-		LOGGER.info("RESULTS SET " + results);
+		searchResult = Result.PLAYLIST;
 	}
 
 	@Override
 	public void noMatches() {
 		LOGGER.info("No results found");
-		message.edit(spec -> spec.setContent("No results found for " + identifier)).subscribe();
-		results = new ArrayList<AudioTrack>();
+		searchResult = Result.NO_MATCHES;
 	}
 
 	@Override
 	public void loadFailed(FriendlyException exception) {
 		LOGGER.info("Something went wrong: " + exception.getMessage());
-		message.edit(spec -> spec.setContent("Something went wrong: " + exception.getMessage())).subscribe();
-		results = new ArrayList<AudioTrack>();
+		searchResult = Result.FAILED;
 	}
 
 	private class SearchSubscription {
