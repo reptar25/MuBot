@@ -22,7 +22,6 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -30,7 +29,6 @@ import reactor.util.Loggers;
 public class SearchMenu extends Menu implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(SearchMenu.class);
-	private static final int MAX_RETRIES = Integer.MAX_VALUE - 1;
 	private final Duration TIMEOUT = Duration.ofMinutes(5L);
 	private final int RESULT_LENGTH = 5;
 	private final String SEARCH_PREFIX = "ytsearch:";
@@ -39,22 +37,17 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	private List<AudioTrack> results;
 	private TrackScheduler scheduler;
 	private String identifier;
-	private Result searchResult;
-
-	private enum Result {
-		SINGLE, PLAYLIST, NO_MATCHES, FAILED
-	}
 
 	public SearchMenu(MessageCreateEvent event, TrackScheduler scheduler, String identifier) {
 		this.scheduler = scheduler;
 		this.identifier = identifier;
-		GuildMusicManager.getPlayerManager().loadItemOrdered(event.getGuild(), SEARCH_PREFIX + identifier, this);
+		
 	}
 
 	private void createResultsMessage() {
-		Mono.justOrEmpty(results).repeatWhenEmpty(MAX_RETRIES, Flux::repeat)
-				.flatMap(ignored -> Mono.justOrEmpty(message).flatMap(message -> message.edit(
-						spec -> spec.setContent("Search resutls for **" + identifier + "**").setEmbed(createEmbed()))))
+		Mono.justOrEmpty(message)
+				.flatMap(message -> message.edit(
+						spec -> spec.setContent("Search resutls for **" + identifier + "**").setEmbed(createEmbed())))
 				.subscribe();
 
 //		Mono.justOrEmpty(message).repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
@@ -82,36 +75,6 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	public Consumer<? super MessageCreateSpec> createMessage() {
 		Consumer<? super MessageCreateSpec> spec = s -> s.setContent("Searching...");
 		return spec;
-	}
-
-	@Override
-	public void setMessage(Message message) {
-		super.setMessage(message);
-		Mono.justOrEmpty(searchResult).repeatWhenEmpty(MAX_RETRIES, Flux::repeat).flatMap(result -> {
-			switch (result) {
-			case PLAYLIST:
-				createResultsMessage();
-				addReactions();
-				break;
-			case SINGLE:
-				String queueResponse = scheduler.queue(results.get(0));
-				message.edit(spec -> spec.setContent(queueResponse)).subscribe();
-				break;
-			case NO_MATCHES:
-				message.edit(spec -> spec.setContent("No results found for " + identifier)).subscribe();
-				results = new ArrayList<AudioTrack>();
-				break;
-			case FAILED:
-				message.edit(spec -> spec.setContent("Something went wrong.")).subscribe();
-				results = new ArrayList<AudioTrack>();
-				break;
-			default:
-				break;
-
-			}
-			return Mono.empty();
-		}).subscribe();
-
 	}
 
 	private void addReactions() {
@@ -150,38 +113,56 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		LOGGER.info("Selected track: " + selection);
 		String queueResponse = scheduler.queue(results.get(selection - 1));
 		message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).subscribe();
-
 		sub.subscription.dispose();
 		sub = null;
 	}
 
 	@Override
+	public void setMessage(Message message) {
+		this.message = message;
+		GuildMusicManager.getPlayerManager().loadItemOrdered(message.getGuild(), SEARCH_PREFIX + identifier, this);
+//		if (results != null) {
+//			createResultsMessage();
+//			addReactions();
+//		}
+	}
+
+	@Override
 	public void trackLoaded(AudioTrack track) {
 		LOGGER.info("Search loaded track: " + track.getInfo().title);
-		searchResult = Result.SINGLE;
 		results = new ArrayList<AudioTrack>();
 		results.add(track);
 
-		searchResult = Result.SINGLE;
+		if (message != null) {
+			createResultsMessage();
+			addReactions();
+		}
 	}
 
 	@Override
 	public void playlistLoaded(AudioPlaylist playlist) {
 		LOGGER.info("Search loaded playlist: " + playlist.getTracks().get(0).getInfo().title);
 		results = playlist.getTracks().stream().limit(RESULT_LENGTH).collect(Collectors.toList());
-		searchResult = Result.PLAYLIST;
+
+		if (message != null) {
+			createResultsMessage();
+			addReactions();
+		}
+
 	}
 
 	@Override
 	public void noMatches() {
 		LOGGER.info("No results found");
-		searchResult = Result.NO_MATCHES;
+		results = new ArrayList<AudioTrack>();
+		if(message != null)
+			message.edit(spec -> spec.setContent("No results found for " + identifier)).subscribe();
 	}
 
 	@Override
 	public void loadFailed(FriendlyException exception) {
 		LOGGER.info("Something went wrong: " + exception.getMessage());
-		searchResult = Result.FAILED;
+		message.edit(spec -> spec.setContent("Something went wrong: " + exception.getMessage())).subscribe();
 	}
 
 	private class SearchSubscription {
@@ -194,8 +175,6 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 
 		public void dispose() {
 			message.removeAllReactions().subscribe();
-			// message.delete().subscribe(null, error -> LOGGER.error(error.getMessage(),
-			// error));
 			subscription.dispose();
 		}
 	}

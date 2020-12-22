@@ -21,7 +21,7 @@ public class SearchCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
-				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK).thenReturn(channel))
+				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES).thenReturn(channel))
 				.flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> search(event, scheduler, args));
 	}
 
