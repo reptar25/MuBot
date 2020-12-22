@@ -25,7 +25,7 @@ public class Paginator extends Menu {
 	int totalPages;
 	String description;
 
-	Duration timeout = Duration.ofMinutes(5);
+	Duration timeout = Duration.ofMinutes(5L);
 
 	private Paginator(Builder b) {
 		this.itemsPerPage = b.itemsPerPage;

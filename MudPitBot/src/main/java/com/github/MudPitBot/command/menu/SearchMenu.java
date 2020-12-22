@@ -31,7 +31,7 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(SearchMenu.class);
 	private static final int RETRY_AMOUNT = Integer.MAX_VALUE - 1;
-	private final Duration TIMEOUT = Duration.ofMinutes(5l);
+	private final Duration TIMEOUT = Duration.ofMinutes(5L);
 	private final int RESULT_LENGTH = 5;
 	private final String SEARCH_PREFIX = "ytsearch:";
 
