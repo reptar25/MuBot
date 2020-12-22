@@ -64,8 +64,16 @@ public final class CommandUtil {
 	private static Mono<CommandResponse> sendPrivateReply(Mono<PrivateChannel> privateChannelMono,
 			CommandResponse response) {
 		return privateChannelMono.flatMap(privateChannel -> {
-			return privateChannel.createMessage(response.getSpec()).thenReturn(response);
+			return privateChannel.createMessage(response.getSpec()).flatMap(message -> {
+				// if the response contains a menu
+				if (response.getMenu() != null) {
+					// set message on the menu
+					response.getMenu().setMessage(message);
+				}
+				return Mono.just(response);
+			}).thenReturn(response);
 		});
+
 	}
 
 	/**
