@@ -28,6 +28,7 @@ public class CommandClient {
 	private GatewayDiscordClient client;
 	private static CommandExecutor executor = new CommandExecutor();
 	private static CommandClient instance;
+	public static final int MAX_COMMANDS_PER_MESSAGE = 5;
 
 	// Singleton create method
 	public static CommandClient create(GatewayDiscordClient client) {
@@ -71,8 +72,9 @@ public class CommandClient {
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMessage().getContent()).map(content -> content.split(Commands.COMMAND_PREFIX))
-				.flatMapMany(Flux::fromArray).filter(Predicate.not(String::isBlank)).flatMap(commandString -> Mono
-						.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase())).flatMap(command -> {
+				.flatMapMany(Flux::fromArray).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
+				.flatMap(commandString -> Mono.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase()))
+						.flatMap(command -> {
 							String[] splitCommand = commandString.trim().split(" ");
 							String[] commandArgs = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 							Mono<CommandResponse> response = processCommand(event, command, commandArgs);
@@ -86,9 +88,9 @@ public class CommandClient {
 											.subscribe();
 
 							return Mono.empty();
-						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
-						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
-								.info("{} took {} ms to be processed", commandString.split(" ")[0].toLowerCase(), elapsed))))
+						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed().doOnNext(
+								TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to be processed",
+										commandString.split(" ")[0].toLowerCase(), elapsed))))
 				.then();
 	}
 
