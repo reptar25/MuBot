@@ -49,13 +49,13 @@ public class CommandClientTest {
 		client = CommandClient.create(mockClient);
 	}
 
-	@Test
-	void processMessage() {
-		when(mockEvent.getMessage()).thenReturn(mockMessage);
-		when(mockMessage.getAuthorAsMember()).thenReturn(Mono.just(mockMember));
-		when(mockMember.isBot()).thenReturn(false);
-		
-		client.processMessage(mockEvent, "message");
-	}
+//	@Test
+//	void processMessage() {
+//		when(mockEvent.getMessage()).thenReturn(mockMessage);
+//		when(mockMessage.getAuthorAsMember()).thenReturn(Mono.just(mockMember));
+//		when(mockMember.isBot()).thenReturn(false);
+//		
+//		client.processMessage(mockEvent, "message");
+//	}
 
 }

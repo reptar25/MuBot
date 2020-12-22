@@ -18,6 +18,7 @@ import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public final class CommandUtil {
@@ -90,6 +91,8 @@ public final class CommandUtil {
 	 * @return the voice channel the bot and message sender share or empty if they
 	 *         do not share a voice channel
 	 */
+	private final static int MAX_RETRIES = 25000;
+
 	public static Mono<VoiceChannel> requireSameVoiceChannel(MessageCreateEvent event) {
 		// id of the bot's voice channel id or empty
 		final Mono<Optional<Snowflake>> getBotVoiceChannelId = event.getClient().getSelf().flatMap(user -> {
@@ -106,25 +109,33 @@ public final class CommandUtil {
 		return Mono.justOrEmpty(event.getMember())
 				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
 						"You can't use this command in a private message")))
-				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId).map(tuple -> {
+				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId).flatMap(tuple -> {
 					final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
 					final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
 
-					// If the user and the bot are not in a voice channel
-					if (botVoiceChannelId.isEmpty() || userVoiceChannelId.isEmpty()) {
-						throw new CommandException("User not in voice channel",
-								"You have to be in the same voice channel as the bot to use this command\"");
+					// If the user is not in a voice channel throw an error
+					if (userVoiceChannelId.isEmpty()) {
+						throw new CommandException("Voice command used without voice channel",
+								"You have to be in a voice channel to use this command");
+					}
+
+					// if the bot is not in a voice channel give a chance to join before erring
+					if (botVoiceChannelId.isEmpty()) {
+						return Mono.empty();
 					}
 
 					// If the user and the bot are not in the same voice channel
-					if (botVoiceChannelId.isPresent()
-							&& !userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
-						throw new CommandException("User and bot not in same channel",
-								"You have to be in the same voice channel as the bot to use this command");
+					if (!userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
+						return Mono.empty();
 					}
 
-					return userVoiceChannelId.get();
-				})).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
+					return Mono.just(userVoiceChannelId.get());
+					// retries allow the bot to connect to channel before throwing error, such as
+					// "!join !play"
+				}).repeatWhenEmpty(MAX_RETRIES, Flux::repeat)).onErrorResume(IllegalStateException.class, error -> {
+					return Mono.error(new CommandException("User and bot not in same channel",
+							"You have to be in the same voice channel as the bot to use this command"));
+				}).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
 	}
 
 	/**

@@ -13,7 +13,7 @@ import org.reflections.Reflections;
 
 public final class Commands {
 
-	public static final char COMMAND_PREFIX = '!';
+	public static final String COMMAND_PREFIX = "!";
 
 	// Immutable structure that maps string commands to the concrete implementation
 	// of that command.
@@ -75,6 +75,10 @@ public final class Commands {
 	public static final Set<Entry<String, Command>> getEntries() {
 		final Set<Entry<String, Command>> entries = new HashSet<Entry<String, Command>>(COMMANDS.entrySet());
 		return entries;
+	}
+
+	public static final Command get(String key) {
+		return COMMANDS.get(key);
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.util;
+package com.github.MudPitBot.eventlistener;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;

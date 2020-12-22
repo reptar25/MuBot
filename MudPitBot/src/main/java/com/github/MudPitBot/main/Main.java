@@ -3,8 +3,9 @@ package com.github.MudPitBot.main;
 import java.io.IOException;
 
 import com.github.MudPitBot.command.CommandClient;
-import com.github.MudPitBot.command.util.MessageLogger;
 import com.github.MudPitBot.command.util.MuteHelper;
+import com.github.MudPitBot.eventlistener.MessageLogger;
+import com.github.MudPitBot.eventlistener.ReadyListener;
 import com.github.MudPitBot.heroku.HerokuServer;
 
 import discord4j.core.DiscordClientBuilder;
@@ -49,6 +50,7 @@ public class Main {
 			LOGGER.info("Not running on Heroku");
 		}
 
+		ReadyListener.create(client);
 		CommandClient.create(client);
 		MuteHelper.create(client);
 		MessageLogger.create(client);
