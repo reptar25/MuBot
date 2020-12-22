@@ -72,7 +72,7 @@ public class CommandClient {
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMessage().getContent()).map(content -> content.split(Commands.COMMAND_PREFIX))
 				.flatMapMany(Flux::fromArray).filter(Predicate.not(String::isBlank)).flatMap(commandString -> Mono
-						.justOrEmpty(Commands.get(commandString.split(" ")[0])).flatMap(command -> {
+						.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase())).flatMap(command -> {
 							String[] splitCommand = commandString.trim().split(" ");
 							String[] commandArgs = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
 							Mono<CommandResponse> response = processCommand(event, command, commandArgs);
@@ -88,7 +88,7 @@ public class CommandClient {
 							return Mono.empty();
 						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
 						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
-								.info("{} took {} ms to be processed", commandString.split(" ")[0], elapsed))))
+								.info("{} took {} ms to be processed", commandString.split(" ")[0].toLowerCase(), elapsed))))
 				.then();
 	}
 
