@@ -10,6 +10,8 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
@@ -17,15 +19,15 @@ public class Paginator extends Menu {
 
 	private static final Logger LOGGER = Loggers.getLogger(Paginator.class);
 
-	int itemsPerPage;
-	String content;
-	String[] entries;
+	private int itemsPerPage;
+	private String content;
+	private String[] entries;
 
-	int currentPageNum = 1;
-	int totalPages;
-	String description;
+	private int currentPageNum = 1;
+	private int totalPages;
+	private String description;
 
-	Duration timeout = Duration.ofMinutes(5L);
+	private Duration timeout = Duration.ofMinutes(5L);
 
 	private Paginator(Builder b) {
 		this.itemsPerPage = b.itemsPerPage;
@@ -62,19 +64,20 @@ public class Paginator extends Menu {
 	}
 
 	private void addReactions() {
-		message.addReaction(Emoji.LEFT_REACTION).subscribe();
-		message.addReaction(Emoji.RIGHT_REACTION).subscribe();
+		message.addReaction(Emoji.LEFT_REACTION).then(message.addReaction(Emoji.RIGHT_REACTION))
+				.thenMany(addReactionListener(message)).onErrorResume(error -> {
+					LOGGER.error("Error in reaction listener.", error);
+					return Mono.empty();
+				}).subscribe();
 
-		addReactionListener(message);
 	}
 
-	private void addReactionListener(Message message) {
-		message.getClient().on(ReactionAddEvent.class).filter(e -> e.getMessageId() != message.getId())
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false)).take(timeout)
-				.doOnTerminate(() -> message.removeAllReactions().subscribe()).subscribe(event -> {
-
-					if (event.getEmoji().asUnicodeEmoji().isEmpty())
-						return;
+	private Flux<Void> addReactionListener(Message message) {
+		return message.getClient().on(ReactionAddEvent.class)
+				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
+				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
+				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(timeout)
+				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
 
 					if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.LEFT_REACTION)) {
 						if (currentPageNum > 1)
@@ -83,12 +86,9 @@ public class Paginator extends Menu {
 						if (currentPageNum < totalPages)
 							currentPageNum++;
 					}
-					message.removeReaction(event.getEmoji(), event.getUserId()).subscribe(null,
-							error -> LOGGER.error(error.getMessage()));
-
-					message.edit(edit -> edit.setEmbed(createEmbed())).subscribe();
-
-				}, error -> LOGGER.error(error.getMessage()));
+					return message.removeReaction(event.getEmoji(), event.getUserId())
+							.then(message.edit(edit -> edit.setEmbed(createEmbed()))).then();
+				});
 	}
 
 	public static class Builder {

@@ -4,17 +4,14 @@ import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.music.GuildMusicManager;
-
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
 public class LeaveVoiceCommand extends Command {
 
-	private static final Logger LOGGER = Loggers.getLogger(LeaveVoiceCommand.class);
+	//private static final Logger LOGGER = Loggers.getLogger(LeaveVoiceCommand.class);
 
 	public LeaveVoiceCommand() {
 		super("leave");
@@ -33,11 +30,7 @@ public class LeaveVoiceCommand extends Command {
 	 * @return null
 	 */
 	public Mono<CommandResponse> leave(VoiceChannel channel) {
-		return channel.getVoiceConnection().flatMap(botVoiceConnection -> {
-			LOGGER.info("Leaving channel " + channel.getId().asLong());
-			GuildMusicManager.removeFromMap(channel.getGuildId().asLong());
-			return botVoiceConnection.disconnect();
-		}).then(CommandResponse.empty());
+		return channel.getVoiceConnection().flatMap(VoiceConnection::disconnect).then(CommandResponse.empty());
 	}
 
 }

@@ -71,21 +71,22 @@ public class MuteCommand extends Command {
 		}
 
 		String response;
+		Flux<Void> doMute;
 		if (mute) {
-			users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
+			doMute = users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
 				LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
 				return member.edit(spec -> spec.setMute(true));
-			}).subscribe();
+			});
 			response = Emoji.MUTE + " Muting " + channel.getName() + " " + Emoji.MUTE;
 		} else {
-			users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
+			doMute = users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
 				LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
 				return member.edit(spec -> spec.setMute(false));
-			}).subscribe();
+			});
 			response = Emoji.SOUND + " Unmuting " + channel.getName() + " " + Emoji.SOUND;
 		}
 		;
-		return CommandResponse.create(response);
+		return doMute.then(CommandResponse.create(response));
 	}
 
 }

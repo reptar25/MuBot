@@ -8,6 +8,7 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class SeekCommand extends Command {
 
@@ -22,19 +23,17 @@ public class SeekCommand extends Command {
 	}
 
 	/**
-	 * @param event  The message event
-	 * @param args The position to move the current song to in seconds
+	 * @param event The message event
+	 * @param args  The position to move the current song to in seconds
 	 * @return null
 	 */
-	public Mono<CommandResponse> seek(TrackScheduler scheduler, String[] args) {
-		if (scheduler != null && args != null) {
-			if (args.length > 0) {
-				try {
-					int positionInSeconds = Integer.parseInt(args[0]);
-					scheduler.seek(positionInSeconds);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+	public Mono<CommandResponse> seek(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+		if (args.length > 0) {
+			try {
+				int positionInSeconds = Integer.parseInt(args[0]);
+				scheduler.seek(positionInSeconds);
+			} catch (NumberFormatException e) {
+				// just ignore commands with improper number
 			}
 		}
 		return CommandResponse.empty();

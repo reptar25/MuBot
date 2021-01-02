@@ -7,10 +7,6 @@ import discord4j.core.object.entity.channel.VoiceChannel;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * Implementation of the Command design pattern.
- */
-
 public abstract class Command implements CommandInterface {
 
 	protected String commandTrigger;
@@ -40,10 +36,9 @@ public abstract class Command implements CommandInterface {
 	private static final int RETRY_AMOUNT = 100;
 
 	protected static Mono<TrackScheduler> getScheduler(VoiceChannel channel) {
-		return Mono.justOrEmpty(GuildMusicManager.getScheduler(channel.getGuildId().asLong())).repeatWhenEmpty(RETRY_AMOUNT,
-				Flux::repeat);
+		return Mono.justOrEmpty(GuildMusicManager.getGuildMusic(channel.getGuildId()))
+				.repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
+				.flatMap(guildMusic -> Mono.just(guildMusic.getTrackScheduler()));
 	}
-
-
 
 }

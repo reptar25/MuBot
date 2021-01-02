@@ -13,6 +13,7 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+import reactor.util.annotation.NonNull;
 
 public class PlayCommand extends Command {
 
@@ -32,34 +33,29 @@ public class PlayCommand extends Command {
 	/**
 	 * Attempts to play the link in the message
 	 * 
-	 * @param event  The message event
-	 * @param args The link of the audio
+	 * @param event The message event
+	 * @param args  The link of the audio
 	 * @return null
 	 */
-	public Mono<CommandResponse> play(MessageCreateEvent event, TrackScheduler scheduler, String[] args) {
-		if (scheduler != null && args != null) {
-			// unpause
-			if (args.length == 0 || args[0].isEmpty()) {
-				if (scheduler.getNowPlaying() != null)
-					scheduler.pause(!scheduler.isPaused());
-				return CommandResponse.empty();
-			}
-
-			if (args.length <= 0 || args[0].isEmpty()) {
-				return CommandResponse.empty();
-			}
-
-			// if its a search recombine the args that were split by space
-			if (args[0].startsWith("ytsearch:"))
-				args[0] = recombineArgs(args);
-
-			GuildMusicManager.loadItem(args[0], scheduler, event);
-//			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
-//				return CommandResponse
-//						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");
-//			}
-			LOGGER.info("Loaded music item: " + args[0]);
+	public Mono<CommandResponse> play(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+			@NonNull String[] args) {
+		// unpause
+		if (args.length == 0 || args[0].isEmpty()) {
+			if (scheduler.getNowPlaying() != null)
+				scheduler.pause(!scheduler.isPaused());
+			return CommandResponse.empty();
 		}
+
+		if (args.length <= 0 || args[0].isEmpty()) {
+			return CommandResponse.empty();
+		}
+
+		// if its a search recombine the args that were split by space
+		if (args[0].startsWith("ytsearch:"))
+			args[0] = recombineArgs(args);
+
+		GuildMusicManager.loadItemOrdered(args[0], scheduler, event);
+		LOGGER.info("Loaded music item: " + args[0]);
 		return CommandResponse.empty();
 	}
 

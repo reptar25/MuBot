@@ -14,6 +14,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackState;
 
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -30,9 +31,9 @@ public final class TrackScheduler extends AudioEventAdapter {
 	/**
 	 * Creates a track scheduler for the given channel
 	 * 
-	 * @param guildId the channel to create a track scheduler for
+	 * @param player the AudioPlayer used for this TrackScheduler
 	 */
-	public TrackScheduler(long guildId, AudioPlayer player) {
+	public TrackScheduler(AudioPlayer player) {
 		this.player = player;
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
@@ -259,6 +260,14 @@ public final class TrackScheduler extends AudioEventAdapter {
 
 	public void setRepeat(boolean repeat) {
 		this.repeat = repeat;
+	}
+
+	public void destroy() {
+		if (player.getPlayingTrack() != null && player.getPlayingTrack().getState() == AudioTrackState.PLAYING) {
+			player.getPlayingTrack().stop();
+		}
+		player.destroy();
+		clearQueue();
 	}
 
 }

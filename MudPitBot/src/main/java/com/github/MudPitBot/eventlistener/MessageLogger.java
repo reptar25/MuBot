@@ -39,11 +39,11 @@ public class MessageLogger {
 		if (client.getEventDispatcher() != null) {
 			client.getEventDispatcher().on(MessageCreateEvent.class)
 					// ignore messages from bots
-					.filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true)).subscribe(event -> {
+					.filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true)).flatMap(event -> {
 						final String content = event.getMessage().getContent();
 						// print out new message to logs
-						logMessage(event, content).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
-					});
+						return logMessage(event, content);
+					}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 		}
 	}
 

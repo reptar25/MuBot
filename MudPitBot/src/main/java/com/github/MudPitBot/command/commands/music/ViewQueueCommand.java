@@ -1,5 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
+import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
 import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import java.util.List;
@@ -16,7 +17,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.spec.MessageCreateSpec;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class ViewQueueCommand extends Command {
 
@@ -26,7 +29,9 @@ public class ViewQueueCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+		return requireSameVoiceChannel(event)
+				.flatMap(channel -> requireBotPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
+				.flatMap(channel -> getScheduler(channel))
 				.flatMap(scheduler -> viewQueue(scheduler, event.getMessage().getChannel()));
 	}
 
@@ -38,33 +43,30 @@ public class ViewQueueCommand extends Command {
 	 * @param scheduler   The TrackScheduler for this guild
 	 * @return List of songs in the queue, or "The queue is empty" if empty
 	 */
-	public Mono<CommandResponse> viewQueue(TrackScheduler scheduler, Mono<MessageChannel> channelMono) {
-		if (scheduler != null) {
-			// get list of songs currently in the queue
-			List<AudioTrack> queue = scheduler.getQueue();
-			Builder paginatorBuilder = new Paginator.Builder();
-			// if the queue is not empty
-			if (queue.size() > 0) {
-				String[] queueEntries = new String[queue.size()];
-				// print total number of songs
-				paginatorBuilder.withMessageContent(
-						"Currently playing: " + CommandUtil.trackInfoString(scheduler.getNowPlaying()) + "\n"
-								+ "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
-				for (int i = 0; i < queue.size(); i++) {
-					AudioTrack track = queue.get(i);
-					// print title and author of song on its own line
-					queueEntries[i] = Emoji.numToEmoji(i + 1) + " - " + CommandUtil.trackInfoString(track) + "\n";
-				}
-
-				Paginator paginator = paginatorBuilder.withEntries(queueEntries).build();
-				Consumer<? super MessageCreateSpec> spec = paginator.createMessage();
-				return new CommandResponse.Builder().withCreateSpec(spec).withMenu(paginator).build();
-
-			} else {
-				return CommandResponse.create("The queue is empty");
+	public Mono<CommandResponse> viewQueue(@NonNull TrackScheduler scheduler, Mono<MessageChannel> channelMono) {
+		// get list of songs currently in the queue
+		List<AudioTrack> queue = scheduler.getQueue();
+		Builder paginatorBuilder = new Paginator.Builder();
+		// if the queue is not empty
+		if (queue.size() > 0) {
+			String[] queueEntries = new String[queue.size()];
+			// print total number of songs
+			paginatorBuilder
+					.withMessageContent("Currently playing: " + CommandUtil.trackInfoString(scheduler.getNowPlaying())
+							+ "\n" + "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
+			for (int i = 0; i < queue.size(); i++) {
+				AudioTrack track = queue.get(i);
+				// print title and author of song on its own line
+				queueEntries[i] = Emoji.numToEmoji(i + 1) + " - " + CommandUtil.trackInfoString(track) + "\n";
 			}
+
+			Paginator paginator = paginatorBuilder.withEntries(queueEntries).build();
+			Consumer<? super MessageCreateSpec> spec = paginator.createMessage();
+			return new CommandResponse.Builder().withCreateSpec(spec).withMenu(paginator).build();
+
+		} else {
+			return CommandResponse.create("The queue is empty");
 		}
-		return CommandResponse.empty();
 	}
 
 }

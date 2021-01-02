@@ -10,6 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class NowPlayingCommand extends Command {
 
@@ -29,18 +30,15 @@ public class NowPlayingCommand extends Command {
 	 * @param event The message event
 	 * @return Info of song currently playing
 	 */
-	public Mono<CommandResponse> nowPlaying(TrackScheduler scheduler) {
-		if (scheduler != null) {
-			// get the track that's currently playing
-			AudioTrack track = scheduler.getNowPlaying();
-			if (track != null) {
-				String response = Emoji.NOTES + " Now playing **" + track.getInfo().title + "** by "
-						+ track.getInfo().author + " " + Emoji.NOTES;
-				return CommandResponse.create(response);
-			}
-			return CommandResponse.create("No track is currently playing");
+	public Mono<CommandResponse> nowPlaying(@NonNull TrackScheduler scheduler) {
+		// get the track that's currently playing
+		AudioTrack track = scheduler.getNowPlaying();
+		if (track != null) {
+			String response = Emoji.NOTES + " Now playing **" + track.getInfo().title + "** by "
+					+ track.getInfo().author + " " + Emoji.NOTES;
+			return CommandResponse.create(response);
 		}
-		return CommandResponse.empty();
+		return CommandResponse.create("No track is currently playing");
 	}
 
 }

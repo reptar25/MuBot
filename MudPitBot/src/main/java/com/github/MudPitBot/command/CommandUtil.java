@@ -56,13 +56,12 @@ public final class CommandUtil {
 					});
 				}
 				return Mono.empty();
-			});
+			}).then();
 		}).onErrorResume(SendMessagesException.class, ignored -> Mono.justOrEmpty(memberOpt)
-				.flatMap(member -> sendPrivateReply(member.getPrivateChannel(), response)));
+				.flatMap(member -> sendPrivateReply(member.getPrivateChannel(), response))).thenReturn(response);
 	}
 
-	private static Mono<CommandResponse> sendPrivateReply(Mono<PrivateChannel> privateChannelMono,
-			CommandResponse response) {
+	private static Mono<Void> sendPrivateReply(Mono<PrivateChannel> privateChannelMono, CommandResponse response) {
 		return privateChannelMono.flatMap(privateChannel -> {
 			return privateChannel.createMessage(response.getSpec()).flatMap(message -> {
 				// if the response contains a menu
@@ -71,7 +70,7 @@ public final class CommandUtil {
 					response.getMenu().setMessage(message);
 				}
 				return Mono.just(response);
-			}).thenReturn(response);
+			}).then();
 		});
 
 	}
@@ -149,7 +148,7 @@ public final class CommandUtil {
 	/**
 	 * 
 	 * @param channel              the guild channel
-	 * @param requestedPermissions the permission the bot will need
+	 * @param requestedPermissions the permissions the bot will need
 	 * @return the permissions the bot has in this channel or an error if the bot
 	 *         does not have the requested permissions
 	 */

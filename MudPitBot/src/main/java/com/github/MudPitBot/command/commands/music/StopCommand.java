@@ -11,6 +11,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+import reactor.util.annotation.NonNull;
 
 public class StopCommand extends Command {
 
@@ -32,15 +33,11 @@ public class StopCommand extends Command {
 	 * @param event The message event
 	 * @return "Player stopped" if successful, null if not
 	 */
-	public Mono<CommandResponse> stop(TrackScheduler scheduler) {
-		if (scheduler != null) {
-			scheduler.getPlayer().stopTrack();
-			scheduler.clearQueue();
-			LOGGER.info("Stopped music");
-			return CommandResponse.create(Emoji.STOP_SIGN + " Player stopped " + Emoji.STOP_SIGN);
-		}
-
-		return CommandResponse.empty();
+	public Mono<CommandResponse> stop(@NonNull TrackScheduler scheduler) {
+		scheduler.getPlayer().stopTrack();
+		scheduler.clearQueue();
+		LOGGER.info("Stopped music");
+		return CommandResponse.create(Emoji.STOP_SIGN + " Player stopped " + Emoji.STOP_SIGN);
 	}
 
 }

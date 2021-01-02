@@ -1,11 +1,15 @@
 package com.github.MudPitBot.command.commands.general;
 
+import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.menu.PollMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.GuildChannel;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 
 public class PollCommand extends Command {
@@ -16,7 +20,9 @@ public class PollCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return poll(pollArgs(args), event.getMember().orElse(null));
+		return event.getMessage().getChannel()
+				.flatMap(channel -> requireBotPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
+				.flatMap(ignored -> poll(pollArgs(args), event.getMember().orElse(null)));
 	}
 
 	/**
@@ -25,6 +31,8 @@ public class PollCommand extends Command {
 	 * @param args the original command parameters
 	 * @return the command parameters split by double quotes instead of spaces
 	 */
+	private final String REGEX_SPLIT = " (?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)";
+
 	private String[] pollArgs(String[] args) {
 		StringBuilder sb = new StringBuilder();
 		// unsplit the parameters
@@ -32,7 +40,7 @@ public class PollCommand extends Command {
 			sb.append(param).append(" ");
 		}
 		// now split the command by what's inside the quotes instead of by space
-		args = sb.toString().split(" (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+		args = sb.toString().split(REGEX_SPLIT);
 
 		// now remove the double quotes from each parameter
 		for (int i = 0; i < args.length; i++) {

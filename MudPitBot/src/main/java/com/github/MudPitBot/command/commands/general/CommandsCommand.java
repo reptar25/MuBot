@@ -30,7 +30,7 @@ public class CommandsCommand extends Command {
 	public Mono<CommandResponse> printCommands() {
 		StringBuilder sb = new StringBuilder("Available commands: ");
 		Set<Entry<String, Command>> entries = Commands.getEntries();
-		sb.append(entries.parallelStream().map(entry -> String.format("%s%s", Commands.COMMAND_PREFIX, entry.getKey()))
+		sb.append(entries.parallelStream().map(entry -> String.format("%s%s", Commands.DEFAULT_COMMAND_PREFIX, entry.getKey()))
 				.sorted().collect(Collectors.joining(", ")).toString());
 		return CommandResponse.create(sb.toString());
 	}

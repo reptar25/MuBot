@@ -10,6 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class RemoveCommand extends Command {
 
@@ -23,20 +24,18 @@ public class RemoveCommand extends Command {
 				.flatMap(scheduler -> remove(scheduler, args));
 	}
 
-	public Mono<CommandResponse> remove(TrackScheduler scheduler, String[] args) {
-		if (scheduler != null) {
-			if (args != null && args.length >= 1) {
-				try {
-					int index = Integer.parseInt(args[0]);
-					AudioTrack removed = scheduler.removeFromQueue(index - 1);
-					if (removed != null)
-						return CommandResponse.create(Emoji.RED_X + " Removed \"" + removed.getInfo().title
-								+ "\" from the queue " + Emoji.RED_X);
-					else
-						return CommandResponse.empty();
-				} catch (NumberFormatException ignored) {
+	public Mono<CommandResponse> remove(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+		if (args.length >= 1) {
+			try {
+				int index = Integer.parseInt(args[0]);
+				AudioTrack removed = scheduler.removeFromQueue(index - 1);
+				if (removed != null)
+					return CommandResponse.create(
+							Emoji.RED_X + " Removed \"" + removed.getInfo().title + "\" from the queue " + Emoji.RED_X);
+				else
 					return CommandResponse.empty();
-				}
+			} catch (NumberFormatException ignored) {
+				return CommandResponse.empty();
 			}
 		}
 		return CommandResponse.empty();

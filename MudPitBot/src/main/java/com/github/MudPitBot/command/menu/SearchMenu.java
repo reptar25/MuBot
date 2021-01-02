@@ -21,7 +21,6 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
-import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -33,7 +32,6 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	private final int RESULT_LENGTH = 5;
 	private final String SEARCH_PREFIX = "ytsearch:";
 
-	static SearchSubscription sub;
 	private List<AudioTrack> results;
 	private TrackScheduler scheduler;
 	private String identifier;
@@ -41,20 +39,12 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	public SearchMenu(MessageCreateEvent event, TrackScheduler scheduler, String identifier) {
 		this.scheduler = scheduler;
 		this.identifier = identifier;
-		
+
 	}
 
-	private void createResultsMessage() {
-		Mono.justOrEmpty(message)
-				.flatMap(message -> message.edit(
-						spec -> spec.setContent("Search resutls for **" + identifier + "**").setEmbed(createEmbed())))
-				.subscribe();
-
-//		Mono.justOrEmpty(message).repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
-//				.map(message -> message.edit(
-//						spec -> spec.setContent("Search resutls for **" + identifier + "**").setEmbed(createEmbed()))
-//						.subscribe())
-//				.subscribe();
+	private Mono<Message> createResultsMessage() {
+		return Mono.justOrEmpty(message).flatMap(message -> message
+				.edit(spec -> spec.setContent("Search resutls for **" + identifier + "**").setEmbed(createEmbed())));
 	}
 
 	private Consumer<? super EmbedCreateSpec> createEmbed() {
@@ -77,34 +67,31 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		return spec;
 	}
 
-	private void addReactions() {
+	private Mono<Void> addReactions() {
+		Mono<Void> ret = Mono.empty();
 		for (int i = 1; i <= results.size(); i++) {
-			message.addReaction(Emoji.numToUnicode(i)).subscribe();
+			LOGGER.info("Adding Reaction " + i);
+			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
 		}
 
 		addReactionListener();
+		return ret;
 	}
 
 	private void addReactionListener() {
-		if (sub != null)
-			sub.dispose();
-		sub = new SearchSubscription(message);
-		sub.subscription = message.getClient().on(ReactionAddEvent.class)
-				.filter(e -> e.getMessageId() != message.getId())
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false)).take(TIMEOUT)
-				.doOnTerminate(() -> message.removeAllReactions().subscribe()).subscribe(event -> {
-
-					if (event.getEmoji().asUnicodeEmoji().isEmpty())
-						return;
-
-//					message.removeReaction(event.getEmoji(), event.getUserId()).subscribe(null,
-//							error -> LOGGER.error(error.getMessage()));
-					message.removeAllReactions().subscribe();
+		message.getClient().on(ReactionAddEvent.class).filter(e -> !e.getMember().map(Member::isBot).orElse(false))
+				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
+				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT)
+				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
 
 					int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get());
 					loadSelection(selection);
+					return message.removeAllReactions();
 
-				}, error -> LOGGER.error(error.getMessage()));
+				}).onErrorResume(error -> {
+					LOGGER.error("Error in reaction listener.", error);
+					return Mono.empty();
+				}).subscribe();
 	}
 
 	private void loadSelection(int selection) {
@@ -113,18 +100,12 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		LOGGER.info("Selected track: " + selection);
 		String queueResponse = scheduler.queue(results.get(selection - 1));
 		message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).subscribe();
-		sub.subscription.dispose();
-		sub = null;
 	}
 
 	@Override
 	public void setMessage(Message message) {
 		this.message = message;
 		GuildMusicManager.getPlayerManager().loadItemOrdered(message.getGuild(), SEARCH_PREFIX + identifier, this);
-//		if (results != null) {
-//			createResultsMessage();
-//			addReactions();
-//		}
 	}
 
 	@Override
@@ -134,8 +115,7 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		results.add(track);
 
 		if (message != null) {
-			createResultsMessage();
-			addReactions();
+			createResultsMessage().then(addReactions()).subscribe(null, error -> LOGGER.error(error.getMessage()));
 		}
 	}
 
@@ -145,17 +125,15 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		results = playlist.getTracks().stream().limit(RESULT_LENGTH).collect(Collectors.toList());
 
 		if (message != null) {
-			createResultsMessage();
-			addReactions();
+			createResultsMessage().then(addReactions()).subscribe(null, error -> LOGGER.error(error.getMessage()));
 		}
-
 	}
 
 	@Override
 	public void noMatches() {
 		LOGGER.info("No results found");
 		results = new ArrayList<AudioTrack>();
-		if(message != null)
+		if (message != null)
 			message.edit(spec -> spec.setContent("No results found for " + identifier)).subscribe();
 	}
 
@@ -163,20 +141,6 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 	public void loadFailed(FriendlyException exception) {
 		LOGGER.info("Something went wrong: " + exception.getMessage());
 		message.edit(spec -> spec.setContent("Something went wrong: " + exception.getMessage())).subscribe();
-	}
-
-	private class SearchSubscription {
-		public Disposable subscription;
-		private Message message;
-
-		public SearchSubscription(Message message) {
-			this.message = message;
-		};
-
-		public void dispose() {
-			message.removeAllReactions().subscribe();
-			subscription.dispose();
-		}
 	}
 
 }

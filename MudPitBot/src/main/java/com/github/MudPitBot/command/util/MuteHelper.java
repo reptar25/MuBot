@@ -52,16 +52,16 @@ public class MuteHelper {
 		if (client.getEventDispatcher() != null) {
 			client.getEventDispatcher().on(VoiceStateUpdateEvent.class)
 					// filter out bots' events
-					.filterWhen(event -> event.getCurrent().getMember().map(m -> !m.isBot())).subscribe(event -> {
+					.filterWhen(event -> event.getCurrent().getMember().map(m -> !m.isBot())).flatMap(event -> {
 						if (event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent()) {
 							if (MuteHelper.mutedChannels.containsKey(event.getCurrent().getGuildId())) {
 								// Checks whether a member should be muted on joining a voice channel and mutes
 								// them if so
-								muteOnJoin(event.getCurrent()).doOnError(error -> LOGGER.error(error.getMessage()))
-										.subscribe();
+								return muteOnJoin(event.getCurrent());
 							}
 						}
-					});
+						return Mono.empty();
+					}).subscribe(null, error -> LOGGER.error(error.getMessage()));
 		}
 
 	}

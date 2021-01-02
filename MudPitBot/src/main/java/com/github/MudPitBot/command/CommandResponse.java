@@ -3,8 +3,6 @@ package com.github.MudPitBot.command;
 import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.menu.Menu;
-import com.github.MudPitBot.command.menu.PollMenu;
-
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.MessageCreateSpec;
 import reactor.core.publisher.Mono;
@@ -13,7 +11,6 @@ public class CommandResponse {
 
 	private String content;
 	private Consumer<? super MessageCreateSpec> spec;
-	private PollMenu poll;
 	private Menu menu;
 
 	// empty constructor
@@ -31,28 +28,23 @@ public class CommandResponse {
 			content = content.substring(0, Message.MAX_CONTENT_LENGTH - 1);
 		this.content = content;
 		this.spec = spec -> spec.setContent(this.content);
-		this.poll = null;
+		this.menu = null;
 	}
 
 	private CommandResponse(Consumer<? super MessageCreateSpec> spec) {
 		this.content = null;
 		this.spec = spec;
-		this.poll = null;
+		this.menu = null;
 	}
 
 	private CommandResponse(Builder b) {
 		this.content = b.content;
 		this.spec = b.spec;
-		this.poll = b.poll;
 		this.menu = b.menu;
 	}
 
 	public Consumer<? super MessageCreateSpec> getSpec() {
 		return spec;
-	}
-
-	public PollMenu getPoll() {
-		return poll;
 	}
 
 	public String getContent() {
@@ -63,8 +55,8 @@ public class CommandResponse {
 		return menu;
 	}
 
-	public CommandResponse withPoll(PollMenu poll) {
-		this.poll = poll;
+	public CommandResponse withMenu(Menu menu) {
+		this.menu = menu;
 		return this;
 	}
 
@@ -86,12 +78,12 @@ public class CommandResponse {
 		return Mono.just(new CommandResponse(content));
 	}
 
-	public static Mono<CommandResponse> create(String content, PollMenu p) {
-		return Mono.just(new CommandResponse(content).withPoll(p));
+	public static Mono<CommandResponse> create(String content, Menu m) {
+		return Mono.just(new CommandResponse(content).withMenu(m));
 	}
 
-	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec, PollMenu p) {
-		return Mono.just(new CommandResponse(spec).withPoll(p));
+	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec, Menu m) {
+		return Mono.just(new CommandResponse(spec).withMenu(m));
 	}
 
 	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec) {
@@ -101,7 +93,6 @@ public class CommandResponse {
 	public static class Builder {
 		private String content;
 		private Consumer<? super MessageCreateSpec> spec;
-		private PollMenu poll;
 		private Menu menu;
 
 		public Builder withContent(String content) {
@@ -112,11 +103,6 @@ public class CommandResponse {
 
 		public Builder withCreateSpec(Consumer<? super MessageCreateSpec> spec) {
 			this.spec = spec;
-			return this;
-		}
-
-		public Builder withPoll(PollMenu poll) {
-			this.poll = poll;
 			return this;
 		}
 

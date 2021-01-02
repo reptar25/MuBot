@@ -16,29 +16,23 @@ import reactor.function.TupleUtils;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-/**
- * A client class for the Command design pattern. A client is an object that
- * controls the command execution process by specifying what commands to execute
- * and at what stages of the process to execute them.
- * https://www.baeldung.com/java-command-pattern
- */
-public class CommandClient {
+public class CommandListener {
 
-	private static final Logger LOGGER = Loggers.getLogger(CommandClient.class);
+	private static final Logger LOGGER = Loggers.getLogger(CommandListener.class);
 	private GatewayDiscordClient client;
 	private static CommandExecutor executor = new CommandExecutor();
-	private static CommandClient instance;
-	public static final int MAX_COMMANDS_PER_MESSAGE = 5;
+	private static CommandListener instance;
+	private static final int MAX_COMMANDS_PER_MESSAGE = 5;
 
 	// Singleton create method
-	public static CommandClient create(GatewayDiscordClient client) {
+	public static CommandListener create(GatewayDiscordClient client) {
 		if (instance == null)
-			instance = new CommandClient(client);
+			instance = new CommandListener(client);
 
 		return instance;
 	}
 
-	private CommandClient(GatewayDiscordClient client) {
+	private CommandListener(GatewayDiscordClient client) {
 		this.client = client;
 
 		setupListener();
@@ -58,7 +52,10 @@ public class CommandClient {
 			client.getEventDispatcher().on(MessageCreateEvent.class)
 					// ignore any messages sent from a bot
 					.filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true))
-					.flatMap(CommandClient::receiveMessage).subscribe(null, error -> LOGGER.error(error.getMessage()));
+					.flatMap(CommandListener::receiveMessage).onErrorResume(error -> {
+						LOGGER.error("Error receiving message.", error);
+						return Mono.empty();
+					}).subscribe();
 		}
 
 	}
@@ -71,26 +68,22 @@ public class CommandClient {
 	 * @return Mono<Void>
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
-		return Mono.justOrEmpty(event.getMessage().getContent()).map(content -> content.split(Commands.COMMAND_PREFIX))
-				.flatMapMany(Flux::fromArray).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
+		return Mono.justOrEmpty(event.getMessage().getContent())
+				.map(content -> content.split(Commands.DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
+				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
 				.flatMap(commandString -> Mono.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase()))
-						.flatMap(command -> {
-							String[] splitCommand = commandString.trim().split(" ");
-							String[] commandArgs = Arrays.copyOfRange(splitCommand, 1, splitCommand.length);
-							Mono<CommandResponse> response = processCommand(event, command, commandArgs);
-							return response;
-						}).onErrorResume(CommandException.class, error -> {
+						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
+								splitCommand -> Mono.just(Arrays.copyOfRange(splitCommand, 1, splitCommand.length)))
+								.flatMap(commandArgs -> executeCommand(event, command, commandArgs)))
+						.onErrorResume(CommandException.class, error -> {
 							LOGGER.error(error.getMessage());
 
-							// Send errors back as a reply to the user who used the command
-							sendReply(event, CommandResponse.createFlat(
-									Emoji.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + Emoji.NO_ENTRY))
-											.subscribe();
-
-							return Mono.empty();
-						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed().doOnNext(
-								TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to be processed",
-										commandString.split(" ")[0].toLowerCase(), elapsed))))
+							// Send command errors back as a reply to the user who used the command
+							return sendReply(event, CommandResponse.createFlat(
+									Emoji.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + Emoji.NO_ENTRY));
+						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
+						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to complete",
+								commandString.split(" ")[0].toLowerCase(), elapsed))))
 				.then();
 	}
 
@@ -102,7 +95,7 @@ public class CommandClient {
 	 * @param args    the parameters of the command
 	 * @return the response to the command
 	 */
-	private static Mono<CommandResponse> processCommand(MessageCreateEvent event, Command command, String[] args) {
+	private static Mono<CommandResponse> executeCommand(MessageCreateEvent event, Command command, String[] args) {
 
 		// commands will return any string that the bot should send back as a message to
 		// the command

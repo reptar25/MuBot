@@ -9,6 +9,7 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class RepeatCommand extends Command {
 
@@ -22,7 +23,7 @@ public class RepeatCommand extends Command {
 				.flatMap(scheduler -> repeat(scheduler));
 	}
 
-	private Mono<CommandResponse> repeat(TrackScheduler scheduler) {
+	private Mono<CommandResponse> repeat(@NonNull TrackScheduler scheduler) {
 		boolean repeatEnabled = scheduler.repeatEnabled();
 		String response;
 
