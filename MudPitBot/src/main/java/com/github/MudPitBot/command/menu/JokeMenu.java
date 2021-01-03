@@ -71,7 +71,11 @@ public class JokeMenu extends Menu {
 
 					int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get()) - 1;
 					String category = categories.get(selection);
-					JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST).addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category).build();
+
+					// no racist or sexist jokes allowed
+					JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe)
+							.addBlacklistFlag(BlacklistFlag.RACIST).addBlacklistFlag(BlacklistFlag.SEXIST)
+							.addCategory(category).build();
 
 					JokeClient.getJokeService().getJoke(request).subscribe(jokeLines -> {
 						if (jokeLines.size() == 1)
