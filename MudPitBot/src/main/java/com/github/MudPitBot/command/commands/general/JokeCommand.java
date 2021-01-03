@@ -19,7 +19,9 @@ public class JokeCommand extends Command {
 	}
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {
-		boolean unsafe = !args[0].equals("unsafe");
+		boolean unsafe = false;
+		if (args.length > 0)
+			unsafe = !args[0].equals("unsafe");
 		JokeMenu menu = new JokeMenu(unsafe);
 		return new CommandResponse.Builder().withCreateSpec(menu.createMessage()).withMenu(menu).build();
 	}
