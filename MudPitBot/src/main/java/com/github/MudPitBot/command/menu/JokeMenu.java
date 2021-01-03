@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.jokeAPI.JokeClient;
+import com.github.MudPitBot.jokeAPI.JokeEnums.BlacklistFlag;
 import com.github.MudPitBot.jokeAPI.JokeRequest;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
@@ -70,7 +71,7 @@ public class JokeMenu extends Menu {
 
 					int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get()) - 1;
 					String category = categories.get(selection);
-					JokeRequest request = new JokeRequest.Builder().safeMode(unsafe).addCategory(category).build();
+					JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST).addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category).build();
 
 					JokeClient.getJokeService().getJoke(request).subscribe(jokeLines -> {
 						if (jokeLines.size() == 1)

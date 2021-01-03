@@ -1,7 +1,7 @@
 package com.github.MudPitBot.jokeAPI;
 
 public class JokeEnums {
-	enum BlacklistFlag {
+	public enum BlacklistFlag {
 		NSFW("nsfw"), RELIGIOUS("religious"), POLITICAL("political"), RACIST("racist"), SEXIST("sexist"),
 		EXPLICIT("explicit");
 
@@ -17,7 +17,7 @@ public class JokeEnums {
 		}
 	}
 
-	enum JokeType {
+	public enum JokeType {
 		SINGLE("single"), TWO_PART("twopart"), DEFAULT("");
 
 		private String type;
@@ -32,7 +32,7 @@ public class JokeEnums {
 		}
 	}
 
-	enum JokeLanguage {
+	public enum JokeLanguage {
 		ENGLISH("en"), CZECH("cs"), RUSSIAN("ru"), GERMAN("de"), DEFAULT("");
 
 		private String code;
@@ -47,7 +47,7 @@ public class JokeEnums {
 		}
 	}
 
-	enum ResponseFormat {
+	public enum ResponseFormat {
 		JSON("json"), XML("xml"), YAML("yaml"), TXT("txt"), DEFAULT("");
 
 		private String format;
