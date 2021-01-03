@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -8,6 +8,7 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class ClearCommand extends Command {
 
@@ -16,15 +17,9 @@ public class ClearCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return clearQueue(scheduler);
-			});
-		});
-		// getScheduler(event).flatMap(scheduler -> return
-		// Mono.just(clearQueue(scheduler));
-		// return clearQueue(getScheduler(event));
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> clearQueue(scheduler));
 	}
 
 	/**
@@ -33,13 +28,9 @@ public class ClearCommand extends Command {
 	 * @param event The message event
 	 * @return "Queue cleared" if successful, null if not
 	 */
-	public Mono<CommandResponse> clearQueue(TrackScheduler scheduler) {
-		if (scheduler != null) {
-			scheduler.clearQueue();
-			return CommandResponse.create("Queue cleared");
-		}
-
-		return CommandResponse.empty();
+	public Mono<CommandResponse> clearQueue(@NonNull TrackScheduler scheduler) {
+		scheduler.clearQueue();
+		return CommandResponse.create("Queue cleared");
 	}
 
 }

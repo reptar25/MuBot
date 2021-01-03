@@ -2,21 +2,53 @@ package com.github.MudPitBot.command.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import discord4j.core.object.reaction.ReactionEmoji;
+import discord4j.core.object.reaction.ReactionEmoji.Unicode;
 
 public abstract class Emoji {
 
-	public static final ReactionEmoji.Unicode A = ReactionEmoji.unicode("\uD83C\uDDE6");
-	public static final ReactionEmoji.Unicode B = ReactionEmoji.unicode("\uD83C\uDDE7");
-	public static final ReactionEmoji.Unicode C = ReactionEmoji.unicode("\uD83C\uDDE8");
-	public static final ReactionEmoji.Unicode D = ReactionEmoji.unicode("\uD83C\uDDE9");
-	public static final ReactionEmoji.Unicode E = ReactionEmoji.unicode("\uD83C\uDDEA");
-	public static final ReactionEmoji.Unicode F = ReactionEmoji.unicode("\uD83C\uDDEB");
-	public static final ReactionEmoji.Unicode G = ReactionEmoji.unicode("\uD83C\uDDEC");
-	public static final ReactionEmoji.Unicode H = ReactionEmoji.unicode("\uD83C\uDDED");
-	public static final ReactionEmoji.Unicode I = ReactionEmoji.unicode("\uD83C\uDDEE");
-	public static final ReactionEmoji.Unicode J = ReactionEmoji.unicode("\uD83C\uDDEF");
+	public static final ReactionEmoji.Unicode A_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE6");
+	public static final ReactionEmoji.Unicode B_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE7");
+	public static final ReactionEmoji.Unicode C_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE8");
+	public static final ReactionEmoji.Unicode D_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE9");
+	public static final ReactionEmoji.Unicode E_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEA");
+	public static final ReactionEmoji.Unicode F_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEB");
+	public static final ReactionEmoji.Unicode G_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEC");
+	public static final ReactionEmoji.Unicode H_UNICODE = ReactionEmoji.unicode("\uD83C\uDDED");
+	public static final ReactionEmoji.Unicode I_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEE");
+	public static final ReactionEmoji.Unicode J_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEF");
+
+	public static final ReactionEmoji.Unicode ZERO_UNICODE = ReactionEmoji.unicode("0\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode ONE_UNICODE = ReactionEmoji.unicode("1\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode TWO_UNICODE = ReactionEmoji.unicode("2\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode THREE_UNICODE = ReactionEmoji.unicode("3\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode FOUR_UNICODE = ReactionEmoji.unicode("4\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode FIVE_UNICODE = ReactionEmoji.unicode("5\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode SIX_UNICODE = ReactionEmoji.unicode("6\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode SEVEN_UNICODE = ReactionEmoji.unicode("7\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode EIGHT_UNICODE = ReactionEmoji.unicode("8\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode NINE_UNICODE = ReactionEmoji.unicode("9\uFE0F\u20E3");
+
+	private static final Map<Integer, Unicode> UNICODE_NUM_MAP;
+
+	static {
+		UNICODE_NUM_MAP = new HashMap<Integer, Unicode>();
+		UNICODE_NUM_MAP.put(0, ZERO_UNICODE);
+		UNICODE_NUM_MAP.put(1, ONE_UNICODE);
+		UNICODE_NUM_MAP.put(2, TWO_UNICODE);
+		UNICODE_NUM_MAP.put(3, THREE_UNICODE);
+		UNICODE_NUM_MAP.put(4, FOUR_UNICODE);
+		UNICODE_NUM_MAP.put(5, FIVE_UNICODE);
+		UNICODE_NUM_MAP.put(6, SIX_UNICODE);
+		UNICODE_NUM_MAP.put(7, SEVEN_UNICODE);
+		UNICODE_NUM_MAP.put(8, EIGHT_UNICODE);
+		UNICODE_NUM_MAP.put(9, NINE_UNICODE);
+	}
+
+	public static final ReactionEmoji.Unicode LEFT_REACTION = ReactionEmoji.unicode("\u25C0");
+	public static final ReactionEmoji.Unicode RIGHT_REACTION = ReactionEmoji.unicode("\u25B6");
 
 	public static final String A_PLAIN = ":regional_indicator_a:";
 	public static final String B_PLAIN = ":regional_indicator_b:";
@@ -69,9 +101,19 @@ public abstract class Emoji {
 	public static final String LOOP = ":loop:";
 	public static final String SHUFFLE = ":twisted_rightwards_arrows:";
 	public static final String REPEAT = ":repeat:";
+	public static final String LEFT = ":arrow_left:";
+	public static final String RIGHT = ":arrow_right:";
 
-	public static final String numToEmoji(int num) {
-		return numToEmoji(Integer.toString(num));
+	public static final Unicode numToUnicode(int num) {
+		return UNICODE_NUM_MAP.get(num);
+	}
+
+	public static final int unicodeToNum(Unicode unicode) {
+		return keys(UNICODE_NUM_MAP, unicode).findFirst().orElse(-1);
+	}
+
+	private static <K, V> Stream<K> keys(Map<K, V> map, V value) {
+		return map.entrySet().stream().filter(entry -> value.equals(entry.getValue())).map(Map.Entry::getKey);
 	}
 
 	public static final String numToEmoji(String num) {
@@ -82,32 +124,38 @@ public abstract class Emoji {
 		return sb.toString();
 	}
 
+	public static final String numToEmoji(int num) {
+		return numToEmoji(Integer.toString(num));
+	}
+
 	public static final ReactionEmoji.Unicode getUnicodeFromNum(int num) {
 
 		switch (num) {
 		case 0:
-			return A;
+			return A_UNICODE;
 		case 1:
-			return B;
+			return B_UNICODE;
 		case 2:
-			return C;
+			return C_UNICODE;
 		case 3:
-			return D;
+			return D_UNICODE;
 		case 4:
-			return E;
+			return E_UNICODE;
 		case 5:
-			return F;
+			return F_UNICODE;
 		case 6:
-			return G;
+			return G_UNICODE;
 		case 7:
-			return H;
+			return H_UNICODE;
 		case 8:
-			return I;
+			return I_UNICODE;
 		case 9:
-			return J;
+			return J_UNICODE;
+		default:
+			;
 		}
 
-		return null;
+		throw new IllegalArgumentException("No unicode character found for " + num);
 	}
 
 	public static final String getPlainLetterFromNum(int num) {
@@ -132,8 +180,10 @@ public abstract class Emoji {
 			return I_PLAIN;
 		case 9:
 			return J_PLAIN;
+		default:
+			;
 		}
-		return null;
+		throw new IllegalArgumentException("No plain letter found for " + num);
 	}
 
 }

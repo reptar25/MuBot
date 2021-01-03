@@ -1,7 +1,7 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -13,6 +13,7 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+import reactor.util.annotation.NonNull;
 
 public class PlayCommand extends Command {
 
@@ -23,53 +24,44 @@ public class PlayCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return requireBotPermissions(channel, Permission.SPEAK).flatMap(ignored -> {
-				return getScheduler(channel).flatMap(scheduler -> {
-					return play(event, scheduler, params);
-				});
-			});
-		});
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
+		return requireSameVoiceChannel(event)
+				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK).thenReturn(channel))
+				.flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> play(event, scheduler, args));
 	}
 
 	/**
 	 * Attempts to play the link in the message
 	 * 
-	 * @param event  The message event
-	 * @param params The link of the audio
+	 * @param event The message event
+	 * @param args  The link of the audio
 	 * @return null
 	 */
-	public Mono<CommandResponse> play(MessageCreateEvent event, TrackScheduler scheduler, String[] params) {
-		if (scheduler != null && params != null) {
-			// unpause
-			if (params.length == 0 || params[0].isEmpty()) {
-				if (scheduler.getNowPlaying() != null)
-					scheduler.pause(!scheduler.isPaused());
-				return CommandResponse.empty();
-			}
-
-			if (params.length <= 0 || params[0].isEmpty()) {
-				return CommandResponse.empty();
-			}
-
-			// if its a search recombine the params that were split by space
-			if (params[0].startsWith("ytsearch:"))
-				params[0] = recombineParams(params);
-
-			GuildMusicManager.loadItem(params[0], scheduler, event);
-//			if (!scheduler.getQueue().isEmpty() || scheduler.getPlayer().getPlayingTrack() != null) {
-//				return CommandResponse
-//						.create("New track added to the queue (#" + (scheduler.getQueue().size() + 1) + ")");
-//			}
-			LOGGER.info("Loaded music item: " + params[0]);
+	public Mono<CommandResponse> play(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+			@NonNull String[] args) {
+		// unpause
+		if (args.length == 0 || args[0].isEmpty()) {
+			if (scheduler.getNowPlaying() != null)
+				scheduler.pause(!scheduler.isPaused());
+			return CommandResponse.empty();
 		}
+
+		if (args.length <= 0 || args[0].isEmpty()) {
+			return CommandResponse.empty();
+		}
+
+		// if its a search recombine the args that were split by space
+		if (args[0].startsWith("ytsearch:"))
+			args[0] = recombineArgs(args);
+
+		GuildMusicManager.loadItemOrdered(args[0], scheduler, event);
+		LOGGER.info("Loaded music item: " + args[0]);
 		return CommandResponse.empty();
 	}
 
-	private String recombineParams(String[] params) {
+	private String recombineArgs(String[] args) {
 		StringBuilder sb = new StringBuilder();
-		for (String param : params) {
+		for (String param : args) {
 			sb.append(param.trim()).append(" ");
 		}
 		return sb.toString();

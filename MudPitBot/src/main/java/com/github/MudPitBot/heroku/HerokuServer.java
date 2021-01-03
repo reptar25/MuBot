@@ -1,19 +1,28 @@
 package com.github.MudPitBot.heroku;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.server.HttpServer;
+import reactor.util.Logger;
+import reactor.util.Loggers;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class HerokuServer {
 
-	private HttpServer server;
+	private static final Logger LOGGER = Loggers.getLogger(HerokuServer.class);
+
 	private static HerokuServer instance;
+
+	private static final String INVITE_LINK = "https://discord.com/api/oauth2/authorize?client_id=776639160164941824&permissions=8&scope=bot";
+	private static final String homeHtml = "<a href=\"" + INVITE_LINK + "\">Invite!</a>"
+			+ "<img style=\"-webkit-user-select: none;margin: auto;\""
+			+ " src=\"https://i.ytimg.com/vi/4Qto049GEkA/maxresdefault.jpg\" width=\"235\" height=\"132\">";
+
+	private static final String inviteHtml = "<html>\r\n" + "   <head>\r\n" + "      <title>HTML Meta Tag</title>\r\n"
+			+ "      <meta http-equiv = \"refresh\" content = \"0; url = " + INVITE_LINK + "\" />\r\n"
+			+ "   </head>\r\n" + "   <body>\r\n" + "\r\n" + "   </body>\r\n" + "</html>";
 
 	public static HerokuServer create(int port) throws IOException {
 		if (instance == null)
@@ -23,48 +32,20 @@ public class HerokuServer {
 	}
 
 	private HerokuServer(int port) throws IOException {
-		server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
-		server.createContext("/", new RootResponseHandler());
-		server.createContext("/invite", new InviteResponseHandler());
-		server.setExecutor(Executors.newCachedThreadPool());
-		server.start();
-		System.out.println("Server started on port " + port);
-	}
-
-}
-
-class RootResponseHandler implements HttpHandler {
-	private static final String INVITE_LINK = "https://discord.com/api/oauth2/authorize?client_id=776639160164941824&permissions=8&scope=bot";
-	private static final String homeHtml = "<a href=\"" + INVITE_LINK + "\">Invite!</a>"
-			+ "<img style=\"-webkit-user-select: none;margin: auto;\""
-			+ " src=\"https://i.ytimg.com/vi/4Qto049GEkA/maxresdefault.jpg\" width=\"235\" height=\"132\">";
-
-	@Override
-	public void handle(HttpExchange exchange) throws IOException {
-		InputStream is = exchange.getRequestBody();
-		exchange.sendResponseHeaders(200, homeHtml.length());
-		OutputStream os = exchange.getResponseBody();
-		os.write(homeHtml.getBytes());
-		os.flush();
-		os.close();
-		is.close();
-	}
-}
-
-class InviteResponseHandler implements HttpHandler {
-	private static final String INVITE_LINK = "https://discord.com/api/oauth2/authorize?client_id=776639160164941824&permissions=8&scope=bot";
-	private static final String inviteHtml = "<html>\r\n" + "   <head>\r\n" + "      <title>HTML Meta Tag</title>\r\n"
-			+ "      <meta http-equiv = \"refresh\" content = \"0; url = " + INVITE_LINK + "\" />\r\n"
-			+ "   </head>\r\n" + "   <body>\r\n" + "\r\n" + "   </body>\r\n" + "</html>";
-
-	@Override
-	public void handle(HttpExchange exchange) throws IOException {
-		InputStream is = exchange.getRequestBody();
-		exchange.sendResponseHeaders(200, inviteHtml.length());
-		OutputStream os = exchange.getResponseBody();
-		os.write(inviteHtml.getBytes());
-		os.flush();
-		os.close();
-		is.close();
+		HttpServer
+				.create().host("0.0.0.0").port(port).route(
+						routes -> routes
+								.get("/",
+										(request, response) -> response.status(HttpResponseStatus.OK)
+												.header(HttpHeaderNames.CONTENT_LENGTH,
+														Integer.toString(homeHtml.length()))
+												.sendString(Mono.just(homeHtml)))
+								.head("/", (request, response) -> response.status(HttpResponseStatus.OK)).get("/invite",
+										(request, response) -> response.status(HttpResponseStatus.OK)
+												.header(HttpHeaderNames.CONTENT_LENGTH,
+														Integer.toString(inviteHtml.length()))
+												.sendString(Mono.just(inviteHtml))))
+				.bindNow();
+		LOGGER.info("Server started on port " + port);
 	}
 }

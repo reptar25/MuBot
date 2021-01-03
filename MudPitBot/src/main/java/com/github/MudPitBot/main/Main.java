@@ -2,9 +2,11 @@ package com.github.MudPitBot.main;
 
 import java.io.IOException;
 
-import com.github.MudPitBot.command.CommandClient;
-import com.github.MudPitBot.command.util.MessageLogger;
+import com.github.MudPitBot.command.CommandListener;
 import com.github.MudPitBot.command.util.MuteHelper;
+import com.github.MudPitBot.eventlistener.MessageLogger;
+import com.github.MudPitBot.eventlistener.ReadyListener;
+import com.github.MudPitBot.eventlistener.VoiceStateUpdateListener;
 import com.github.MudPitBot.heroku.HerokuServer;
 
 import discord4j.core.DiscordClientBuilder;
@@ -19,18 +21,14 @@ public class Main {
 	public static void main(String[] args) {
 		String token = null;
 
-		try {
-			token = args[0];
-		} catch (Exception e) {
-
-		}
+		token = args[0];
 
 		if (token == null)
 			token = System.getenv("token");
 
 		// no token found
 		if (token == null) {
-			LOGGER.error("No token found. Dicord token needs to be first argument or an env var named \"token\"");
+			LOGGER.error("No token found. Dicord api token needs to be first argument or an env var named \"token\"");
 			return;
 		}
 
@@ -49,9 +47,13 @@ public class Main {
 			LOGGER.info("Not running on Heroku");
 		}
 
-		CommandClient.create(client);
+		ReadyListener.create(client);
+		VoiceStateUpdateListener.create(client);
+		CommandListener.create(client);
 		MuteHelper.create(client);
 		MessageLogger.create(client);
+
+		LOGGER.info("Bot is ready");
 
 		client.onDisconnect().block();
 	}

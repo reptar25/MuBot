@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
@@ -8,6 +8,8 @@ import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
+
 public class RewindCommand extends Command {
 
 	public RewindCommand() {
@@ -15,28 +17,23 @@ public class RewindCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] params) {
-		return requireSameVoiceChannel(event).flatMap(channel -> {
-			return getScheduler(channel).flatMap(scheduler -> {
-				return rewind(scheduler, params);
-			});
-		});
+	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
+		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+				.flatMap(scheduler -> rewind(scheduler, args));
 	}
 
 	/**
-	 * @param event  The message event
-	 * @param params The amount of time in seconds to rewind
+	 * @param event The message event
+	 * @param args  The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public Mono<CommandResponse> rewind(TrackScheduler scheduler, String[] params) {
-		if (scheduler != null && params != null) {
-			if (params.length > 0) {
-				try {
-					int amountInSeconds = Integer.parseInt(params[0]);
-					scheduler.rewind(amountInSeconds);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+	public Mono<CommandResponse> rewind(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+		if (args.length > 0) {
+			try {
+				int amountInSeconds = Integer.parseInt(args[0]);
+				scheduler.rewind(amountInSeconds);
+			} catch (NumberFormatException e) {
+				// just ignore commands with improper number
 			}
 		}
 		return CommandResponse.empty();

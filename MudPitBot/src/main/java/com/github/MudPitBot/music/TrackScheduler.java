@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.github.MudPitBot.command.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackState;
 
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -28,9 +31,9 @@ public final class TrackScheduler extends AudioEventAdapter {
 	/**
 	 * Creates a track scheduler for the given channel
 	 * 
-	 * @param guildId the channel to create a track scheduler for
+	 * @param player the AudioPlayer used for this TrackScheduler
 	 */
-	public TrackScheduler(long guildId, AudioPlayer player) {
+	public TrackScheduler(AudioPlayer player) {
 		this.player = player;
 		// add this as a listener so we can listen for tracks ending
 		player.addListener(this);
@@ -51,11 +54,10 @@ public final class TrackScheduler extends AudioEventAdapter {
 		if (!player.startTrack(track, true)) {
 			queue.offer(track);
 			LOGGER.info("Track added to the queue: " + queue.size());
-			return Emoji.CHECK_MARK + " \"" + track.getInfo().title + "\" by " + track.getInfo().author
-					+ " was added to the queue (" + Emoji.numToEmoji(getQueue().size()) + ") " + Emoji.CHECK_MARK;
+			return Emoji.CHECK_MARK + " " + CommandUtil.trackInfoString(track) + " was added to the queue ("
+					+ Emoji.numToEmoji(getQueue().size()) + ") " + Emoji.CHECK_MARK;
 		}
-		return Emoji.NOTES + " Now playing " + track.getInfo().title + " by " + track.getInfo().author + " "
-				+ Emoji.NOTES;
+		return Emoji.NOTES + " Now playing " + CommandUtil.trackInfoString(track) + " " + Emoji.NOTES;
 	}
 
 	/**
@@ -74,6 +76,21 @@ public final class TrackScheduler extends AudioEventAdapter {
 	 */
 	public void clearQueue() {
 		queue.clear();
+	}
+
+	/**
+	 * Skips to the element number in the queue
+	 * 
+	 * @param elementNumber
+	 */
+	public String skipQueue(int elementNumber) {
+		if (elementNumber > queue.size())
+			return "";
+
+		queue = queue.stream().skip(elementNumber - 1).collect(Collectors.toCollection(LinkedBlockingQueue::new));
+		String ret = CommandUtil.trackInfoString(queue.peek());
+		nextTrack();
+		return ret;
 	}
 
 	/**
@@ -243,6 +260,14 @@ public final class TrackScheduler extends AudioEventAdapter {
 
 	public void setRepeat(boolean repeat) {
 		this.repeat = repeat;
+	}
+
+	public void destroy() {
+		if (player.getPlayingTrack() != null && player.getPlayingTrack().getState() == AudioTrackState.PLAYING) {
+			player.getPlayingTrack().stop();
+		}
+		player.destroy();
+		clearQueue();
 	}
 
 }

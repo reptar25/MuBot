@@ -7,13 +7,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.reflections.Reflections;
 
+import reactor.util.Logger;
+import reactor.util.Loggers;
+
 public final class Commands {
 
-	public static final char COMMAND_PREFIX = '!';
+	private static final Logger LOGGER = Loggers.getLogger(Commands.class);
+	public static final String DEFAULT_COMMAND_PREFIX = "!";
 
 	// Immutable structure that maps string commands to the concrete implementation
 	// of that command.
@@ -25,13 +30,13 @@ public final class Commands {
 
 	/**
 	 * Use Reflections library to scan class path for subclasses of {@link Command}
-	 * and add those to the commands map. This way any new commands that are created
-	 * that extend {@link Command} automatically get added to the map without any
-	 * extra work
+	 * and adds those to the commands map. This way any new commands that are
+	 * created that extend {@link Command} automatically get added to the map
+	 * without any extra work
 	 */
 	private static void buildCommandMap() {
-		// scan urls that contain 'com.github.MudPitBot.botCommand.commandImpl', include
-		// inputs starting with'com.github.MudPitBot.botCommand.commandImpl', use the
+		// scan urls that contain 'com.github.MudPitBot.command.commands.', include
+		// inputs starting with'com.github.MudPitBot.command.commands.', use the
 		// default scanners
 		Reflections reflections = new Reflections("com.github.MudPitBot.command.commands.");
 		// get a set of all the subclasses of Command
@@ -49,7 +54,7 @@ public final class Commands {
 
 			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) {
-				e.printStackTrace();
+				LOGGER.error(e.getMessage(), e);
 			}
 		}
 	}
@@ -62,8 +67,7 @@ public final class Commands {
 	 */
 	public static final Collection<Command> values() {
 		// make a defensive copy to prevent the actual map from being mutated
-		final Collection<Command> commands = new ArrayList<Command>(COMMANDS.values());
-		return commands;
+		return new ArrayList<Command>(COMMANDS.values());
 	}
 
 	/**
@@ -73,8 +77,11 @@ public final class Commands {
 	 * @return the entries of the command map
 	 */
 	public static final Set<Entry<String, Command>> getEntries() {
-		final Set<Entry<String, Command>> entries = new HashSet<Entry<String, Command>>(COMMANDS.entrySet());
-		return entries;
+		return new HashSet<Entry<String, Command>>(COMMANDS.entrySet());
+	}
+
+	public static final Optional<Command> get(String key) {
+		return Optional.ofNullable(COMMANDS.get(key));
 	}
 
 }
