@@ -16,7 +16,6 @@ public class HerokuServer {
 
 	private static final Logger LOGGER = Loggers.getLogger(HerokuServer.class);
 
-	private DisposableServer server;
 	private static HerokuServer instance;
 
 	private static final String INVITE_LINK = "https://discord.com/api/oauth2/authorize?client_id=776639160164941824&permissions=8&scope=bot";
@@ -36,7 +35,7 @@ public class HerokuServer {
 	}
 
 	private HerokuServer(int port) throws IOException {
-		server = HttpServer
+		HttpServer
 				.create().host("0.0.0.0").port(port).route(
 						routes -> routes
 								.get("/",
@@ -51,6 +50,5 @@ public class HerokuServer {
 												.sendString(Mono.just(inviteHtml))))
 				.bindNow();
 		LOGGER.info("Server started on port " + port);
-		server.onDispose().block();
 	}
 }
