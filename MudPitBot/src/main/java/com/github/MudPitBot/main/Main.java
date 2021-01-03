@@ -56,6 +56,8 @@ public class Main {
 		CommandListener.create(client);
 		MuteHelper.create(client);
 		MessageLogger.create(client);
+		
+		LOGGER.info("Bot is ready");
 
 		client.onDisconnect().block();
 	}

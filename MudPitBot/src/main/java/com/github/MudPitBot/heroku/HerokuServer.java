@@ -1,14 +1,20 @@
 package com.github.MudPitBot.heroku;
 
 import java.io.IOException;
+
+import com.github.MudPitBot.main.Main;
+
 import reactor.core.publisher.Mono;
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
-
+import reactor.util.Logger;
+import reactor.util.Loggers;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class HerokuServer {
+
+	private static final Logger LOGGER = Loggers.getLogger(HerokuServer.class);
 
 	private DisposableServer server;
 	private static HerokuServer instance;
@@ -44,7 +50,7 @@ public class HerokuServer {
 														Integer.toString(inviteHtml.length()))
 												.sendString(Mono.just(inviteHtml))))
 				.bindNow();
-		System.out.println("Server started on port " + port);
+		LOGGER.info("Server started on port " + port);
 		server.onDispose().block();
 	}
 }
