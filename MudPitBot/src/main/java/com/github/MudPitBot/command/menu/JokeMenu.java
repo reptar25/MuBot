@@ -35,7 +35,7 @@ public class JokeMenu extends Menu {
 	private String createDescription() {
 		StringBuilder sb = new StringBuilder();
 		categories = JokeClient.getJokeService().getCategories().block();
-		if (unsafe)
+		if (!unsafe)
 			categories.remove("Dark");
 		categories.remove("Spooky");
 		for (int i = 0; i < categories.size(); i++) {
