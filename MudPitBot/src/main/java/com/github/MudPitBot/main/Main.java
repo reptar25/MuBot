@@ -21,11 +21,7 @@ public class Main {
 	public static void main(String[] args) {
 		String token = null;
 
-		try {
-			token = args[0];
-		} catch (Exception e) {
-
-		}
+		token = args[0];
 
 		if (token == null)
 			token = System.getenv("token");
@@ -56,7 +52,7 @@ public class Main {
 		CommandListener.create(client);
 		MuteHelper.create(client);
 		MessageLogger.create(client);
-		
+
 		LOGGER.info("Bot is ready");
 
 		client.onDisconnect().block();
