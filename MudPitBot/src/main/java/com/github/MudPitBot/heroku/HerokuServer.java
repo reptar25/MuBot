@@ -2,10 +2,7 @@ package com.github.MudPitBot.heroku;
 
 import java.io.IOException;
 
-import com.github.MudPitBot.main.Main;
-
 import reactor.core.publisher.Mono;
-import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 import reactor.util.Logger;
 import reactor.util.Loggers;
