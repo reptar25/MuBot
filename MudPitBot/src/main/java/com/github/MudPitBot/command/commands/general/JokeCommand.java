@@ -6,6 +6,7 @@ import com.github.MudPitBot.command.menu.JokeMenu;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
+import static com.github.MudPitBot.command.CommandUtil.requireNotPrivateMessage;
 
 public class JokeCommand extends Command {
 
@@ -15,7 +16,7 @@ public class JokeCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return joke(args);
+		return requireNotPrivateMessage(event).flatMap(ignored -> joke(args));
 	}
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {

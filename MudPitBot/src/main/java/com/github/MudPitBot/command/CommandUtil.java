@@ -57,8 +57,10 @@ public final class CommandUtil {
 				}
 				return Mono.empty();
 			}).then();
-		}).onErrorResume(SendMessagesException.class, ignored -> Mono.justOrEmpty(memberOpt)
-				.flatMap(member -> sendPrivateReply(member.getPrivateChannel(), response))).thenReturn(response);
+		}).onErrorResume(SendMessagesException.class,
+				ignored -> Mono.justOrEmpty(memberOpt)
+						.flatMap(member -> sendPrivateReply(member.getPrivateChannel(), response)))
+				.thenReturn(response);
 	}
 
 	private static Mono<Void> sendPrivateReply(Mono<PrivateChannel> privateChannelMono, CommandResponse response) {
@@ -113,9 +115,7 @@ public final class CommandUtil {
 		final Mono<Optional<Snowflake>> getUserVoiceChannelId = Mono.justOrEmpty(event.getMember())
 				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty());
 
-		return Mono.justOrEmpty(event.getMember())
-				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
-						"You can't use this command in a private message")))
+		return requireNotPrivateMessage(event)
 				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId).flatMap(tuple -> {
 					final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
 					final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
@@ -222,6 +222,12 @@ public final class CommandUtil {
 			}
 			return Mono.just(permissions);
 		});
+	}
+
+	public static Mono<Member> requireNotPrivateMessage(MessageCreateEvent event) {
+		return Mono.justOrEmpty(event.getMember())
+				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
+						"You can't use this command in a private message")));
 	}
 
 	/**
