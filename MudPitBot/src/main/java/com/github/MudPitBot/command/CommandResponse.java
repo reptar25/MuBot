@@ -55,14 +55,9 @@ public class CommandResponse {
 		return menu;
 	}
 
-	public CommandResponse withMenu(Menu menu) {
-		this.menu = menu;
-		return this;
-	}
-
 	private static final CommandResponse empty = new CommandResponse();
 
-	public static CommandResponse emptyResponse() {
+	public static CommandResponse emptyFlat() {
 		return empty;
 	}
 
@@ -75,19 +70,19 @@ public class CommandResponse {
 	}
 
 	public static Mono<CommandResponse> create(String content) {
-		return Mono.just(new CommandResponse(content));
+		return new CommandResponse.Builder().withContent(content).build();
 	}
 
 	public static Mono<CommandResponse> create(String content, Menu m) {
-		return Mono.just(new CommandResponse(content).withMenu(m));
+		return new CommandResponse.Builder().withContent(content).withMenu(m).build();
 	}
 
 	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec, Menu m) {
-		return Mono.just(new CommandResponse(spec).withMenu(m));
+		return new CommandResponse.Builder().withCreateSpec(spec).withMenu(m).build();
 	}
 
 	public static Mono<CommandResponse> create(Consumer<? super MessageCreateSpec> spec) {
-		return Mono.just(new CommandResponse(spec));
+		return new CommandResponse.Builder().withCreateSpec(spec).build();
 	}
 
 	public static class Builder {

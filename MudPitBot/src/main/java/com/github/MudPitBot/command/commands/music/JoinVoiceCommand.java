@@ -60,7 +60,7 @@ public class JoinVoiceCommand extends Command {
 				.flatMap(guildMusic -> channel.join(spec -> spec.setProvider(guildMusic.getAudioProvider())))
 				.delaySubscription(Duration.ofMillis(1));// delay to allow disconnect first if already connected
 
-		return checkSameVoiceChannel.then(disconnect).then(joinChannel).thenReturn(CommandResponse.emptyResponse());
+		return checkSameVoiceChannel.then(disconnect).then(joinChannel).thenReturn(CommandResponse.emptyFlat());
 	}
 
 }

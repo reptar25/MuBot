@@ -146,7 +146,8 @@ public class JokeRequest {
 			sb.append(parameters.stream().collect(Collectors.joining("&")));
 		}
 
-		LOGGER.info("JokeRequest url: " + sb.toString());
+		if (LOGGER.isDebugEnabled())
+			LOGGER.debug("JokeRequest url: " + sb.toString());
 		return sb.toString();
 	}
 

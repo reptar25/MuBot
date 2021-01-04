@@ -63,7 +63,7 @@ public class PollCommand extends Command {
 		// create a new poll object
 		PollMenu poll = new PollMenu(args, member);
 
-		return new CommandResponse.Builder().withCreateSpec(poll.createMessage()).withMenu(poll).build();
+		return CommandResponse.create(poll.createMessage(), poll);
 	}
 
 }

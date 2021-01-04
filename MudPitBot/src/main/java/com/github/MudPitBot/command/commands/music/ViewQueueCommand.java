@@ -62,7 +62,8 @@ public class ViewQueueCommand extends Command {
 
 			Paginator paginator = paginatorBuilder.withEntries(queueEntries).build();
 			Consumer<? super MessageCreateSpec> spec = paginator.createMessage();
-			return new CommandResponse.Builder().withCreateSpec(spec).withMenu(paginator).build();
+
+			return CommandResponse.create(spec, paginator);
 
 		} else {
 			return CommandResponse.create("The queue is empty");

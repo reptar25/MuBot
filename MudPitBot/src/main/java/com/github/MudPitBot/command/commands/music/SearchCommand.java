@@ -30,7 +30,7 @@ public class SearchCommand extends Command {
 	private Mono<CommandResponse> search(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
 			@NonNull String[] args) {
 		SearchMenu menu = new SearchMenu(event, scheduler, unsplitArgs(args));
-		return new CommandResponse.Builder().withCreateSpec(menu.createMessage()).withMenu(menu).build();
+		return CommandResponse.create(menu.createMessage(), menu);
 	}
 
 	private String unsplitArgs(String[] args) {

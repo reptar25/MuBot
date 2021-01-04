@@ -81,7 +81,7 @@ public class CommandListener {
 							// Send command errors back as a reply to the user who used the command
 							return sendReply(event, CommandResponse.createFlat(
 									Emoji.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + Emoji.NO_ENTRY));
-						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
+						}).defaultIfEmpty(CommandResponse.emptyFlat()).elapsed()
 						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to complete",
 								commandString.split(" ")[0].toLowerCase(), elapsed))))
 				.then();

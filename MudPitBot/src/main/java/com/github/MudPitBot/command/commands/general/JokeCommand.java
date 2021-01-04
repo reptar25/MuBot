@@ -38,15 +38,14 @@ public class JokeCommand extends Command {
 				if (categories.contains(arg.toLowerCase())) {
 
 					// no dark safe jokes, so ignore
-					if (arg == "dark" && !unsafe)
+					if (arg.equals("dark") && !unsafe)
 						continue;
 
 					menu = new JokeMenu(unsafe, arg);
 				}
 			}
 		}
-
-		return new CommandResponse.Builder().withCreateSpec(menu.createMessage()).withMenu(menu).build();
+		return CommandResponse.create(menu.createMessage(), menu);
 	}
 
 }
