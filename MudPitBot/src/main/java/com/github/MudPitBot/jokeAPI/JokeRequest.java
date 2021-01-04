@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.MudPitBot.command.CommandListener;
 import com.github.MudPitBot.jokeAPI.JokeEnums.BlacklistFlag;
 import com.github.MudPitBot.jokeAPI.JokeEnums.JokeLanguage;
 import com.github.MudPitBot.jokeAPI.JokeEnums.JokeType;
 import com.github.MudPitBot.jokeAPI.JokeEnums.ResponseFormat;
 
+import reactor.util.Logger;
+import reactor.util.Loggers;
+
 public class JokeRequest {
 
-
+	private static final Logger LOGGER = Loggers.getLogger(JokeRequest.class);
 
 	public static JokeRequest createDefaultRequest() {
 		return new JokeRequest.Builder().build();
@@ -142,7 +146,7 @@ public class JokeRequest {
 			sb.append(parameters.stream().collect(Collectors.joining("&")));
 		}
 
-		System.out.println(sb.toString());
+		LOGGER.info("JokeRequest url: " + sb.toString());
 		return sb.toString();
 	}
 

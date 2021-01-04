@@ -21,12 +21,18 @@ import reactor.util.Loggers;
 public class JokeMenu extends Menu {
 
 	private static final Logger LOGGER = Loggers.getLogger(JokeMenu.class);
-	List<String> categories;
+	private List<String> categories;
 	private final Duration TIMEOUT = Duration.ofMinutes(5L);
 	private boolean unsafe = false;
+	private String selectedCategory;
 
 	public JokeMenu(boolean unsafe) {
 		this.unsafe = unsafe;
+	}
+
+	public JokeMenu(boolean unsafe, String category) {
+		this.unsafe = unsafe;
+		this.selectedCategory = category;
 	}
 
 	private Consumer<? super EmbedCreateSpec> createEmbed() {
@@ -34,22 +40,31 @@ public class JokeMenu extends Menu {
 	}
 
 	private String createDescription() {
-		StringBuilder sb = new StringBuilder();
-		categories = JokeClient.getJokeService().getCategories().block();
-		if (!unsafe)
-			categories.remove("Dark");
-		categories.remove("Spooky");
-		for (int i = 0; i < categories.size(); i++) {
-			String category = categories.get(i);
-			sb.append(Emoji.numToEmoji(i + 1)).append(" ").append(category).append("\n");
-		}
-		return sb.toString();
+
+		return JokeClient.getJokeService().getCategories().map(categories -> {
+			StringBuilder sb = new StringBuilder();
+			this.categories = categories;
+			// there are no safe dark jokes, so remove it if safe mode is on
+			if (!unsafe)
+				categories.remove("Dark");
+			// spooky only has 1 joke, so just remove it
+			categories.remove("Spooky");
+			for (int i = 0; i < categories.size(); i++) {
+				String category = categories.get(i);
+				sb.append(Emoji.numToEmoji(i + 1)).append(" ").append(category).append("\n");
+			}
+			return sb.toString();
+		}).block();
 	}
 
 	@Override
 	public Consumer<? super MessageCreateSpec> createMessage() {
-		Consumer<? super MessageCreateSpec> spec = s -> s.setContent("**What kind of joke do you want to hear?**")
-				.setEmbed(createEmbed());
+		Consumer<? super MessageCreateSpec> spec = null;
+		if (selectedCategory == null) {
+			spec = s -> s.setContent("**What kind of joke do you want to hear?**").setEmbed(createEmbed());
+		} else {
+			spec = s -> s.setContent("Loading joke...");
+		}
 		return spec;
 	}
 
@@ -68,25 +83,8 @@ public class JokeMenu extends Menu {
 				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
 				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT)
 				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
-
 					int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get()) - 1;
-					String category = categories.get(selection);
-
-					// no racist or sexist jokes allowed
-					JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe)
-							.addBlacklistFlag(BlacklistFlag.RACIST).addBlacklistFlag(BlacklistFlag.SEXIST)
-							.addCategory(category).build();
-
-					JokeClient.getJokeService().getJoke(request).subscribe(jokeLines -> {
-						if (jokeLines.size() == 1)
-							message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null)).subscribe();
-						else
-							message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null))
-									.then(Mono.delay(Duration.ofSeconds(5L)))
-									.then(message.edit(spec -> spec
-											.setContent(jokeLines.get(0) + "\n" + jokeLines.get(1)).setEmbed(null)))
-									.subscribe();
-					}, error -> LOGGER.error(error.getMessage(), error));
+					loadJoke(categories.get(selection));
 					return message.removeAllReactions();
 				}).onErrorResume(error -> {
 					LOGGER.error("Error in reaction listener.", error);
@@ -94,10 +92,30 @@ public class JokeMenu extends Menu {
 				}).subscribe();
 	}
 
+	private void loadJoke(String category) {
+		// no racist or sexist jokes allowed
+		JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST)
+				.addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category).build();
+		JokeClient.getJokeService().getJoke(request).subscribe(jokeLines -> {
+			if (jokeLines.size() == 1)
+				message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null)).subscribe();
+			else
+				message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null))
+						.then(Mono.delay(Duration.ofSeconds(5L)))
+						.then(message.edit(
+								spec -> spec.setContent(jokeLines.get(0) + "\n" + jokeLines.get(1)).setEmbed(null)))
+						.subscribe();
+		}, error -> LOGGER.error(error.getMessage(), error));
+
+	}
+
 	@Override
 	public void setMessage(Message message) {
 		this.message = message;
-		addReactions().subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+		if (selectedCategory == null)
+			addReactions().subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+		else
+			loadJoke(selectedCategory);
 	}
 
 }
