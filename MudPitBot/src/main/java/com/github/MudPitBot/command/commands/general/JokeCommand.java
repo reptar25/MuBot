@@ -37,7 +37,7 @@ public class JokeCommand extends Command {
 			for (String arg : argList) {
 				if (categories.contains(arg.toLowerCase())) {
 
-					// no dark safe dark jokes, so ignore
+					// no dark safe jokes, so ignore
 					if (arg == "dark" && !unsafe)
 						continue;
 
