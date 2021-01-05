@@ -1,7 +1,7 @@
 package com.github.MudPitBot.command.commands.general;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.CommandUtil.requireVoiceChannel;
+import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.CommandUtil.requireVoiceChannel;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -85,7 +85,6 @@ public class MuteCommand extends Command {
 			});
 			response = Emoji.SOUND + " Unmuting " + channel.getName() + " " + Emoji.SOUND;
 		}
-		;
 		return doMute.then(CommandResponse.create(response));
 	}
 

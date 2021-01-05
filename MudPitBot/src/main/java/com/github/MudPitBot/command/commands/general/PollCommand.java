@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.general;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;

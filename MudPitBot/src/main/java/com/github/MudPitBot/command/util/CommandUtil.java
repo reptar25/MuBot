@@ -1,8 +1,9 @@
-package com.github.MudPitBot.command;
+package com.github.MudPitBot.command.util;
 
 import java.time.Duration;
 import java.util.Optional;
 
+import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.exceptions.BotPermissionException;
 import com.github.MudPitBot.command.exceptions.CommandException;
 import com.github.MudPitBot.command.exceptions.SendMessagesException;

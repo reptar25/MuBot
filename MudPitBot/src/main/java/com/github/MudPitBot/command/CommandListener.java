@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command;
 
-import static com.github.MudPitBot.command.CommandUtil.sendReply;
+import static com.github.MudPitBot.command.util.CommandUtil.sendReply;
 
 import java.util.Arrays;
 import java.util.function.Predicate;

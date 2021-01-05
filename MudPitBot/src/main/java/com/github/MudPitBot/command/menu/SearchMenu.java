@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.github.MudPitBot.command.CommandUtil;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;

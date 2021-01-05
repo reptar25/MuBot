@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.github.MudPitBot.command.CommandUtil;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;

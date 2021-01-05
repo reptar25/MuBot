@@ -8,7 +8,8 @@ import com.github.MudPitBot.command.menu.JokeMenu;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
-import static com.github.MudPitBot.command.CommandUtil.requireNotPrivateMessage;
+
+import static com.github.MudPitBot.command.util.CommandUtil.requireNotPrivateMessage;
 
 import java.util.Arrays;
 import java.util.List;

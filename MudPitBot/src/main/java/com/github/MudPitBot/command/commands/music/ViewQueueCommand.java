@@ -1,16 +1,16 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.CommandUtil;
 import com.github.MudPitBot.command.menu.Paginator;
 import com.github.MudPitBot.command.menu.Paginator.Builder;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;

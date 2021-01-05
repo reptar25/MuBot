@@ -3,8 +3,6 @@ package com.github.MudPitBot.command.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.github.MudPitBot.command.CommandUtil;
-
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;

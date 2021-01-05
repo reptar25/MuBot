@@ -152,7 +152,6 @@ public abstract class Emoji {
 		case 9:
 			return J_UNICODE;
 		default:
-			;
 		}
 
 		throw new IllegalArgumentException("No unicode character found for " + num);
@@ -181,7 +180,6 @@ public abstract class Emoji {
 		case 9:
 			return J_PLAIN;
 		default:
-			;
 		}
 		throw new IllegalArgumentException("No plain letter found for " + num);
 	}
