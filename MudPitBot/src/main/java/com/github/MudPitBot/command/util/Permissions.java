@@ -114,6 +114,22 @@ public final class Permissions {
 	}
 
 	/**
+	 * 
+	 * @param channel              the guild channel
+	 * @param memberId             the Snowflake id of the member
+	 * @param requestedPermissions the permissions the bot will need
+	 * @return the permissions the member has in this channel or an error if the
+	 *         member does not have the requested permissions
+	 */
+
+	public static Mono<PermissionSet> requireMemberPermissions(GuildChannel channel, Snowflake memberId,
+			Permission... requestedPermissions) {
+		return channel.getEffectivePermissions(memberId).flatMap(permissions -> {
+			return checkPermissions(channel.getName(), permissions, requestedPermissions);
+		});
+	}
+
+	/**
 	 * Checks the given permissions set agains the requested permission
 	 * 
 	 * @param channelName          the name of the channel permissions are being
