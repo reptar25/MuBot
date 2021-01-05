@@ -11,7 +11,6 @@ import reactor.util.annotation.NonNull;
 import static com.github.MudPitBot.command.CommandUtil.requireNotPrivateMessage;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 

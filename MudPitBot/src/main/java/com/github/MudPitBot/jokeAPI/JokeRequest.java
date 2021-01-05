@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.MudPitBot.command.CommandListener;
 import com.github.MudPitBot.jokeAPI.JokeEnums.BlacklistFlag;
 import com.github.MudPitBot.jokeAPI.JokeEnums.JokeLanguage;
 import com.github.MudPitBot.jokeAPI.JokeEnums.JokeType;

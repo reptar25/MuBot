@@ -42,6 +42,7 @@ public class Paginator extends Menu {
 		return embed -> embed.setDescription(description).setFooter("Page " + currentPageNum + "/" + totalPages, null);
 	}
 
+	@Override
 	public Consumer<? super MessageCreateSpec> createMessage() {
 		return spec -> spec.setEmbed(createEmbed()).setContent(content);
 	}
