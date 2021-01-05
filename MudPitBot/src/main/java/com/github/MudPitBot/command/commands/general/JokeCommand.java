@@ -9,7 +9,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireNotPrivateMessage;
+import static com.github.MudPitBot.command.util.Permissions.requireNotPrivateMessage;
 
 import java.util.Arrays;
 import java.util.List;

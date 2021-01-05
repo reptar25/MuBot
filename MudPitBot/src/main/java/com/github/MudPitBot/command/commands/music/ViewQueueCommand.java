@@ -1,7 +1,7 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
 import java.util.List;
 import java.util.function.Consumer;

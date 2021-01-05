@@ -1,6 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.util.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
