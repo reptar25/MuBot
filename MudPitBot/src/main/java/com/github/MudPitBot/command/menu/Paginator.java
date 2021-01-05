@@ -65,7 +65,7 @@ public class Paginator extends Menu {
 	}
 
 	private void addReactions() {
-		message.addReaction(Emoji.LEFT_REACTION).then(message.addReaction(Emoji.RIGHT_REACTION))
+		message.addReaction(Emoji.LEFT_ARROW).then(message.addReaction(Emoji.RIGHT_ARROW))
 				.thenMany(addReactionListener(message)).onErrorResume(error -> {
 					LOGGER.error("Error in reaction listener.", error);
 					return Mono.empty();
@@ -80,10 +80,10 @@ public class Paginator extends Menu {
 				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(timeout)
 				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
 
-					if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.LEFT_REACTION)) {
+					if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.LEFT_ARROW)) {
 						if (currentPageNum > 1)
 							currentPageNum--;
-					} else if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.RIGHT_REACTION)) {
+					} else if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.RIGHT_ARROW)) {
 						if (currentPageNum < totalPages)
 							currentPageNum++;
 					}
