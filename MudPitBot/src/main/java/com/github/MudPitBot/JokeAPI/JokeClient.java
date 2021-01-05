@@ -1,4 +1,4 @@
-package com.github.MudPitBot.jokeAPI;
+package com.github.MudPitBot.JokeAPI;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,7 +23,7 @@ public class JokeClient {
 				.headers(h -> h.set(HttpHeaderNames.CONTENT_TYPE, JOKE_MIME_TYPE));
 	}
 
-	protected static Mono<JsonNode> readTree(String json) {
+	public static Mono<JsonNode> readTree(String json) {
 		try {
 			return checkError(OBJECT_MAPPER.readTree(json));
 		} catch (JsonProcessingException e) {
@@ -42,6 +42,10 @@ public class JokeClient {
 
 	public static JokeServiceInterface getJokeService() {
 		return jokeService;
+	}
+
+	public static HttpClient getWebClient() {
+		return webClient;
 	}
 	
 }

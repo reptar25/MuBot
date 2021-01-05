@@ -4,10 +4,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.github.MudPitBot.JokeAPI.JokeClient;
+import com.github.MudPitBot.JokeAPI.JokeRequest;
+import com.github.MudPitBot.JokeAPI.util.JokeEnums.BlacklistFlag;
 import com.github.MudPitBot.command.util.Emoji;
-import com.github.MudPitBot.jokeAPI.JokeClient;
-import com.github.MudPitBot.jokeAPI.JokeEnums.BlacklistFlag;
-import com.github.MudPitBot.jokeAPI.JokeRequest;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Member;

@@ -1,6 +1,11 @@
-package com.github.MudPitBot.jokeAPI;
+package com.github.MudPitBot.JokeAPI;
 
 import java.util.List;
+
+import com.github.MudPitBot.JokeAPI.endpoints.Categories;
+import com.github.MudPitBot.JokeAPI.endpoints.Info;
+import com.github.MudPitBot.JokeAPI.endpoints.Joke;
+
 import reactor.core.publisher.Mono;
 
 public class JokeService implements JokeServiceInterface {

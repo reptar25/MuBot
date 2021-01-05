@@ -1,4 +1,4 @@
-package com.github.MudPitBot.jokeAPI;
+package com.github.MudPitBot.JokeAPI;
 
 import java.util.List;
 

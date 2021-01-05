@@ -1,13 +1,13 @@
-package com.github.MudPitBot.jokeAPI;
+package com.github.MudPitBot.JokeAPI;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.MudPitBot.jokeAPI.JokeEnums.BlacklistFlag;
-import com.github.MudPitBot.jokeAPI.JokeEnums.JokeLanguage;
-import com.github.MudPitBot.jokeAPI.JokeEnums.JokeType;
-import com.github.MudPitBot.jokeAPI.JokeEnums.ResponseFormat;
+import com.github.MudPitBot.JokeAPI.util.JokeEnums.BlacklistFlag;
+import com.github.MudPitBot.JokeAPI.util.JokeEnums.JokeLanguage;
+import com.github.MudPitBot.JokeAPI.util.JokeEnums.JokeType;
+import com.github.MudPitBot.JokeAPI.util.JokeEnums.ResponseFormat;
 
 import reactor.util.Logger;
 import reactor.util.Loggers;

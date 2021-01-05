@@ -1,13 +1,15 @@
-package com.github.MudPitBot.jokeAPI;
+package com.github.MudPitBot.JokeAPI.endpoints;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.github.MudPitBot.JokeAPI.JokeClient;
+import com.github.MudPitBot.JokeAPI.JokeRequest;
+import com.github.MudPitBot.JokeAPI.util.JokeJson;
 
 import reactor.core.publisher.Mono;
 
-class Joke {
+public class Joke {
 
 	private static final String JOKE_URI = "/joke";
 
@@ -20,7 +22,7 @@ class Joke {
 	}
 
 	public static Mono<List<String>> getJoke(JokeRequest request) {
-		return JokeClient.webClient.get().uri(JOKE_URI + request.toString()).responseContent().aggregate().asString()
+		return JokeClient.getWebClient().get().uri(JOKE_URI + request.toString()).responseContent().aggregate().asString()
 				.flatMap(JokeClient::readTree).map(json -> new JokeJson(json.get("type").asText(), json))
 				.map(Joke::handleResponse);
 	}
@@ -38,24 +40,5 @@ class Joke {
 		default:
 			throw new RuntimeException("Unknown joke type: " + jokeJson.getType());
 		}
-	}
-
-}
-
-class JokeJson {
-	String type;
-	JsonNode node;
-
-	public String getType() {
-		return type;
-	}
-
-	public JsonNode getNode() {
-		return node;
-	}
-
-	public JokeJson(String type, JsonNode json) {
-		this.type = type;
-		this.node = json;
 	}
 }

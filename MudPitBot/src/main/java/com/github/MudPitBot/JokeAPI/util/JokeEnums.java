@@ -1,4 +1,4 @@
-package com.github.MudPitBot.jokeAPI;
+package com.github.MudPitBot.JokeAPI.util;
 
 public class JokeEnums {
 	public enum BlacklistFlag {
