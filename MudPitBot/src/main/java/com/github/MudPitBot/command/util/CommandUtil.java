@@ -29,6 +29,8 @@ public final class CommandUtil {
 	 * @return the command response
 	 */
 	public static Mono<CommandResponse> sendReply(MessageCreateEvent event, CommandResponse response) {
+		if (response.getSpec() == null)
+			return CommandResponse.empty();
 		// send reply, on CommandException error send the message to the member in a
 		// private message
 		return sendReply(event.getMember(), event.getMessage().getChannel(), response);

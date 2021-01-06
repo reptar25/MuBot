@@ -20,7 +20,6 @@ public class CommandListener {
 
 	private static final Logger LOGGER = Loggers.getLogger(CommandListener.class);
 	private GatewayDiscordClient client;
-	private static CommandExecutor executor = new CommandExecutor();
 	private static CommandListener instance;
 	private static final int MAX_COMMANDS_PER_MESSAGE = 5;
 
@@ -96,14 +95,7 @@ public class CommandListener {
 	 * @return the response to the command
 	 */
 	private static Mono<CommandResponse> executeCommand(MessageCreateEvent event, Command command, String[] args) {
-
-		// commands will return any string that the bot should send back as a message to
-		// the command
-		// CommandResponse response = executor.executeCommand(command, event, args);
-		return executor.executeCommand(event, command, args).flatMap(response -> {
-			if (response.getSpec() == null)
-				return CommandResponse.empty();
-
+		return command.execute(event, args).flatMap(response -> {
 			return sendReply(event, response);
 		});
 	}
