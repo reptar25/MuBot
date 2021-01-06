@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.menu;
+package com.github.MudPitBot.command.menu.menus;
 
 import java.time.Duration;
 import java.util.List;
@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import com.github.MudPitBot.JokeAPI.JokeClient;
 import com.github.MudPitBot.JokeAPI.JokeRequest;
 import com.github.MudPitBot.JokeAPI.util.JokeEnums.BlacklistFlag;
+import com.github.MudPitBot.command.menu.SingleActionChoiceMenu;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class JokeMenu extends SingleChoiceMenu {
+public class JokeMenu extends SingleActionChoiceMenu {
 
 	private static final Logger LOGGER = Loggers.getLogger(JokeMenu.class);
 	private List<String> categories;
@@ -76,7 +77,7 @@ public class JokeMenu extends SingleChoiceMenu {
 		// no racist or sexist jokes allowed
 		JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST)
 				.addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category).build();
-		return message.removeAllReactions().then(JokeClient.getJokeService().getJoke(request).flatMap(jokeLines -> {
+		return JokeClient.getJokeService().getJoke(request).flatMap(jokeLines -> {
 			if (jokeLines.size() == 1)
 				return message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null)).then();
 			else
@@ -85,20 +86,20 @@ public class JokeMenu extends SingleChoiceMenu {
 						.then(message.edit(
 								spec -> spec.setContent(jokeLines.get(0) + "\n" + jokeLines.get(1)).setEmbed(null)))
 						.then();
-		}));
+		});
 
 	}
 
 	@Override
 	public void setMessage(Message message) {
 		this.message = message;
-		checkIfCategorySelected().subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+		checkSelectedCategory().subscribe(null, error -> LOGGER.error(error.getMessage(), error));
 
 	}
 
-	private Mono<Void> checkIfCategorySelected() {
+	private Mono<Void> checkSelectedCategory() {
 		if (selectedCategory == null)
-			return addReactions();
+			return addReactions().then(addReactionListener()).then();
 		else
 			return loadJoke(selectedCategory);
 	}
@@ -110,7 +111,6 @@ public class JokeMenu extends SingleChoiceMenu {
 			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
 		}
 
-		ret = ret.thenMany(addReactionListener()).then();
 		return ret;
 	}
 

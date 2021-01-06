@@ -4,7 +4,7 @@ import static com.github.MudPitBot.command.util.Permissions.requireBotPermission
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.menu.PollMenu;
+import com.github.MudPitBot.command.menu.menus.PollMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;

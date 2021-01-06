@@ -1,4 +1,4 @@
-package com.github.MudPitBot.command.menu;
+package com.github.MudPitBot.command.menu.menus;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.function.Consumer;
 
+import com.github.MudPitBot.command.menu.Menu;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.object.entity.Member;

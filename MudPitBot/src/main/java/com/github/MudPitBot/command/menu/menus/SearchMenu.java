@@ -1,10 +1,11 @@
-package com.github.MudPitBot.command.menu;
+package com.github.MudPitBot.command.menu.menus;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.github.MudPitBot.command.menu.SingleActionChoiceMenu;
 import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.GuildMusicManager;
@@ -23,7 +24,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class SearchMenu extends SingleChoiceMenu implements AudioLoadResultHandler {
+public class SearchMenu extends SingleActionChoiceMenu implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(SearchMenu.class);
 	private final int RESULT_LENGTH = 5;
@@ -72,25 +73,20 @@ public class SearchMenu extends SingleChoiceMenu implements AudioLoadResultHandl
 			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
 		}
 
-		ret = ret.thenMany(addReactionListener()).then();
 		return ret;
 	}
 
 	@Override
 	protected Mono<Void> loadSelection(ReactionAddEvent event) {
-		if (event.getEmoji().asUnicodeEmoji().isEmpty())
-			return Mono.empty();
-
 		int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get());
 		if (selection < 1)
 			return Mono.empty();
 		LOGGER.info("Selected track: " + selection);
 		String queueResponse = scheduler.queue(results.get(selection - 1));
-		return message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).then(message.removeAllReactions())
-				.onErrorResume(error -> {
-					LOGGER.error("Error selecting track.", error);
-					return Mono.empty();
-				});
+		return message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).then().onErrorResume(error -> {
+			LOGGER.error("Error selecting track.", error);
+			return Mono.empty();
+		});
 	}
 
 	@Override
@@ -106,7 +102,8 @@ public class SearchMenu extends SingleChoiceMenu implements AudioLoadResultHandl
 		results.add(track);
 
 		if (message != null) {
-			createResultsMessage().then(addReactions()).subscribe(null, error -> LOGGER.error(error.getMessage()));
+			createResultsMessage().then(addReactionListener()).then(addReactions()).subscribe(null,
+					error -> LOGGER.error(error.getMessage()));
 		}
 	}
 
@@ -116,7 +113,8 @@ public class SearchMenu extends SingleChoiceMenu implements AudioLoadResultHandl
 		results = playlist.getTracks().stream().limit(RESULT_LENGTH).collect(Collectors.toList());
 
 		if (message != null) {
-			createResultsMessage().then(addReactions()).subscribe(null, error -> LOGGER.error(error.getMessage()));
+			createResultsMessage().then(addReactionListener()).then(addReactions()).subscribe(null,
+					error -> LOGGER.error(error.getMessage()));
 		}
 	}
 

@@ -1,19 +1,16 @@
-package com.github.MudPitBot.command.menu;
+package com.github.MudPitBot.command.menu.menus;
 
 import java.util.function.Consumer;
 
+import com.github.MudPitBot.command.menu.ActionChoiceMenu;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
-public class Paginator extends SingleChoiceMenu {
-
-	private static final Logger LOGGER = Loggers.getLogger(Paginator.class);
+public class Paginator extends ActionChoiceMenu {
 
 	private int itemsPerPage;
 	private String content;
@@ -79,11 +76,7 @@ public class Paginator extends SingleChoiceMenu {
 
 	@Override
 	protected Mono<Void> addReactions() {
-		return message.addReaction(Emoji.LEFT_ARROW).then(message.addReaction(Emoji.RIGHT_ARROW))
-				.thenMany(addReactionListener()).onErrorResume(error -> {
-					LOGGER.error("Error in reaction listener.", error);
-					return Mono.empty();
-				}).then();
+		return message.addReaction(Emoji.LEFT_ARROW).then(message.addReaction(Emoji.RIGHT_ARROW));
 	}
 
 	@Override

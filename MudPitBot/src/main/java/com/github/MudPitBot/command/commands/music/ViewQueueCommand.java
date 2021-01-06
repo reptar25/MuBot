@@ -8,8 +8,8 @@ import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.menu.Paginator;
-import com.github.MudPitBot.command.menu.Paginator.Builder;
+import com.github.MudPitBot.command.menu.menus.Paginator;
+import com.github.MudPitBot.command.menu.menus.Paginator.Builder;
 import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.TrackScheduler;

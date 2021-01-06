@@ -3,7 +3,7 @@ package com.github.MudPitBot.command.commands.general;
 import com.github.MudPitBot.JokeAPI.JokeClient;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.menu.JokeMenu;
+import com.github.MudPitBot.command.menu.menus.JokeMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
