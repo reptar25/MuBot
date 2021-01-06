@@ -10,7 +10,6 @@ import com.github.MudPitBot.JokeAPI.util.JokeEnums.BlacklistFlag;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
@@ -18,11 +17,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class JokeMenu extends Menu {
+public class JokeMenu extends SingleChoiceMenu {
 
 	private static final Logger LOGGER = Loggers.getLogger(JokeMenu.class);
 	private List<String> categories;
-	private final Duration TIMEOUT = Duration.ofMinutes(5L);
 	private boolean unsafe = false;
 	private String selectedCategory;
 
@@ -68,54 +66,52 @@ public class JokeMenu extends Menu {
 		return spec;
 	}
 
-	private Mono<Void> addReactions() {
-		Mono<Void> ret = Mono.empty();
-		for (int i = 1; i <= categories.size(); i++) {
-			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
-		}
-
-		addReactionListener();
-		return ret;
+	@Override
+	protected Mono<Void> loadSelection(ReactionAddEvent event) {
+		int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get()) - 1;
+		return loadJoke(categories.get(selection));
 	}
 
-	private void addReactionListener() {
-		message.getClient().on(ReactionAddEvent.class).filter(e -> !e.getMember().map(Member::isBot).orElse(false))
-				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
-				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT)
-				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
-					int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get()) - 1;
-					loadJoke(categories.get(selection));
-					return message.removeAllReactions();
-				}).onErrorResume(error -> {
-					LOGGER.error("Error in reaction listener.", error);
-					return Mono.empty();
-				}).subscribe();
-	}
-
-	private void loadJoke(String category) {
+	private Mono<Void> loadJoke(String category) {
 		// no racist or sexist jokes allowed
 		JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST)
 				.addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category).build();
-		JokeClient.getJokeService().getJoke(request).subscribe(jokeLines -> {
+		return message.removeAllReactions().then(JokeClient.getJokeService().getJoke(request).flatMap(jokeLines -> {
 			if (jokeLines.size() == 1)
-				message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null)).subscribe();
+				return message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null)).then();
 			else
-				message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null))
+				return message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null))
 						.then(Mono.delay(Duration.ofSeconds(5L)))
 						.then(message.edit(
 								spec -> spec.setContent(jokeLines.get(0) + "\n" + jokeLines.get(1)).setEmbed(null)))
-						.subscribe();
-		}, error -> LOGGER.error(error.getMessage(), error));
+						.then();
+		}));
 
 	}
 
 	@Override
 	public void setMessage(Message message) {
 		this.message = message;
+		checkIfCategorySelected().subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+
+	}
+
+	private Mono<Void> checkIfCategorySelected() {
 		if (selectedCategory == null)
-			addReactions().subscribe(null, error -> LOGGER.error(error.getMessage(), error));
+			return addReactions();
 		else
-			loadJoke(selectedCategory);
+			return loadJoke(selectedCategory);
+	}
+
+	@Override
+	protected Mono<Void> addReactions() {
+		Mono<Void> ret = Mono.empty();
+		for (int i = 1; i <= categories.size(); i++) {
+			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
+		}
+
+		ret = ret.thenMany(addReactionListener()).then();
+		return ret;
 	}
 
 }

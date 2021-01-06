@@ -1,6 +1,5 @@
 package com.github.MudPitBot.command.menu;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,7 +16,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
@@ -25,10 +23,9 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class SearchMenu extends Menu implements AudioLoadResultHandler {
+public class SearchMenu extends SingleChoiceMenu implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(SearchMenu.class);
-	private final Duration TIMEOUT = Duration.ofMinutes(5L);
 	private final int RESULT_LENGTH = 5;
 	private final String SEARCH_PREFIX = "ytsearch:";
 
@@ -67,39 +64,33 @@ public class SearchMenu extends Menu implements AudioLoadResultHandler {
 		return spec;
 	}
 
-	private Mono<Void> addReactions() {
+	@Override
+	protected Mono<Void> addReactions() {
 		Mono<Void> ret = Mono.empty();
 		for (int i = 1; i <= results.size(); i++) {
 			LOGGER.info("Adding Reaction " + i);
 			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
 		}
 
-		addReactionListener();
+		ret = ret.thenMany(addReactionListener()).then();
 		return ret;
 	}
 
-	private void addReactionListener() {
-		message.getClient().on(ReactionAddEvent.class).filter(e -> !e.getMember().map(Member::isBot).orElse(false))
-				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
-				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT)
-				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
+	@Override
+	protected Mono<Void> loadSelection(ReactionAddEvent event) {
+		if (event.getEmoji().asUnicodeEmoji().isEmpty())
+			return Mono.empty();
 
-					int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get());
-					loadSelection(selection);
-					return message.removeAllReactions();
-
-				}).onErrorResume(error -> {
-					LOGGER.error("Error in reaction listener.", error);
-					return Mono.empty();
-				}).subscribe();
-	}
-
-	private void loadSelection(int selection) {
+		int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get());
 		if (selection < 1)
-			return;
+			return Mono.empty();
 		LOGGER.info("Selected track: " + selection);
 		String queueResponse = scheduler.queue(results.get(selection - 1));
-		message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).subscribe();
+		return message.edit(spec -> spec.setContent(queueResponse).setEmbed(null)).then(message.removeAllReactions())
+				.onErrorResume(error -> {
+					LOGGER.error("Error selecting track.", error);
+					return Mono.empty();
+				});
 	}
 
 	@Override

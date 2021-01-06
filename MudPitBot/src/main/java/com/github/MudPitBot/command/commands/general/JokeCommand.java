@@ -28,7 +28,7 @@ public class JokeCommand extends Command {
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {
 		boolean unsafe = false;
-		JokeMenu menu = new JokeMenu(unsafe);
+		JokeMenu menu = null;
 		if (args.length > 0) {
 			List<String> argList = Arrays.asList(args);
 			unsafe = argList.contains("unsafe");
@@ -36,15 +36,19 @@ public class JokeCommand extends Command {
 					.map(s -> s.map(String::toLowerCase).collect(Collectors.toList())).block();
 			for (String arg : argList) {
 				if (categories.contains(arg.toLowerCase())) {
-
 					// no dark safe jokes, so ignore
 					if (arg.equals("dark") && !unsafe)
-						continue;
+						break;
 
 					menu = new JokeMenu(unsafe, arg);
+					break;
 				}
 			}
 		}
+
+		if (menu == null)
+			menu = new JokeMenu(unsafe);
+
 		return CommandResponse.create(menu.createMessage(), menu);
 	}
 

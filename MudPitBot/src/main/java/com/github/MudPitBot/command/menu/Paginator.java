@@ -1,21 +1,17 @@
 package com.github.MudPitBot.command.menu;
 
-import java.time.Duration;
 import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class Paginator extends Menu {
+public class Paginator extends SingleChoiceMenu {
 
 	private static final Logger LOGGER = Loggers.getLogger(Paginator.class);
 
@@ -26,8 +22,6 @@ public class Paginator extends Menu {
 	private int currentPageNum = 1;
 	private int totalPages;
 	private String description;
-
-	private Duration timeout = Duration.ofMinutes(5L);
 
 	private Paginator(Builder b) {
 		this.itemsPerPage = b.itemsPerPage;
@@ -58,40 +52,6 @@ public class Paginator extends Menu {
 		description = sb.toString();
 	}
 
-	@Override
-	public void setMessage(Message message) {
-		super.setMessage(message);
-		addReactions();
-	}
-
-	private void addReactions() {
-		message.addReaction(Emoji.LEFT_ARROW).then(message.addReaction(Emoji.RIGHT_ARROW))
-				.thenMany(addReactionListener(message)).onErrorResume(error -> {
-					LOGGER.error("Error in reaction listener.", error);
-					return Mono.empty();
-				}).subscribe();
-
-	}
-
-	private Flux<Void> addReactionListener(Message message) {
-		return message.getClient().on(ReactionAddEvent.class)
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
-				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
-				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(timeout)
-				.doOnTerminate(() -> message.removeAllReactions().subscribe()).flatMap(event -> {
-
-					if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.LEFT_ARROW)) {
-						if (currentPageNum > 1)
-							currentPageNum--;
-					} else if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.RIGHT_ARROW)) {
-						if (currentPageNum < totalPages)
-							currentPageNum++;
-					}
-					return message.removeReaction(event.getEmoji(), event.getUserId())
-							.then(message.edit(edit -> edit.setEmbed(createEmbed()))).then();
-				});
-	}
-
 	public static class Builder {
 		private int itemsPerPage = 10;
 		String content = "";
@@ -115,6 +75,28 @@ public class Paginator extends Menu {
 		public Paginator build() {
 			return new Paginator(this);
 		}
+	}
+
+	@Override
+	protected Mono<Void> addReactions() {
+		return message.addReaction(Emoji.LEFT_ARROW).then(message.addReaction(Emoji.RIGHT_ARROW))
+				.thenMany(addReactionListener()).onErrorResume(error -> {
+					LOGGER.error("Error in reaction listener.", error);
+					return Mono.empty();
+				}).then();
+	}
+
+	@Override
+	protected Mono<Void> loadSelection(ReactionAddEvent event) {
+		if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.LEFT_ARROW)) {
+			if (currentPageNum > 1)
+				currentPageNum--;
+		} else if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.RIGHT_ARROW)) {
+			if (currentPageNum < totalPages)
+				currentPageNum++;
+		}
+		return message.removeReaction(event.getEmoji(), event.getUserId())
+				.then(message.edit(edit -> edit.setEmbed(createEmbed()))).then();
 	}
 
 }
