@@ -1,5 +1,6 @@
 package com.github.MudPitBot.command.util;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import com.github.MudPitBot.command.exceptions.BotPermissionException;
@@ -18,6 +19,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public final class Permissions {
+
+	static HashMap<Permission, String> permissionErrorMessages = new HashMap<Permission, String>();
+
+	static {
+		permissionErrorMessages.put(Permission.CONNECT, " connect to ");
+		permissionErrorMessages.put(Permission.SPEAK, " speak in ");
+		permissionErrorMessages.put(Permission.VIEW_CHANNEL, " view ");
+		permissionErrorMessages.put(Permission.MUTE_MEMBERS, " mute members in ");
+		permissionErrorMessages.put(Permission.ADD_REACTIONS, " add message reactions in ");
+		permissionErrorMessages.put(Permission.MANAGE_MESSAGES, " manage messages in ");
+		permissionErrorMessages.put(Permission.SEND_MESSAGES, " send messages in ");
+	}
 
 	/**
 	 * Returns the voice channel the message sender is in or empty if they are not
@@ -146,69 +159,28 @@ public final class Permissions {
 			Permission... requestedPermissions) {
 		for (Permission permission : requestedPermissions) {
 			if (!permissions.contains(permission)) {
-				StringBuilder sb = new StringBuilder("I don't have permission to");
-				RuntimeException exception = new BotPermissionException(
-						new StringBuilder("Bot missing ").append(permission).append(" for command").toString());
-				switch (permission) {
-				case CONNECT:
-					((BotPermissionException) exception)
-							.setUserFriendlyMessage(sb.append(" connect to ").append(channelName).toString());
-					break;
-				case SPEAK:
-					((BotPermissionException) exception)
-							.setUserFriendlyMessage(sb.append(" speak in ").append(channelName).toString());
-					break;
-				case VIEW_CHANNEL:
-					((BotPermissionException) exception)
-							.setUserFriendlyMessage(sb.append(" view ").append(channelName).toString());
-					break;
-				case MUTE_MEMBERS:
-					((BotPermissionException) exception)
-							.setUserFriendlyMessage(sb.append(" mute members in ").append(channelName).toString());
-					break;
-				case SEND_MESSAGES:
-					exception = new SendMessagesException(
-							new StringBuilder("Bot missing ").append(permission).append(" for command").toString());
-					break;
-				case ADD_REACTIONS:
-					((BotPermissionException) exception).setUserFriendlyMessage(
-							sb.append(" add message reactions in ").append(channelName).toString());
-					break;
-				case MANAGE_MESSAGES:
-					((BotPermissionException) exception)
-							.setUserFriendlyMessage(sb.append(" manage messages in ").append(channelName).toString());
-					break;
-				case ADMINISTRATOR:
-				case ATTACH_FILES:
-				case BAN_MEMBERS:
-				case CHANGE_NICKNAME:
-				case CREATE_INSTANT_INVITE:
-				case DEAFEN_MEMBERS:
-				case EMBED_LINKS:
-				case KICK_MEMBERS:
-				case MANAGE_CHANNELS:
-				case MANAGE_EMOJIS:
-				case MANAGE_GUILD:
-				case MANAGE_NICKNAMES:
-				case MANAGE_ROLES:
-				case MANAGE_WEBHOOKS:
-				case MENTION_EVERYONE:
-				case MOVE_MEMBERS:
-				case PRIORITY_SPEAKER:
-				case READ_MESSAGE_HISTORY:
-				case SEND_TTS_MESSAGES:
-				case STREAM:
-				case USE_EXTERNAL_EMOJIS:
-				case USE_VAD:
-				case VIEW_AUDIT_LOG:
-				case VIEW_GUILD_INSIGHTS:
-				default:
-					return Mono.error(
-							new BotPermissionException(sb.append(" do that in ").append(channelName).toString()));
+				RuntimeException exception;
+				String exceptionMessage = getPermissionErrorMessage(permission, channelName);
+				if (permission.equals(Permission.SEND_MESSAGES)) {
+					exception = new SendMessagesException(exceptionMessage);
+				} else {
+					exception = new BotPermissionException(exceptionMessage);
 				}
 				return Mono.error(exception);
 			}
 		}
 		return Mono.just(permissions);
+	}
+
+	public static String getPermissionErrorMessage(Permission permission, String channelName) {
+		StringBuilder sb = new StringBuilder("I don't have permission to");
+		String errorMessage = permissionErrorMessages.get(permission);
+		if (errorMessage != null) {
+			sb.append(errorMessage);
+		} else
+			sb.append(" do that in ");
+
+		sb.append(channelName);
+		return sb.toString();
 	}
 }
