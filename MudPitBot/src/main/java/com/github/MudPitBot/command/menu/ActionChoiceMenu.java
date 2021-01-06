@@ -5,7 +5,6 @@ import java.time.Duration;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -18,10 +17,6 @@ public abstract class ActionChoiceMenu extends Menu {
 
 	private static final Logger LOGGER = Loggers.getLogger(ActionChoiceMenu.class);
 	protected final Duration TIMEOUT = Duration.ofMinutes(5L);
-	protected Flux<ReactionAddEvent> listenerFlux = message.getClient().on(ReactionAddEvent.class)
-			.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
-			.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
-			.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT);
 
 	/**
 	 * Adds a ReactionAddEvent listener to the menu to allow for some action to be
@@ -31,7 +26,11 @@ public abstract class ActionChoiceMenu extends Menu {
 	 * @return
 	 */
 	protected Mono<Void> addReactionListener() {
-		return listenerFlux.doOnTerminate(() -> {
+		
+		return message.getClient().on(ReactionAddEvent.class)
+				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
+				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
+				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT).doOnTerminate(() -> {
 			message.removeAllReactions().subscribe();
 		}).flatMap(event -> {
 			return loadSelection(event);

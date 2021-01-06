@@ -1,5 +1,7 @@
 package com.github.MudPitBot.command.menu;
 
+import discord4j.core.event.domain.message.ReactionAddEvent;
+import discord4j.core.object.entity.Member;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -10,6 +12,7 @@ import reactor.util.Loggers;
  */
 public abstract class SingleActionChoiceMenu extends ActionChoiceMenu {
 	private static final Logger LOGGER = Loggers.getLogger(ActionChoiceMenu.class);
+
 	/**
 	 * Adds a ReactionAddEvent listener to the menu to allow for some action to be
 	 * performed when a non-bot member adds a reaction to this menu's message Takes
@@ -19,7 +22,10 @@ public abstract class SingleActionChoiceMenu extends ActionChoiceMenu {
 	 */
 	@Override
 	protected Mono<Void> addReactionListener() {
-		return listenerFlux.take(1L).doOnTerminate(() -> {
+		return message.getClient().on(ReactionAddEvent.class)
+				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
+				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
+				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT).take(1L).doOnTerminate(() -> {
 					message.removeAllReactions().subscribe();
 				}).flatMap(event -> {
 					return loadSelection(event);

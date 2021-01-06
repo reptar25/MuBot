@@ -102,7 +102,7 @@ public class SearchMenu extends SingleActionChoiceMenu implements AudioLoadResul
 		results.add(track);
 
 		if (message != null) {
-			createResultsMessage().then(addReactionListener()).then(addReactions()).subscribe(null,
+			createResultsMessage().then(addReactions()).then(addReactionListener()).then().subscribe(null,
 					error -> LOGGER.error(error.getMessage()));
 		}
 	}
@@ -113,7 +113,7 @@ public class SearchMenu extends SingleActionChoiceMenu implements AudioLoadResul
 		results = playlist.getTracks().stream().limit(RESULT_LENGTH).collect(Collectors.toList());
 
 		if (message != null) {
-			createResultsMessage().then(addReactionListener()).then(addReactions()).subscribe(null,
+			createResultsMessage().then(addReactions()).then(addReactionListener()).subscribe(null,
 					error -> LOGGER.error(error.getMessage()));
 		}
 	}
