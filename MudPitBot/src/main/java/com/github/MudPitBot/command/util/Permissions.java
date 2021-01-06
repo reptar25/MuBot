@@ -23,13 +23,13 @@ public final class Permissions {
 	static HashMap<Permission, String> permissionErrorMessages = new HashMap<Permission, String>();
 
 	static {
-		permissionErrorMessages.put(Permission.CONNECT, " connect to ");
-		permissionErrorMessages.put(Permission.SPEAK, " speak in ");
-		permissionErrorMessages.put(Permission.VIEW_CHANNEL, " view ");
-		permissionErrorMessages.put(Permission.MUTE_MEMBERS, " mute members in ");
-		permissionErrorMessages.put(Permission.ADD_REACTIONS, " add message reactions in ");
-		permissionErrorMessages.put(Permission.MANAGE_MESSAGES, " manage messages in ");
-		permissionErrorMessages.put(Permission.SEND_MESSAGES, " send messages in ");
+		permissionErrorMessages.put(Permission.CONNECT, "connect to");
+		permissionErrorMessages.put(Permission.SPEAK, "speak in");
+		permissionErrorMessages.put(Permission.VIEW_CHANNEL, "view");
+		permissionErrorMessages.put(Permission.MUTE_MEMBERS, "mute members in");
+		permissionErrorMessages.put(Permission.ADD_REACTIONS, "add message reactions in");
+		permissionErrorMessages.put(Permission.MANAGE_MESSAGES, "manage messages in");
+		permissionErrorMessages.put(Permission.SEND_MESSAGES, "send messages in");
 	}
 
 	/**
@@ -40,10 +40,7 @@ public final class Permissions {
 	 * @return the voice channel of the message sender
 	 */
 	public static Mono<VoiceChannel> requireVoiceChannel(MessageCreateEvent event) {
-		return Mono.justOrEmpty(event.getMember())
-				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
-						"You can't use this command in a private message")))
-				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+		return requireNotPrivateMessage(event).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
 				.switchIfEmpty(Mono.error(new CommandException("Voice command used without voice channel",
 						"You have to be in a voice channel to use this command")))
 				.flatMap(Mono::justOrEmpty).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
@@ -122,7 +119,7 @@ public final class Permissions {
 
 	public static Mono<PermissionSet> requireBotPermissions(GuildChannel channel, Permission... requestedPermissions) {
 		return channel.getEffectivePermissions(channel.getClient().getSelfId()).flatMap(permissions -> {
-			return checkPermissions(channel.getName(), permissions, requestedPermissions);
+			return checkPermissions(true, channel.getName(), permissions, requestedPermissions);
 		});
 	}
 
@@ -138,7 +135,7 @@ public final class Permissions {
 	public static Mono<PermissionSet> requireMemberPermissions(GuildChannel channel, Snowflake memberId,
 			Permission... requestedPermissions) {
 		return channel.getEffectivePermissions(memberId).flatMap(permissions -> {
-			return checkPermissions(channel.getName(), permissions, requestedPermissions);
+			return checkPermissions(false, channel.getName(), permissions, requestedPermissions);
 		});
 	}
 
@@ -155,12 +152,12 @@ public final class Permissions {
 	 *         doesn't have one of the requested permissions for this channel
 	 */
 
-	private static Mono<PermissionSet> checkPermissions(String channelName, PermissionSet permissions,
+	private static Mono<PermissionSet> checkPermissions(boolean bot, String channelName, PermissionSet permissions,
 			Permission... requestedPermissions) {
 		for (Permission permission : requestedPermissions) {
 			if (!permissions.contains(permission)) {
 				RuntimeException exception;
-				String exceptionMessage = getPermissionErrorMessage(permission, channelName);
+				String exceptionMessage = getPermissionErrorMessage(bot, permission, channelName);
 				if (permission.equals(Permission.SEND_MESSAGES)) {
 					exception = new SendMessagesException(exceptionMessage);
 				} else {
@@ -172,15 +169,19 @@ public final class Permissions {
 		return Mono.just(permissions);
 	}
 
-	public static String getPermissionErrorMessage(Permission permission, String channelName) {
-		StringBuilder sb = new StringBuilder("I don't have permission to");
+	public static String getPermissionErrorMessage(boolean bot, Permission permission, String channelName) {
+		StringBuilder sb;
+		if (bot)
+			sb = new StringBuilder("I don't have permission to ");
+		else
+			sb = new StringBuilder("You don't have permission to ");
 		String errorMessage = permissionErrorMessages.get(permission);
-		if (errorMessage != null) {
+		if (errorMessage != null)
 			sb.append(errorMessage);
-		} else
-			sb.append(" do that in ");
+		else
+			sb.append("do that in");
 
-		sb.append(channelName);
+		sb.append(" " + channelName);
 		return sb.toString();
 	}
 }

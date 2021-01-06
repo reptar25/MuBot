@@ -56,21 +56,20 @@ public final class CommandUtil {
 				return Mono.empty();
 			}).then();
 		}).onErrorResume(SendMessagesException.class,
-				ignored -> Mono.justOrEmpty(memberOpt)
-						.flatMap(member -> sendPrivateReply(member.getPrivateChannel(), response)))
+				exception -> Mono.justOrEmpty(memberOpt)
+						.flatMap(member -> sendPrivateReply(exception, member.getPrivateChannel(), response)))
 				.thenReturn(response);
 	}
 
-	private static Mono<Void> sendPrivateReply(Mono<PrivateChannel> privateChannelMono, CommandResponse response) {
+	private static Mono<Void> sendPrivateReply(SendMessagesException exception, Mono<PrivateChannel> privateChannelMono,
+			CommandResponse response) {
 		return privateChannelMono.flatMap(privateChannel -> {
-			return privateChannel.createMessage(response.getSpec()).flatMap(message -> {
-				// if the response contains a menu
-				if (response.getMenu() != null) {
-					// set message on the menu
-					response.getMenu().setMessage(message);
-				}
-				return Mono.just(response);
-			}).then();
+			// no menus in private messages
+			if (response.getMenu() == null)
+				return privateChannel.createMessage(response.getSpec()).then();
+			else
+				return privateChannel
+						.createMessage(Emoji.NO_ENTRY + " " + exception.getMessage() + " " + Emoji.NO_ENTRY).then();
 		});
 
 	}
