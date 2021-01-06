@@ -92,13 +92,14 @@ public final class CommandUtil {
 			minuteFormat = "%02d";
 		}
 
-		if (duration.toMinutesPart() > 0) {
+		if (duration.toMinutesPart() >= 0) {
 			sb.append(String.format(minuteFormat, duration.toMinutesPart())).append(":");
 			secondFormat = "%02d";
 		}
 
-		if (duration.toSecondsPart() > 0) {
+		if (duration.toSecondsPart() >= 0) {
 			sb.append(String.format(secondFormat, duration.toSecondsPart()));
+			secondFormat = "%02d";
 		}
 
 		return sb.toString();
