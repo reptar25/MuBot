@@ -30,6 +30,7 @@ public abstract class Emoji {
 	public static final ReactionEmoji.Unicode SEVEN_UNICODE = ReactionEmoji.unicode("7️⃣");
 	public static final ReactionEmoji.Unicode EIGHT_UNICODE = ReactionEmoji.unicode("8️⃣");
 	public static final ReactionEmoji.Unicode NINE_UNICODE = ReactionEmoji.unicode("9️⃣");
+	public static final ReactionEmoji.Unicode RED_X_UNICODE = ReactionEmoji.unicode("❌");
 
 	private static final Map<Integer, Unicode> UNICODE_NUM_MAP;
 

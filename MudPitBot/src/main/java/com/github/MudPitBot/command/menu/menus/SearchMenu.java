@@ -69,15 +69,19 @@ public class SearchMenu extends SingleActionChoiceMenu implements AudioLoadResul
 	protected Mono<Void> addReactions() {
 		Mono<Void> ret = Mono.empty();
 		for (int i = 1; i <= results.size(); i++) {
-			LOGGER.info("Adding Reaction " + i);
 			ret = ret.then(message.addReaction(Emoji.numToUnicode(i)));
 		}
+
+		ret = ret.then(message.addReaction(Emoji.RED_X_UNICODE));
 
 		return ret;
 	}
 
 	@Override
 	protected Mono<Void> loadSelection(ReactionAddEvent event) {
+		if (event.getEmoji().asUnicodeEmoji().get().equals(Emoji.RED_X_UNICODE)) {
+			return message.delete();
+		}
 		int selection = Emoji.unicodeToNum(event.getEmoji().asUnicodeEmoji().get());
 		if (selection < 1)
 			return Mono.empty();
