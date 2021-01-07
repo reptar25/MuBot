@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.github.MudPitBot.command.menu.SingleActionChoiceMenu;
+import com.github.MudPitBot.command.menu.SingleChoiceActionMenu;
 import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.GuildMusicManager;
@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class SearchMenu extends SingleActionChoiceMenu implements AudioLoadResultHandler {
+public class SearchMenu extends SingleChoiceActionMenu implements AudioLoadResultHandler {
 
 	private static final Logger LOGGER = Loggers.getLogger(SearchMenu.class);
 	private final int RESULT_LENGTH = 5;

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.github.MudPitBot.JokeAPI.JokeClient;
 import com.github.MudPitBot.JokeAPI.JokeRequest;
 import com.github.MudPitBot.JokeAPI.util.JokeEnums.BlacklistFlag;
-import com.github.MudPitBot.command.menu.SingleActionChoiceMenu;
+import com.github.MudPitBot.command.menu.SingleChoiceActionMenu;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class JokeMenu extends SingleActionChoiceMenu {
+public class JokeMenu extends SingleChoiceActionMenu {
 
 	private static final Logger LOGGER = Loggers.getLogger(JokeMenu.class);
 	private List<String> categories;

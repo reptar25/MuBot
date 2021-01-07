@@ -13,9 +13,9 @@ import reactor.util.Loggers;
  * A menu that does some action after a user chooses a reaction
  *
  */
-public abstract class ActionChoiceMenu extends Menu {
+public abstract class ChoiceActionMenu extends Menu {
 
-	private static final Logger LOGGER = Loggers.getLogger(ActionChoiceMenu.class);
+	private static final Logger LOGGER = Loggers.getLogger(ChoiceActionMenu.class);
 	protected final Duration TIMEOUT = Duration.ofMinutes(5L);
 
 	/**

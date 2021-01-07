@@ -2,7 +2,7 @@ package com.github.MudPitBot.command.menu.menus;
 
 import java.util.function.Consumer;
 
-import com.github.MudPitBot.command.menu.ActionChoiceMenu;
+import com.github.MudPitBot.command.menu.ChoiceActionMenu;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
@@ -10,7 +10,7 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import reactor.core.publisher.Mono;
 
-public class Paginator extends ActionChoiceMenu {
+public class Paginator extends ChoiceActionMenu {
 
 	private int itemsPerPage;
 	private String content;

@@ -10,8 +10,8 @@ import reactor.util.Loggers;
  * An ActionChoiceMenu that only listens for the first reaction of the message
  *
  */
-public abstract class SingleActionChoiceMenu extends ActionChoiceMenu {
-	private static final Logger LOGGER = Loggers.getLogger(ActionChoiceMenu.class);
+public abstract class SingleChoiceActionMenu extends ChoiceActionMenu {
+	private static final Logger LOGGER = Loggers.getLogger(ChoiceActionMenu.class);
 
 	/**
 	 * Adds a ReactionAddEvent listener to the menu to allow for some action to be
