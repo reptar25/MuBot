@@ -1,7 +1,7 @@
 package com.github.MudPitBot.command.commands.general;
 
 import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
-
+import static com.github.MudPitBot.command.util.Permissions.requireNotPrivate;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.menu.menus.PollMenu;
@@ -20,7 +20,7 @@ public class PollCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return event.getMessage().getChannel()
+		return requireNotPrivate(event).flatMap(ignored -> event.getMessage().getChannel())
 				.flatMap(channel -> requireBotPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
 				.flatMap(ignored -> poll(pollArgs(args), event.getMember().orElse(null)));
 	}
@@ -64,6 +64,16 @@ public class PollCommand extends Command {
 		PollMenu poll = new PollMenu(args, member);
 
 		return CommandResponse.create(poll.createMessage(), poll);
+	}
+
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription(
+				"Creates a simple poll in the channel the command was used in. Allows up to 10 choices. All arguments must be contained in quotes to allow for spaces.")
+				.addArg("Question", "The question for the poll in quotes(\").", false)
+				.addArg("Choice 1", "The first choice of the poll in quotes(\").", false)
+				.addArg("Choice 2", "The second choice of the poll in quotes(\").", false)
+				.addArg("Choice X", "The X-th choice of the poll in quotes(\").", true)
+				.addExample("\"question\" \"choice 1\" \"choice 2\""));
 	}
 
 }

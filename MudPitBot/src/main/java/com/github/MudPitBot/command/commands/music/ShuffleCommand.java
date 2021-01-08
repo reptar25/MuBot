@@ -34,4 +34,9 @@ public class ShuffleCommand extends Command {
 		return CommandResponse.create(Emoji.SHUFFLE + " Queue shuffled " + Emoji.SHUFFLE);
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Shuffles the songs that are in the queue."));
+	}
+
 }

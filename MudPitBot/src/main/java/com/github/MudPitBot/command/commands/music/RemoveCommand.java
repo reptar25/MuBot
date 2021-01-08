@@ -41,4 +41,13 @@ public class RemoveCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s
+				.setDescription("Removes the song at the given position number from the queue.")
+				.addArg("position",
+						"The song to be remove's number position in the queue i.e. \"1\" to remove the song at the top of the queue.",
+						false)
+				.addExample("1"));
+	}
+
 }

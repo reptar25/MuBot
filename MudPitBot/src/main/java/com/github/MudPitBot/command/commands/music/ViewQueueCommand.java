@@ -70,4 +70,9 @@ public class ViewQueueCommand extends Command {
 		}
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Displays all the songs currently in the queue."));
+	}
+
 }

@@ -33,4 +33,8 @@ public class ClearCommand extends Command {
 		return CommandResponse.create("Queue cleared");
 	}
 
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Clears the queue of all songs."));
+	}
+
 }

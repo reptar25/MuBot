@@ -67,4 +67,11 @@ public class PlayCommand extends Command {
 		return sb.toString();
 	}
 
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s
+				.setDescription("Plays the song(s) from the given url.").addArg("url",
+						"Url of the song/playlist to be played from YouTube/SoundCloud/Bandcamp/Twitch/ect.", false)
+				.addExample("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+	}
+
 }

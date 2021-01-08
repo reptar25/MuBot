@@ -51,4 +51,10 @@ public class SkipCommand extends Command {
 			return CommandResponse.create("No song is currently playing");
 		}
 	}
+
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(
+				s -> s.setDescription("Skips the currently playing song and plays the next song in the queue."));
+	}
 }

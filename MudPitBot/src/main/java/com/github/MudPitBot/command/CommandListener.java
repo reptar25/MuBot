@@ -1,6 +1,7 @@
 package com.github.MudPitBot.command;
 
 import static com.github.MudPitBot.command.util.CommandUtil.sendReply;
+import static com.github.MudPitBot.command.util.CommandUtil.DEFAULT_COMMAND_PREFIX;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -22,6 +23,7 @@ public class CommandListener {
 	private GatewayDiscordClient client;
 	private static CommandListener instance;
 	private static final int MAX_COMMANDS_PER_MESSAGE = 5;
+	private static final CommandExecutor commandExecutor = new CommandExecutor();
 
 	// Singleton create method
 	public static CommandListener create(GatewayDiscordClient client) {
@@ -68,7 +70,7 @@ public class CommandListener {
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMessage().getContent())
-				.map(content -> content.split(Commands.DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
+				.map(content -> content.split(DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
 				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
 				.flatMap(commandString -> Mono.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase()))
 						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
@@ -95,7 +97,7 @@ public class CommandListener {
 	 * @return the response to the command
 	 */
 	private static Mono<CommandResponse> executeCommand(MessageCreateEvent event, Command command, String[] args) {
-		return command.execute(event, args).flatMap(response -> {
+		return commandExecutor.executeCommand(event, command, args).flatMap(response -> {
 			return sendReply(event, response);
 		});
 	}

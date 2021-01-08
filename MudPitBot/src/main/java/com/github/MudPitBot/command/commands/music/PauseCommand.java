@@ -32,4 +32,8 @@ public class PauseCommand extends Command {
 		scheduler.pause(!scheduler.isPaused());
 		return CommandResponse.empty();
 	}
+	
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Pauses currently playing track."));
+	}
 }

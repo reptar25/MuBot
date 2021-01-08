@@ -39,4 +39,12 @@ public class SeekCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Moves the currently playing song to the given time.")
+				.addArg("time",
+						"amount of time in seconds to set the song to i.e. \"60\" will set the song to the 1 minute mark, and \"0\" would set the song back to the beginning.",
+						false)
+				.addExample("60").addExample("0"));
+	}
 }

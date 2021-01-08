@@ -39,4 +39,11 @@ public class RewindCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(
+				s -> s.setDescription("Rewinds the currently playing song by the given amount of seconds.")
+						.addArg("time", "amount of time in seconds to rewind", false).addExample("60"));
+	}
+
 }

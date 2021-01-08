@@ -9,7 +9,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import static com.github.MudPitBot.command.util.Permissions.requireNotPrivateMessage;
+import static com.github.MudPitBot.command.util.Permissions.requireNotPrivate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +23,7 @@ public class JokeCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivateMessage(event).flatMap(ignored -> joke(args));
+		return requireNotPrivate(event).flatMap(ignored -> joke(args));
 	}
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {
@@ -36,7 +36,7 @@ public class JokeCommand extends Command {
 					.map(s -> s.map(String::toLowerCase).collect(Collectors.toList())).block();
 			for (String arg : argList) {
 				if (categories.contains(arg.toLowerCase())) {
-					// no dark safe jokes, so ignore
+					// no safe-dark jokes, so ignore
 					if (arg.equals("dark") && !unsafe)
 						break;
 
@@ -50,6 +50,14 @@ public class JokeCommand extends Command {
 			menu = new JokeMenu(unsafe);
 
 		return CommandResponse.create(menu.createMessage(), menu);
+	}
+
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Tells a random joke from the chosen category of jokes.")
+				.addArg("unsafe", "Allows \"unsafe\" jokes to be returned by the bot.", true)
+				.addArg("category", "Gets a joke of only the given category.", true).addExample("puns")
+				.addExample("unsafe").addExample("unsafe any").addExample("misc unsafe"));
 	}
 
 }

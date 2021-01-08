@@ -1,7 +1,6 @@
 package com.github.MudPitBot.command.commands.music;
 
 import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
-
 import java.util.regex.Pattern;
 
 import com.github.MudPitBot.command.Command;
@@ -50,6 +49,15 @@ public class VolumeCommand extends Command {
 			return CommandResponse.create(sb.toString());
 		} else
 			return CommandResponse.create("Invalid volume amount");
+	}
+
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription(
+				"Changes the volume to the given amount, or to the default amount if reset is given, or no argument to get the current volume.")
+				.addArg("volume||reset",
+						"Volume to set the bot to from 0 to 100 or \"reset\" to reset the volume to default.", true)
+				.addExample("50").addExample("reset"));
 	}
 
 }

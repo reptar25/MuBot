@@ -40,4 +40,10 @@ public class StopCommand extends Command {
 		return CommandResponse.create(Emoji.STOP_SIGN + " Player stopped " + Emoji.STOP_SIGN);
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(
+				s -> s.setDescription("Stops the currently playing song and clears all songs from the queue."));
+	}
+
 }

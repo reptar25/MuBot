@@ -26,4 +26,9 @@ public class EchoCommand extends Command {
 		return CommandResponse.create("echo!");
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Bot replies with a simple echo message."));
+	}
+
 }

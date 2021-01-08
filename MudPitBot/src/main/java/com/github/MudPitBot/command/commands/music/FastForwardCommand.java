@@ -39,4 +39,10 @@ public class FastForwardCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(
+				s -> s.setDescription("Fast fowards the currently playing song by the given amount of seconds.")
+						.addArg("time", "amount of time in seconds to fast foward", false).addExample("60"));
+	}
+
 }

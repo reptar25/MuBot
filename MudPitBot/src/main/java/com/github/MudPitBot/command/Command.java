@@ -1,5 +1,8 @@
 package com.github.MudPitBot.command;
 
+import java.util.function.Consumer;
+
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
@@ -23,6 +26,23 @@ public abstract class Command implements CommandInterface {
 	 */
 	public String getCommandTrigger() {
 		return commandTrigger;
+	}
+
+	/**
+	 * 
+	 * @return the help embed for this command as a CommandResponse
+	 */
+	public abstract Mono<CommandResponse> getHelp();
+
+	/**
+	 * 
+	 * @param spec the CommandHelpSpec to use to create the embed
+	 * @return the help embed as a CommandResponse
+	 */
+	protected final Mono<CommandResponse> createCommandHelpEmbed(Consumer<? super CommandHelpSpec> spec) {
+		CommandHelpSpec mutatedSpec = new CommandHelpSpec(getCommandTrigger());
+		spec.accept(mutatedSpec);
+		return CommandResponse.create(s -> s.setEmbed(mutatedSpec.build()));
 	}
 
 	/**

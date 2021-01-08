@@ -41,4 +41,10 @@ public class SearchCommand extends Command {
 		return sb.toString();
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription(
+				"Searches YouTube for the given terms and returns the top 5 results as choices that can be added to the queue of songs.")
+				.addArg("terms", "terms to search YouTube with", false).addExample("something the beatles"));
+	}
 }

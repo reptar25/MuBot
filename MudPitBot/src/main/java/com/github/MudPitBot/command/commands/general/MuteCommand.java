@@ -88,4 +88,10 @@ public class MuteCommand extends Command {
 		return doMute.then(CommandResponse.create(response));
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription(
+				"Mutes the voice channel of the user who used the command. Will also mute any new users that join that channel until this command is used again to unmute the channel."));
+	}
+
 }

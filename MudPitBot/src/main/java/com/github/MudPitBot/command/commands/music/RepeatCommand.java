@@ -36,4 +36,10 @@ public class RepeatCommand extends Command {
 		return CommandResponse.create(response);
 	}
 
+	@Override
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription(
+				"Toggles repeating the currently playing song. Use this command again to enable/disable repeating."));
+	}
+
 }

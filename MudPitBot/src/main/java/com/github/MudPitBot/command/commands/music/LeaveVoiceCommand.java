@@ -11,7 +11,8 @@ import reactor.core.publisher.Mono;
 
 public class LeaveVoiceCommand extends Command {
 
-	//private static final Logger LOGGER = Loggers.getLogger(LeaveVoiceCommand.class);
+	// private static final Logger LOGGER =
+	// Loggers.getLogger(LeaveVoiceCommand.class);
 
 	public LeaveVoiceCommand() {
 		super("leave");
@@ -33,4 +34,7 @@ public class LeaveVoiceCommand extends Command {
 		return channel.getVoiceConnection().flatMap(VoiceConnection::disconnect).then(CommandResponse.empty());
 	}
 
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(s -> s.setDescription("Requests the bot to leave its' current voice channel."));
+	}
 }
