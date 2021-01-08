@@ -40,7 +40,7 @@ public final class Permissions {
 	 * @return the voice channel of the message sender
 	 */
 	public static Mono<VoiceChannel> requireVoiceChannel(MessageCreateEvent event) {
-		return requireNotPrivateMessage(event).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+		return requireNotPrivate(event).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
 				.switchIfEmpty(Mono.error(new CommandException("Voice command used without voice channel",
 						"You have to be in a voice channel to use this command")))
 				.flatMap(Mono::justOrEmpty).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
@@ -67,7 +67,7 @@ public final class Permissions {
 		final Mono<Optional<Snowflake>> getUserVoiceChannelId = Mono.justOrEmpty(event.getMember())
 				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty());
 
-		return requireNotPrivateMessage(event)
+		return requireNotPrivate(event)
 				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId).flatMap(tuple -> {
 					final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
 					final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
@@ -103,7 +103,7 @@ public final class Permissions {
 	 * @param event the MessageCreateEvent
 	 * @return returns the Member if not a private message, or errors if it is
 	 */
-	public static Mono<Member> requireNotPrivateMessage(MessageCreateEvent event) {
+	public static Mono<Member> requireNotPrivate(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMember())
 				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
 						"You can't use this command in a private message")));
