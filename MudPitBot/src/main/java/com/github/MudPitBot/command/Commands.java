@@ -18,7 +18,6 @@ import reactor.util.Loggers;
 public final class Commands {
 
 	private static final Logger LOGGER = Loggers.getLogger(Commands.class);
-	public static final String DEFAULT_COMMAND_PREFIX = "!";
 
 	// Immutable structure that maps string commands to the concrete implementation
 	// of that command.

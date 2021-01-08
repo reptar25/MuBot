@@ -12,12 +12,16 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
+import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
 
 public final class CommandUtil {
+
+	public static final Color DEFAULT_EMBED_COLOR = Color.of(23, 53, 77);
+	public static final String DEFAULT_COMMAND_PREFIX = "!";
 
 	/**
 	 * Sends a reply to either the channel the command was sent in or in a private
