@@ -30,12 +30,6 @@ public abstract class Command implements CommandInterface {
 
 	/**
 	 * 
-	 * @return the help embed for this command as a CommandResponse
-	 */
-	public abstract Mono<CommandResponse> getHelp();
-
-	/**
-	 * 
 	 * @param spec the CommandHelpSpec to use to create the embed
 	 * @return the help embed as a CommandResponse
 	 */
