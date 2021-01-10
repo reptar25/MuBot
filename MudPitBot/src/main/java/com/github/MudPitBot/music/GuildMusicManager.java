@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.util.SoundCloudHtmlLoader;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -29,7 +28,6 @@ public class GuildMusicManager {
 	private static AudioPlayerManager playerManager;
 
 	public static final int DEFAULT_VOLUME = 15;
-	private static GuildMusicManager instance;
 
 	/**
 	 * Maps a GuildMusic object for each new guild joined. Key is guild id snowflake
@@ -37,10 +35,6 @@ public class GuildMusicManager {
 	private static Map<Snowflake, GuildMusic> guildMusicMap = new ConcurrentHashMap<>();
 
 	static {
-		GuildMusicManager.instance = new GuildMusicManager();
-	}
-
-	private GuildMusicManager() {
 		// Creates AudioPlayer instances and translates URLs to AudioTrack instances
 		playerManager = new DefaultAudioPlayerManager();
 		playerManager.registerSourceManager(
@@ -51,7 +45,6 @@ public class GuildMusicManager {
 
 		// Allow playerManager to parse remote sources like YouTube links
 		AudioSourceManagers.registerRemoteSources(playerManager);
-
 	}
 
 	public static Mono<GuildMusic> getOrCreate(Snowflake guildId) {
@@ -77,15 +70,11 @@ public class GuildMusicManager {
 		return playerManager;
 	}
 
-	public static Optional<GuildMusic> getGuildMusic(Snowflake guildId) {
+	private static Optional<GuildMusic> getGuildMusic(Snowflake guildId) {
 		return Optional.ofNullable(guildMusicMap.get(guildId));
 	}
 
-	public static GuildMusicManager getInstance() {
-		return instance;
-	}
-
-	public void destroy(Snowflake guildId) {
+	public static void destroy(Snowflake guildId) {
 		final GuildMusic guildMusic = guildMusicMap.remove(guildId);
 		if (guildMusic != null)
 			guildMusic.destroy();
