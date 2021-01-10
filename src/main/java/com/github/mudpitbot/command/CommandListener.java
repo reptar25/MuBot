@@ -73,7 +73,7 @@ public class CommandListener {
 		return Mono.justOrEmpty(event.getMessage().getContent())
 				.map(content -> content.split(DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
 				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
-				.flatMap(commandString -> Mono.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase()))
+				.flatMap(commandString -> Mono.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
 						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
 								splitCommand -> Mono.just(Arrays.copyOfRange(splitCommand, 1, splitCommand.length)))
 								.flatMap(commandArgs -> executeCommand(event, command, commandArgs)))

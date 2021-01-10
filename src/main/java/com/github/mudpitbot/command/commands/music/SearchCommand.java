@@ -29,10 +29,10 @@ public class SearchCommand extends Command {
 				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES)
 						.thenReturn(channel))
 				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> search(event, scheduler, args));
+				.flatMap(scheduler -> search(scheduler, args));
 	}
 
-	private Mono<CommandResponse> search(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+	private Mono<CommandResponse> search(@NonNull TrackScheduler scheduler,
 			@NonNull String[] args) {
 		SearchMenu menu = new SearchMenu(scheduler, unsplitArgs(args));
 		return CommandResponse.create(menu.createMessage(), menu);

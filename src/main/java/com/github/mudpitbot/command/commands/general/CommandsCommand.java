@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import com.github.mudpitbot.command.Command;
 import com.github.mudpitbot.command.CommandResponse;
-import com.github.mudpitbot.command.Commands;
+import com.github.mudpitbot.command.CommandsHelper;
 import com.github.mudpitbot.command.help.CommandHelpSpec;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -34,7 +34,7 @@ public class CommandsCommand extends Command {
 	 * @return List of available commands
 	 */
 	public Mono<CommandResponse> commands() {
-		Set<Entry<String, Command>> entries = Commands.getEntries();
+		Set<Entry<String, Command>> entries = CommandsHelper.getEntries();
 		String commands = entries.stream().map(entry -> String.format("%n%s%s", DEFAULT_COMMAND_PREFIX, entry.getKey()))
 				.sorted().collect(Collectors.joining()).toString();
 

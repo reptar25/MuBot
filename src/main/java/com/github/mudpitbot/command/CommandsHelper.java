@@ -15,9 +15,9 @@ import org.reflections.Reflections;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public final class Commands {
+public final class CommandsHelper {
 
-	private static final Logger LOGGER = Loggers.getLogger(Commands.class);
+	private static final Logger LOGGER = Loggers.getLogger(CommandsHelper.class);
 
 	// Immutable structure that maps string commands to the concrete implementation
 	// of that command.
