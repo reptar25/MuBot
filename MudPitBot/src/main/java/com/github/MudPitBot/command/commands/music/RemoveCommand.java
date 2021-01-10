@@ -1,10 +1,14 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
+
+import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.util.Emoji;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
@@ -20,7 +24,7 @@ public class RemoveCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> remove(scheduler, args));
 	}
 
@@ -39,6 +43,14 @@ public class RemoveCommand extends Command {
 			}
 		}
 		return CommandResponse.empty();
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Removes the song at the given position number from the queue.").addArg(
+				"position",
+				"The song to be remove's number position in the queue i.e. \"1\" to remove the song at the top of the queue.",
+				false).addExample("1");
 	}
 
 }

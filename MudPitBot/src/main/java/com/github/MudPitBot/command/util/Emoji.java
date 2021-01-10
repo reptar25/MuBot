@@ -9,27 +9,28 @@ import discord4j.core.object.reaction.ReactionEmoji.Unicode;
 
 public abstract class Emoji {
 
-	public static final ReactionEmoji.Unicode A_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE6");
-	public static final ReactionEmoji.Unicode B_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE7");
-	public static final ReactionEmoji.Unicode C_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE8");
-	public static final ReactionEmoji.Unicode D_UNICODE = ReactionEmoji.unicode("\uD83C\uDDE9");
-	public static final ReactionEmoji.Unicode E_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEA");
-	public static final ReactionEmoji.Unicode F_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEB");
-	public static final ReactionEmoji.Unicode G_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEC");
-	public static final ReactionEmoji.Unicode H_UNICODE = ReactionEmoji.unicode("\uD83C\uDDED");
-	public static final ReactionEmoji.Unicode I_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEE");
-	public static final ReactionEmoji.Unicode J_UNICODE = ReactionEmoji.unicode("\uD83C\uDDEF");
+	public static final ReactionEmoji.Unicode A_UNICODE = ReactionEmoji.unicode("🇦");
+	public static final ReactionEmoji.Unicode B_UNICODE = ReactionEmoji.unicode("🇧");
+	public static final ReactionEmoji.Unicode C_UNICODE = ReactionEmoji.unicode("🇨");
+	public static final ReactionEmoji.Unicode D_UNICODE = ReactionEmoji.unicode("🇩");
+	public static final ReactionEmoji.Unicode E_UNICODE = ReactionEmoji.unicode("🇪");
+	public static final ReactionEmoji.Unicode F_UNICODE = ReactionEmoji.unicode("🇫");
+	public static final ReactionEmoji.Unicode G_UNICODE = ReactionEmoji.unicode("🇬");
+	public static final ReactionEmoji.Unicode H_UNICODE = ReactionEmoji.unicode("🇭");
+	public static final ReactionEmoji.Unicode I_UNICODE = ReactionEmoji.unicode("🇮");
+	public static final ReactionEmoji.Unicode J_UNICODE = ReactionEmoji.unicode("🇯");
 
-	public static final ReactionEmoji.Unicode ZERO_UNICODE = ReactionEmoji.unicode("0\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode ONE_UNICODE = ReactionEmoji.unicode("1\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode TWO_UNICODE = ReactionEmoji.unicode("2\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode THREE_UNICODE = ReactionEmoji.unicode("3\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode FOUR_UNICODE = ReactionEmoji.unicode("4\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode FIVE_UNICODE = ReactionEmoji.unicode("5\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode SIX_UNICODE = ReactionEmoji.unicode("6\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode SEVEN_UNICODE = ReactionEmoji.unicode("7\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode EIGHT_UNICODE = ReactionEmoji.unicode("8\uFE0F\u20E3");
-	public static final ReactionEmoji.Unicode NINE_UNICODE = ReactionEmoji.unicode("9\uFE0F\u20E3");
+	public static final ReactionEmoji.Unicode ZERO_UNICODE = ReactionEmoji.unicode("0️⃣");
+	public static final ReactionEmoji.Unicode ONE_UNICODE = ReactionEmoji.unicode("1️⃣");
+	public static final ReactionEmoji.Unicode TWO_UNICODE = ReactionEmoji.unicode("2️⃣");
+	public static final ReactionEmoji.Unicode THREE_UNICODE = ReactionEmoji.unicode("3️⃣");
+	public static final ReactionEmoji.Unicode FOUR_UNICODE = ReactionEmoji.unicode("4️⃣");
+	public static final ReactionEmoji.Unicode FIVE_UNICODE = ReactionEmoji.unicode("5️⃣");
+	public static final ReactionEmoji.Unicode SIX_UNICODE = ReactionEmoji.unicode("6️⃣");
+	public static final ReactionEmoji.Unicode SEVEN_UNICODE = ReactionEmoji.unicode("7️⃣");
+	public static final ReactionEmoji.Unicode EIGHT_UNICODE = ReactionEmoji.unicode("8️⃣");
+	public static final ReactionEmoji.Unicode NINE_UNICODE = ReactionEmoji.unicode("9️⃣");
+	public static final ReactionEmoji.Unicode RED_X_UNICODE = ReactionEmoji.unicode("❌");
 
 	private static final Map<Integer, Unicode> UNICODE_NUM_MAP;
 
@@ -47,8 +48,8 @@ public abstract class Emoji {
 		UNICODE_NUM_MAP.put(9, NINE_UNICODE);
 	}
 
-	public static final ReactionEmoji.Unicode LEFT_REACTION = ReactionEmoji.unicode("\u25C0");
-	public static final ReactionEmoji.Unicode RIGHT_REACTION = ReactionEmoji.unicode("\u25B6");
+	public static final ReactionEmoji.Unicode LEFT_ARROW = ReactionEmoji.unicode("◀️");
+	public static final ReactionEmoji.Unicode RIGHT_ARROW = ReactionEmoji.unicode("▶️");
 
 	public static final String A_PLAIN = ":regional_indicator_a:";
 	public static final String B_PLAIN = ":regional_indicator_b:";
@@ -152,7 +153,6 @@ public abstract class Emoji {
 		case 9:
 			return J_UNICODE;
 		default:
-			;
 		}
 
 		throw new IllegalArgumentException("No unicode character found for " + num);
@@ -181,7 +181,6 @@ public abstract class Emoji {
 		case 9:
 			return J_PLAIN;
 		default:
-			;
 		}
 		throw new IllegalArgumentException("No plain letter found for " + num);
 	}

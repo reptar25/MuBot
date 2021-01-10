@@ -3,8 +3,6 @@ package com.github.MudPitBot.command.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.github.MudPitBot.command.CommandUtil;
-
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
@@ -16,6 +14,8 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
 
 /**
  * Helper class for the mute function
@@ -75,7 +75,7 @@ public class MuteHelper {
 	 */
 	private Mono<Void> muteOnJoin(VoiceState voiceState) {
 		return voiceState.getChannel()
-				.flatMap(voiceChannel -> CommandUtil.requireBotPermissions(voiceChannel, Permission.MUTE_MEMBERS))
+				.flatMap(voiceChannel -> requireBotPermissions(voiceChannel, Permission.MUTE_MEMBERS))
 				.flatMap(ignored -> voiceState.getChannel().map(VoiceChannel::getId)).flatMap(currentChannelId -> {
 					// if user join same channel as mute channel
 					if (MuteHelper.mutedChannels.containsKey(voiceState.getGuildId())) {

@@ -1,10 +1,8 @@
 package com.github.MudPitBot.command;
 
-import com.github.MudPitBot.music.GuildMusicManager;
-import com.github.MudPitBot.music.TrackScheduler;
+import java.util.function.Consumer;
 
-import discord4j.core.object.entity.channel.VoiceChannel;
-import reactor.core.publisher.Flux;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import reactor.core.publisher.Mono;
 
 public abstract class Command implements CommandInterface {
@@ -26,19 +24,23 @@ public abstract class Command implements CommandInterface {
 	}
 
 	/**
-	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
-	 * channel of the guild the message was sent in.
 	 * 
-	 * @param event The message event
-	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
-	 *         bot in the guild the message was sent from.
+	 * @param spec the CommandHelpSpec to use to create the embed
+	 * @return the help embed as a CommandResponse
 	 */
-	private static final int RETRY_AMOUNT = 100;
+	private final Mono<CommandResponse> createCommandHelpEmbed(Consumer<? super CommandHelpSpec> spec) {
+		CommandHelpSpec mutatedSpec = new CommandHelpSpec(getCommandTrigger());
+		spec.accept(mutatedSpec);
+		return CommandResponse.create(s -> s.setEmbed(mutatedSpec.build()));
+	}
 
-	protected static Mono<TrackScheduler> getScheduler(VoiceChannel channel) {
-		return Mono.justOrEmpty(GuildMusicManager.getGuildMusic(channel.getGuildId()))
-				.repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
-				.flatMap(guildMusic -> Mono.just(guildMusic.getTrackScheduler()));
+	/**
+	 * 
+	 * @return the help embed for this command as a CommandResponse
+	 */
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(createHelpSpec());
+
 	}
 
 }

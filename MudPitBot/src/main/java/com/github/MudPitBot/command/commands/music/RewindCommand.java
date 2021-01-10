@@ -1,9 +1,13 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
+
+import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -18,7 +22,7 @@ public class RewindCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> rewind(scheduler, args));
 	}
 
@@ -37,6 +41,12 @@ public class RewindCommand extends Command {
 			}
 		}
 		return CommandResponse.empty();
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Rewinds the currently playing song by the given amount of seconds.")
+				.addArg("time", "amount of time in seconds to rewind", false).addExample("60");
 	}
 
 }

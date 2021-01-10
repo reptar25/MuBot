@@ -1,10 +1,14 @@
 package com.github.MudPitBot.command.commands.general;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireNotPrivate;
+
+import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.menu.PollMenu;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+import com.github.MudPitBot.command.menu.menus.PollMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
@@ -20,7 +24,7 @@ public class PollCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return event.getMessage().getChannel()
+		return requireNotPrivate(event).flatMap(ignored -> event.getMessage().getChannel())
 				.flatMap(channel -> requireBotPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
 				.flatMap(ignored -> poll(pollArgs(args), event.getMember().orElse(null)));
 	}
@@ -63,7 +67,18 @@ public class PollCommand extends Command {
 		// create a new poll object
 		PollMenu poll = new PollMenu(args, member);
 
-		return new CommandResponse.Builder().withCreateSpec(poll.createMessage()).withMenu(poll).build();
+		return CommandResponse.create(poll.createMessage(), poll);
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription(
+				"Creates a simple poll in the channel the command was used in. Allows up to 10 choices. All arguments must be contained in quotes to allow for spaces.")
+				.addArg("Question", "The question for the poll in quotes(\").", false)
+				.addArg("Choice 1", "The first choice of the poll in quotes(\").", false)
+				.addArg("Choice 2", "The second choice of the poll in quotes(\").", false)
+				.addArg("Choice X", "The X-th choice of the poll in quotes(\").", true)
+				.addExample("\"question\" \"choice 1\" \"choice 2\"");
 	}
 
 }

@@ -47,7 +47,7 @@ public class VoiceStateUpdateListener {
 		final Snowflake guildId = event.getCurrent().getGuildId();
 		if (event.isLeaveEvent()) {
 			LOGGER.info("{Guild ID: {}} Voice channel left {}", guildId.asLong(), event);
-			GuildMusicManager.getInstance().destroy(guildId);
+			GuildMusicManager.destroy(guildId);
 		} else if (event.isJoinEvent()) {
 			LOGGER.info("{Guild ID: {}} Voice channel joined", guildId.asLong());
 		} else if (event.isMoveEvent()) {

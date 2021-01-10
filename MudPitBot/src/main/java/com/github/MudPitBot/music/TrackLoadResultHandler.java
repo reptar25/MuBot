@@ -1,7 +1,7 @@
 package com.github.MudPitBot.music;
 
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.CommandUtil;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;

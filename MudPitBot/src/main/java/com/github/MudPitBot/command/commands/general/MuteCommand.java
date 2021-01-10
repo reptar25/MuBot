@@ -1,14 +1,16 @@
 package com.github.MudPitBot.command.commands.general;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.CommandUtil.requireVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireVoiceChannel;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.commands.music.StopCommand;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.command.util.MuteHelper;
 
@@ -85,8 +87,13 @@ public class MuteCommand extends Command {
 			});
 			response = Emoji.SOUND + " Unmuting " + channel.getName() + " " + Emoji.SOUND;
 		}
-		;
 		return doMute.then(CommandResponse.create(response));
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription(
+				"Mutes the voice channel of the user who used the command. Will also mute any new users that join that channel until this command is used again to unmute the channel.");
 	}
 
 }

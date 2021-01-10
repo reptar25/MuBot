@@ -1,10 +1,12 @@
 package com.github.MudPitBot.command.commands.general;
 
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.util.Emoji;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -58,6 +60,12 @@ public class RollCommand extends Command {
 		}
 
 		return CommandResponse.empty();
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Rolls a dice of the given amount.")
+				.addArg("dice", "Number and type of dice to roll.", false).addExample("1d20").addExample("5d8");
 	}
 
 }

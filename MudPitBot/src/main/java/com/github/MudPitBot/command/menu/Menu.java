@@ -7,7 +7,7 @@ import discord4j.core.spec.MessageCreateSpec;
 
 public abstract class Menu {
 
-	Message message;
+	protected Message message;
 
 	public abstract Consumer<? super MessageCreateSpec> createMessage();
 

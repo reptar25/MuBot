@@ -1,6 +1,7 @@
 package com.github.MudPitBot.command;
 
-import static com.github.MudPitBot.command.CommandUtil.sendReply;
+import static com.github.MudPitBot.command.util.CommandUtil.sendReply;
+import static com.github.MudPitBot.command.util.CommandUtil.DEFAULT_COMMAND_PREFIX;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -20,9 +21,9 @@ public class CommandListener {
 
 	private static final Logger LOGGER = Loggers.getLogger(CommandListener.class);
 	private GatewayDiscordClient client;
-	private static CommandExecutor executor = new CommandExecutor();
 	private static CommandListener instance;
 	private static final int MAX_COMMANDS_PER_MESSAGE = 5;
+	private static final CommandExecutor commandExecutor = new CommandExecutor();
 
 	// Singleton create method
 	public static CommandListener create(GatewayDiscordClient client) {
@@ -69,7 +70,7 @@ public class CommandListener {
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMessage().getContent())
-				.map(content -> content.split(Commands.DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
+				.map(content -> content.split(DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
 				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
 				.flatMap(commandString -> Mono.justOrEmpty(Commands.get(commandString.split(" ")[0].toLowerCase()))
 						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
@@ -81,7 +82,7 @@ public class CommandListener {
 							// Send command errors back as a reply to the user who used the command
 							return sendReply(event, CommandResponse.createFlat(
 									Emoji.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + Emoji.NO_ENTRY));
-						}).defaultIfEmpty(CommandResponse.emptyResponse()).elapsed()
+						}).defaultIfEmpty(CommandResponse.emptyFlat()).elapsed()
 						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to complete",
 								commandString.split(" ")[0].toLowerCase(), elapsed))))
 				.then();
@@ -96,14 +97,7 @@ public class CommandListener {
 	 * @return the response to the command
 	 */
 	private static Mono<CommandResponse> executeCommand(MessageCreateEvent event, Command command, String[] args) {
-
-		// commands will return any string that the bot should send back as a message to
-		// the command
-		// CommandResponse response = executor.executeCommand(command, event, args);
-		return executor.executeCommand(event, command, args).flatMap(response -> {
-			if (response.getSpec() == null)
-				return CommandResponse.empty();
-
+		return commandExecutor.executeCommand(event, command, args).flatMap(response -> {
 			return sendReply(event, response);
 		});
 	}

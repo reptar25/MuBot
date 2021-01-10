@@ -1,12 +1,15 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.CommandUtil.requireVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireVoiceChannel;
 
 import java.time.Duration;
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.exceptions.CommandException;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -60,7 +63,12 @@ public class JoinVoiceCommand extends Command {
 				.flatMap(guildMusic -> channel.join(spec -> spec.setProvider(guildMusic.getAudioProvider())))
 				.delaySubscription(Duration.ofMillis(1));// delay to allow disconnect first if already connected
 
-		return checkSameVoiceChannel.then(disconnect).then(joinChannel).thenReturn(CommandResponse.emptyResponse());
+		return checkSameVoiceChannel.then(disconnect).then(joinChannel).thenReturn(CommandResponse.emptyFlat());
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Requests the bot to join the same voice channel as user who used the command.");
 	}
 
 }

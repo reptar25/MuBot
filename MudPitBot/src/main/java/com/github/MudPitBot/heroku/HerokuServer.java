@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import reactor.core.publisher.Mono;
 import reactor.netty.http.server.HttpServer;
+import reactor.netty.http.server.HttpServerRoutes;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -32,20 +33,27 @@ public class HerokuServer {
 	}
 
 	private HerokuServer(int port) throws IOException {
-		HttpServer
-				.create().host("0.0.0.0").port(port).route(
-						routes -> routes
-								.get("/",
-										(request, response) -> response.status(HttpResponseStatus.OK)
-												.header(HttpHeaderNames.CONTENT_LENGTH,
-														Integer.toString(homeHtml.length()))
-												.sendString(Mono.just(homeHtml)))
-								.head("/", (request, response) -> response.status(HttpResponseStatus.OK)).get("/invite",
-										(request, response) -> response.status(HttpResponseStatus.OK)
-												.header(HttpHeaderNames.CONTENT_LENGTH,
-														Integer.toString(inviteHtml.length()))
-												.sendString(Mono.just(inviteHtml))))
-				.bindNow();
+		HttpServer.create().host("0.0.0.0").port(port).route(this::routes).bindNow();
 		LOGGER.info("Server started on port " + port);
+	}
+
+	private void routes(HttpServerRoutes routes) {
+		routeIndex(routes);
+		routeInvite(routes);
+	}
+
+	private void routeIndex(HttpServerRoutes routes) {
+		routes.get("/",
+				(request, response) -> response.status(HttpResponseStatus.OK)
+						.header(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(homeHtml.length()))
+						.sendString(Mono.just(homeHtml)))
+				.head("/", (request, response) -> response.status(HttpResponseStatus.OK));
+	}
+
+	private void routeInvite(HttpServerRoutes routes) {
+		routes.get("/invite",
+				(request, response) -> response.status(HttpResponseStatus.OK)
+						.header(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(inviteHtml.length()))
+						.sendString(Mono.just(inviteHtml)));
 	}
 }

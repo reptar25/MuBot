@@ -14,6 +14,8 @@ import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBu
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.VoiceChannel;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -26,7 +28,6 @@ public class GuildMusicManager {
 	private static AudioPlayerManager playerManager;
 
 	public static final int DEFAULT_VOLUME = 15;
-	private static GuildMusicManager instance;
 
 	/**
 	 * Maps a GuildMusic object for each new guild joined. Key is guild id snowflake
@@ -34,10 +35,6 @@ public class GuildMusicManager {
 	private static Map<Snowflake, GuildMusic> guildMusicMap = new ConcurrentHashMap<>();
 
 	static {
-		GuildMusicManager.instance = new GuildMusicManager();
-	}
-
-	private GuildMusicManager() {
 		// Creates AudioPlayer instances and translates URLs to AudioTrack instances
 		playerManager = new DefaultAudioPlayerManager();
 		playerManager.registerSourceManager(
@@ -48,7 +45,6 @@ public class GuildMusicManager {
 
 		// Allow playerManager to parse remote sources like YouTube links
 		AudioSourceManagers.registerRemoteSources(playerManager);
-
 	}
 
 	public static Mono<GuildMusic> getOrCreate(Snowflake guildId) {
@@ -74,18 +70,29 @@ public class GuildMusicManager {
 		return playerManager;
 	}
 
-	public static Optional<GuildMusic> getGuildMusic(Snowflake guildId) {
+	private static Optional<GuildMusic> getGuildMusic(Snowflake guildId) {
 		return Optional.ofNullable(guildMusicMap.get(guildId));
 	}
 
-	public static GuildMusicManager getInstance() {
-		return instance;
-	}
-
-	public void destroy(Snowflake guildId) {
+	public static void destroy(Snowflake guildId) {
 		final GuildMusic guildMusic = guildMusicMap.remove(guildId);
 		if (guildMusic != null)
 			guildMusic.destroy();
+	}
+
+	/**
+	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
+	 * channel of the guild the message was sent in.
+	 * 
+	 * @param event The message event
+	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
+	 *         bot in the guild the message was sent from.
+	 */
+	private static final int RETRY_AMOUNT = 100;
+
+	public static Mono<TrackScheduler> getScheduler(VoiceChannel channel) {
+		return Mono.justOrEmpty(getGuildMusic(channel.getGuildId())).repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
+				.flatMap(guildMusic -> Mono.just(guildMusic.getTrackScheduler()));
 	}
 
 }

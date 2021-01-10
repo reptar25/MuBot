@@ -1,11 +1,15 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
+
+import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.CommandUtil;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -20,7 +24,7 @@ public class SkipCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> skip(scheduler, args));
 	}
 
@@ -43,12 +47,17 @@ public class SkipCommand extends Command {
 				}
 			}
 
-			String response = Emoji.NEXT_TRACK + " Skipping " + CommandUtil.trackInfoString(scheduler.getNowPlaying())
-					+ " " + Emoji.NEXT_TRACK;
+			String response = Emoji.NEXT_TRACK + " Skipping " + CommandUtil.trackInfo(scheduler.getNowPlaying()) + " "
+					+ Emoji.NEXT_TRACK;
 			scheduler.nextTrack();
 			return CommandResponse.create(response);
 		} else {
 			return CommandResponse.create("No song is currently playing");
 		}
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Skips the currently playing song and plays the next song in the queue.");
 	}
 }

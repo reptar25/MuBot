@@ -1,17 +1,19 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.CommandUtil;
-import com.github.MudPitBot.command.menu.Paginator;
-import com.github.MudPitBot.command.menu.Paginator.Builder;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+import com.github.MudPitBot.command.menu.menus.Paginator;
+import com.github.MudPitBot.command.menu.menus.Paginator.Builder;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -31,7 +33,7 @@ public class ViewQueueCommand extends Command {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
-				.flatMap(channel -> getScheduler(channel))
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> viewQueue(scheduler, event.getMessage().getChannel()));
 	}
 
@@ -51,22 +53,27 @@ public class ViewQueueCommand extends Command {
 		if (queue.size() > 0) {
 			String[] queueEntries = new String[queue.size()];
 			// print total number of songs
-			paginatorBuilder
-					.withMessageContent("Currently playing: " + CommandUtil.trackInfoString(scheduler.getNowPlaying())
-							+ "\n" + "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
+			paginatorBuilder.withMessageContent("Currently playing: " + CommandUtil.trackInfo(scheduler.getNowPlaying())
+					+ "\n" + "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
 			for (int i = 0; i < queue.size(); i++) {
 				AudioTrack track = queue.get(i);
 				// print title and author of song on its own line
-				queueEntries[i] = Emoji.numToEmoji(i + 1) + " - " + CommandUtil.trackInfoString(track) + "\n";
+				queueEntries[i] = Emoji.numToEmoji(i + 1) + " - " + CommandUtil.trackInfo(track) + "\n";
 			}
 
 			Paginator paginator = paginatorBuilder.withEntries(queueEntries).build();
 			Consumer<? super MessageCreateSpec> spec = paginator.createMessage();
-			return new CommandResponse.Builder().withCreateSpec(spec).withMenu(paginator).build();
+
+			return CommandResponse.create(spec, paginator);
 
 		} else {
 			return CommandResponse.create("The queue is empty");
 		}
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Displays all the songs currently in the queue.");
 	}
 
 }

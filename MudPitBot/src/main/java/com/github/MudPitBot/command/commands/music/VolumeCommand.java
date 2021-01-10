@@ -1,11 +1,13 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
@@ -21,7 +23,7 @@ public class VolumeCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> volume(scheduler, args));
 	}
 
@@ -50,6 +52,15 @@ public class VolumeCommand extends Command {
 			return CommandResponse.create(sb.toString());
 		} else
 			return CommandResponse.create("Invalid volume amount");
+	}
+
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription(
+				"Changes the volume to the given amount, or to the default amount if reset is given, or no argument to get the current volume.")
+				.addArg("volume||reset",
+						"Volume to set the bot to from 0 to 100 or \"reset\" to reset the volume to default.", true)
+				.addExample("50").addExample("reset");
 	}
 
 }

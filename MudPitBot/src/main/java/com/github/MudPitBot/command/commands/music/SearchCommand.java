@@ -1,11 +1,15 @@
 package com.github.MudPitBot.command.commands.music;
 
-import static com.github.MudPitBot.command.CommandUtil.requireBotPermissions;
-import static com.github.MudPitBot.command.CommandUtil.requireSameVoiceChannel;
+import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
+import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
+
+import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
-import com.github.MudPitBot.command.menu.SearchMenu;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+import com.github.MudPitBot.command.menu.menus.SearchMenu;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -24,13 +28,14 @@ public class SearchCommand extends Command {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES)
 						.thenReturn(channel))
-				.flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> search(event, scheduler, args));
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
+				.flatMap(scheduler -> search(event, scheduler, args));
 	}
 
 	private Mono<CommandResponse> search(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
 			@NonNull String[] args) {
 		SearchMenu menu = new SearchMenu(event, scheduler, unsplitArgs(args));
-		return new CommandResponse.Builder().withCreateSpec(menu.createMessage()).withMenu(menu).build();
+		return CommandResponse.create(menu.createMessage(), menu);
 	}
 
 	private String unsplitArgs(String[] args) {
@@ -41,4 +46,10 @@ public class SearchCommand extends Command {
 		return sb.toString();
 	}
 
+	@Override
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription(
+				"Searches YouTube for the given terms and returns the top 5 results as choices that can be added to the queue of songs.")
+				.addArg("terms", "terms to search YouTube with", false).addExample("something the beatles");
+	}
 }

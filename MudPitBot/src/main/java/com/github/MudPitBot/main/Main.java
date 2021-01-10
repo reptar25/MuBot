@@ -19,20 +19,21 @@ public class Main {
 	private static final Logger LOGGER = Loggers.getLogger(Main.class);
 
 	public static void main(String[] args) {
-		String token = null;
+		String discordApiToken = null;
 
-		token = args[0];
+		discordApiToken = args[0];
 
-		if (token == null)
-			token = System.getenv("token");
+		if (discordApiToken == null)
+			discordApiToken = System.getenv("token");
 
 		// no token found
-		if (token == null) {
-			LOGGER.error("No token found. Dicord api token needs to be first argument or an env var named \"token\"");
+		if (discordApiToken == null) {
+			LOGGER.error(
+					"No Discord api token found. Your Discord api token needs to be first argument or an env var named \"token\"");
 			return;
 		}
 
-		final GatewayDiscordClient client = DiscordClientBuilder.create(token).build().login().block();
+		final GatewayDiscordClient client = DiscordClientBuilder.create(discordApiToken).build().login().block();
 
 		// we should only find this when running on Heroku
 		String port = System.getenv("PORT");
