@@ -4,11 +4,14 @@ import static com.github.MudPitBot.command.util.CommandUtil.DEFAULT_COMMAND_PREF
 import static com.github.MudPitBot.command.util.CommandUtil.DEFAULT_EMBED_COLOR;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.Commands;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
@@ -39,9 +42,8 @@ public class CommandsCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(
-				s -> s.setDescription("Displays a list of available commands you can use with the bot."));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Displays a list of available commands you can use with the bot.");
 	}
 
 }

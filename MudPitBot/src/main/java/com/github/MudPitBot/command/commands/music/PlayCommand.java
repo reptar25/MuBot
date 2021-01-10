@@ -3,8 +3,11 @@ package com.github.MudPitBot.command.commands.music;
 import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
 import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
@@ -27,7 +30,8 @@ public class PlayCommand extends Command {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK).thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel)).flatMap(scheduler -> play(event, scheduler, args));
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
+				.flatMap(scheduler -> play(event, scheduler, args));
 	}
 
 	/**
@@ -68,11 +72,11 @@ public class PlayCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec
 				.setDescription("Plays the song(s) from the given url.").addArg("url",
 						"Url of the song/playlist to be played from YouTube/SoundCloud/Bandcamp/Twitch/ect.", false)
-				.addExample("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+				.addExample("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 	}
 
 }

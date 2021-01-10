@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.menu.menus.Paginator;
 import com.github.MudPitBot.command.menu.menus.Paginator.Builder;
 import com.github.MudPitBot.command.util.CommandUtil;
@@ -52,9 +53,8 @@ public class ViewQueueCommand extends Command {
 		if (queue.size() > 0) {
 			String[] queueEntries = new String[queue.size()];
 			// print total number of songs
-			paginatorBuilder
-					.withMessageContent("Currently playing: " + CommandUtil.trackInfo(scheduler.getNowPlaying())
-							+ "\n" + "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
+			paginatorBuilder.withMessageContent("Currently playing: " + CommandUtil.trackInfo(scheduler.getNowPlaying())
+					+ "\n" + "There are currently " + Emoji.numToEmoji(queue.size()) + " songs in the queue");
 			for (int i = 0; i < queue.size(); i++) {
 				AudioTrack track = queue.get(i);
 				// print title and author of song on its own line
@@ -72,8 +72,8 @@ public class ViewQueueCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s.setDescription("Displays all the songs currently in the queue."));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Displays all the songs currently in the queue.");
 	}
 
 }

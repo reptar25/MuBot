@@ -2,8 +2,11 @@ package com.github.MudPitBot.command.commands.music;
 
 import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
@@ -41,11 +44,9 @@ public class SeekCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s.setDescription("Moves the currently playing song to the given time.")
-				.addArg("time",
-						"amount of time in seconds to set the song to i.e. \"60\" will set the song to the 1 minute mark, and \"0\" would set the song back to the beginning.",
-						false)
-				.addExample("60").addExample("0"));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Moves the currently playing song to the given time.").addArg("time",
+				"amount of time in seconds to set the song to i.e. \"60\" will set the song to the 1 minute mark, and \"0\" would set the song back to the beginning.",
+				false).addExample("60").addExample("0");
 	}
 }

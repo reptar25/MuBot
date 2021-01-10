@@ -4,9 +4,12 @@ import static com.github.MudPitBot.command.util.Permissions.requireBotPermission
 import static com.github.MudPitBot.command.util.Permissions.requireVoiceChannel;
 
 import java.time.Duration;
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.exceptions.CommandException;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -64,9 +67,8 @@ public class JoinVoiceCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(
-				s -> s.setDescription("Requests the bot to join the same voice channel as user who used the command."));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Requests the bot to join the same voice channel as user who used the command.");
 	}
 
 }

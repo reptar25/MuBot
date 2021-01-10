@@ -2,8 +2,12 @@ package com.github.MudPitBot.command.commands.general;
 
 import static com.github.MudPitBot.command.util.Permissions.requireBotPermissions;
 import static com.github.MudPitBot.command.util.Permissions.requireNotPrivate;
+
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.menu.menus.PollMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -67,14 +71,14 @@ public class PollCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s.setDescription(
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription(
 				"Creates a simple poll in the channel the command was used in. Allows up to 10 choices. All arguments must be contained in quotes to allow for spaces.")
 				.addArg("Question", "The question for the poll in quotes(\").", false)
 				.addArg("Choice 1", "The first choice of the poll in quotes(\").", false)
 				.addArg("Choice 2", "The second choice of the poll in quotes(\").", false)
 				.addArg("Choice X", "The X-th choice of the poll in quotes(\").", true)
-				.addExample("\"question\" \"choice 1\" \"choice 2\""));
+				.addExample("\"question\" \"choice 1\" \"choice 2\"");
 	}
 
 }

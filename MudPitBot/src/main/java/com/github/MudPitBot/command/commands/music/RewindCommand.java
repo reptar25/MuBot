@@ -2,8 +2,11 @@ package com.github.MudPitBot.command.commands.music;
 
 import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
@@ -41,10 +44,9 @@ public class RewindCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(
-				s -> s.setDescription("Rewinds the currently playing song by the given amount of seconds.")
-						.addArg("time", "amount of time in seconds to rewind", false).addExample("60"));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Rewinds the currently playing song by the given amount of seconds.")
+				.addArg("time", "amount of time in seconds to rewind", false).addExample("60");
 	}
 
 }

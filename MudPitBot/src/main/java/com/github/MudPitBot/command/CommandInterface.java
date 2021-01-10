@@ -1,5 +1,9 @@
 package com.github.MudPitBot.command;
 
+import java.util.function.Consumer;
+
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
@@ -18,8 +22,10 @@ public interface CommandInterface {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args);
 
 	/**
+	 * Used to create the {@link CommandHelpSpec} for this command
 	 * 
-	 * @return the help embed for this command as a CommandResponse
+	 * @return returns the created {@link CommandHelpSpec} for this command
 	 */
-	public Mono<CommandResponse> getHelp();
+	public Consumer<? super CommandHelpSpec> createHelpSpec();
+
 }

@@ -3,6 +3,7 @@ package com.github.MudPitBot.command.commands.general;
 import com.github.MudPitBot.JokeAPI.JokeClient;
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.menu.menus.JokeMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -13,6 +14,7 @@ import static com.github.MudPitBot.command.util.Permissions.requireNotPrivate;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class JokeCommand extends Command {
@@ -53,11 +55,11 @@ public class JokeCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s.setDescription("Tells a random joke from the chosen category of jokes.")
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Tells a random joke from the chosen category of jokes.")
 				.addArg("unsafe", "Allows \"unsafe\" jokes to be returned by the bot.", true)
 				.addArg("category", "Gets a joke of only the given category.", true).addExample("puns")
-				.addExample("unsafe").addExample("unsafe any").addExample("misc unsafe"));
+				.addExample("unsafe").addExample("unsafe any").addExample("misc unsafe");
 	}
 
 }

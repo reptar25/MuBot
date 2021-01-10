@@ -28,10 +28,19 @@ public abstract class Command implements CommandInterface {
 	 * @param spec the CommandHelpSpec to use to create the embed
 	 * @return the help embed as a CommandResponse
 	 */
-	protected final Mono<CommandResponse> createCommandHelpEmbed(Consumer<? super CommandHelpSpec> spec) {
+	private final Mono<CommandResponse> createCommandHelpEmbed(Consumer<? super CommandHelpSpec> spec) {
 		CommandHelpSpec mutatedSpec = new CommandHelpSpec(getCommandTrigger());
 		spec.accept(mutatedSpec);
 		return CommandResponse.create(s -> s.setEmbed(mutatedSpec.build()));
+	}
+
+	/**
+	 * 
+	 * @return the help embed for this command as a CommandResponse
+	 */
+	public Mono<CommandResponse> getHelp() {
+		return createCommandHelpEmbed(createHelpSpec());
+
 	}
 
 }

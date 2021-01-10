@@ -2,8 +2,11 @@ package com.github.MudPitBot.command.commands.music;
 
 import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
@@ -43,13 +46,11 @@ public class RemoveCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s
-				.setDescription("Removes the song at the given position number from the queue.")
-				.addArg("position",
-						"The song to be remove's number position in the queue i.e. \"1\" to remove the song at the top of the queue.",
-						false)
-				.addExample("1"));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Removes the song at the given position number from the queue.").addArg(
+				"position",
+				"The song to be remove's number position in the queue i.e. \"1\" to remove the song at the top of the queue.",
+				false).addExample("1");
 	}
 
 }

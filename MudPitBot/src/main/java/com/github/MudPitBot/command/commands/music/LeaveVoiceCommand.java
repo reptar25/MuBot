@@ -2,8 +2,12 @@ package com.github.MudPitBot.command.commands.music;
 
 import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChannel;
 
+import java.util.function.Consumer;
+
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.help.CommandHelpSpec;
+
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
@@ -35,7 +39,7 @@ public class LeaveVoiceCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(s -> s.setDescription("Requests the bot to leave its' current voice channel."));
+	public Consumer<? super CommandHelpSpec> createHelpSpec() {
+		return spec -> spec.setDescription("Requests the bot to leave its' current voice channel.");
 	}
 }
