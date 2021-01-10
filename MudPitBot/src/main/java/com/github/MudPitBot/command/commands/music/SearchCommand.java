@@ -6,6 +6,7 @@ import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChan
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
 import com.github.MudPitBot.command.menu.menus.SearchMenu;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -24,7 +25,7 @@ public class SearchCommand extends Command {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES)
 						.thenReturn(channel))
-				.flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> search(event, scheduler, args));
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel)).flatMap(scheduler -> search(event, scheduler, args));
 	}
 
 	private Mono<CommandResponse> search(MessageCreateEvent event, @NonNull TrackScheduler scheduler,

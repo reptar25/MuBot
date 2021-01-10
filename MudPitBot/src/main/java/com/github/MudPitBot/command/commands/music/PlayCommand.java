@@ -27,7 +27,7 @@ public class PlayCommand extends Command {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK).thenReturn(channel))
-				.flatMap(channel -> getScheduler(channel)).flatMap(scheduler -> play(event, scheduler, args));
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel)).flatMap(scheduler -> play(event, scheduler, args));
 	}
 
 	/**

@@ -4,6 +4,7 @@ import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -18,7 +19,7 @@ public class RewindCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> getScheduler(channel))
+		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> rewind(scheduler, args));
 	}
 

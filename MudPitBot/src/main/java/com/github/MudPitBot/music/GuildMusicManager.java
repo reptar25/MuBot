@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.util.SoundCloudHtmlLoader;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -14,6 +15,8 @@ import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBu
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.VoiceChannel;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -86,6 +89,21 @@ public class GuildMusicManager {
 		final GuildMusic guildMusic = guildMusicMap.remove(guildId);
 		if (guildMusic != null)
 			guildMusic.destroy();
+	}
+
+	/**
+	 * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice
+	 * channel of the guild the message was sent in.
+	 * 
+	 * @param event The message event
+	 * @return The {@link TrackScheduler} that is mapped to the voice channel of the
+	 *         bot in the guild the message was sent from.
+	 */
+	private static final int RETRY_AMOUNT = 100;
+
+	public static Mono<TrackScheduler> getScheduler(VoiceChannel channel) {
+		return Mono.justOrEmpty(getGuildMusic(channel.getGuildId())).repeatWhenEmpty(RETRY_AMOUNT, Flux::repeat)
+				.flatMap(guildMusic -> Mono.just(guildMusic.getTrackScheduler()));
 	}
 
 }

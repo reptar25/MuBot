@@ -12,6 +12,7 @@ import com.github.MudPitBot.command.menu.menus.Paginator;
 import com.github.MudPitBot.command.menu.menus.Paginator.Builder;
 import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
+import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -31,7 +32,7 @@ public class ViewQueueCommand extends Command {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
-				.flatMap(channel -> getScheduler(channel))
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> viewQueue(scheduler, event.getMessage().getChannel()));
 	}
 
