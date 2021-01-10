@@ -3,8 +3,6 @@ package com.github.MudPitBot.command;
 import java.util.function.Consumer;
 
 import com.github.MudPitBot.command.help.CommandHelpSpec;
-import com.github.MudPitBot.music.TrackScheduler;
-
 import reactor.core.publisher.Mono;
 
 public abstract class Command implements CommandInterface {

@@ -66,6 +66,7 @@ public class PollCommand extends Command {
 		return CommandResponse.create(poll.createMessage(), poll);
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s.setDescription(
 				"Creates a simple poll in the channel the command was used in. Allows up to 10 choices. All arguments must be contained in quotes to allow for spaces.")

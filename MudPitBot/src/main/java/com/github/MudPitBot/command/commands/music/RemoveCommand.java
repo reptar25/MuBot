@@ -42,6 +42,7 @@ public class RemoveCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s
 				.setDescription("Removes the song at the given position number from the queue.")

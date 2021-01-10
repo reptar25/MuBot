@@ -60,6 +60,7 @@ public class RollCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s.setDescription("Rolls a dice of the given amount.")
 				.addArg("dice", "Number and type of dice to roll.", false).addExample("1d20").addExample("5d8"));

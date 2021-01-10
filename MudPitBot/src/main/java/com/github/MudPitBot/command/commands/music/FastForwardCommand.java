@@ -40,6 +40,7 @@ public class FastForwardCommand extends Command {
 		return CommandResponse.empty();
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(
 				s -> s.setDescription("Fast fowards the currently playing song by the given amount of seconds.")

@@ -42,6 +42,7 @@ public class NowPlayingCommand extends Command {
 		return CommandResponse.create("No track is currently playing");
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s.setDescription("Displays currently playing song."));
 	}

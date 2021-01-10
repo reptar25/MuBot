@@ -34,6 +34,7 @@ public class LeaveVoiceCommand extends Command {
 		return channel.getVoiceConnection().flatMap(VoiceConnection::disconnect).then(CommandResponse.empty());
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s.setDescription("Requests the bot to leave its' current voice channel."));
 	}

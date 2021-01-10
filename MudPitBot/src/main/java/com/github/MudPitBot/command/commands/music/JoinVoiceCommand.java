@@ -63,6 +63,7 @@ public class JoinVoiceCommand extends Command {
 		return checkSameVoiceChannel.then(disconnect).then(joinChannel).thenReturn(CommandResponse.emptyFlat());
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(
 				s -> s.setDescription("Requests the bot to join the same voice channel as user who used the command."));

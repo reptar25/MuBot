@@ -67,6 +67,7 @@ public class PlayCommand extends Command {
 		return sb.toString();
 	}
 
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s
 				.setDescription("Plays the song(s) from the given url.").addArg("url",

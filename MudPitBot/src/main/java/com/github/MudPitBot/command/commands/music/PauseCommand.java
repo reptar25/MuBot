@@ -34,6 +34,7 @@ public class PauseCommand extends Command {
 		return CommandResponse.empty();
 	}
 	
+	@Override
 	public Mono<CommandResponse> getHelp() {
 		return createCommandHelpEmbed(s -> s.setDescription("Pauses currently playing track."));
 	}
