@@ -54,7 +54,7 @@ public class SearchMenu extends SingleChoiceActionMenu implements AudioLoadResul
 		for (int i = 0; i < results.size(); i++) {
 			AudioTrack track = results.get(i);
 			sb.append(Emoji.numToEmoji(i + 1)).append(" [").append(CommandUtil.convertMillisToTime(track.getDuration()))
-					.append("] ").append(CommandUtil.trackInfoString(track)).append("\n");
+					.append("] ").append(CommandUtil.trackInfo(track)).append("\n");
 		}
 		return sb.toString();
 	}

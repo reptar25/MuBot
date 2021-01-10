@@ -54,10 +54,10 @@ public final class TrackScheduler extends AudioEventAdapter {
 		if (!player.startTrack(track, true)) {
 			queue.offer(track);
 			LOGGER.info("Track added to the queue: " + queue.size());
-			return Emoji.CHECK_MARK + " " + CommandUtil.trackInfoString(track) + " was added to the queue ("
+			return Emoji.CHECK_MARK + " " + CommandUtil.trackInfo(track) + " was added to the queue ("
 					+ Emoji.numToEmoji(getQueue().size()) + ") " + Emoji.CHECK_MARK;
 		}
-		return Emoji.NOTES + " Now playing " + CommandUtil.trackInfoString(track) + " " + Emoji.NOTES;
+		return Emoji.NOTES + " Now playing " + CommandUtil.trackInfo(track) + " " + Emoji.NOTES;
 	}
 
 	/**
@@ -88,7 +88,7 @@ public final class TrackScheduler extends AudioEventAdapter {
 			return "";
 
 		queue = queue.stream().skip(elementNumber - 1).collect(Collectors.toCollection(LinkedBlockingQueue::new));
-		String ret = CommandUtil.trackInfoString(queue.peek());
+		String ret = CommandUtil.trackInfo(queue.peek());
 		nextTrack();
 		return ret;
 	}

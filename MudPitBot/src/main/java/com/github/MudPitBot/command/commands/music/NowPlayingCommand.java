@@ -4,6 +4,7 @@ import static com.github.MudPitBot.command.util.Permissions.requireSameVoiceChan
 
 import com.github.MudPitBot.command.Command;
 import com.github.MudPitBot.command.CommandResponse;
+import com.github.MudPitBot.command.util.CommandUtil;
 import com.github.MudPitBot.command.util.Emoji;
 import com.github.MudPitBot.music.GuildMusicManager;
 import com.github.MudPitBot.music.TrackScheduler;
@@ -35,8 +36,7 @@ public class NowPlayingCommand extends Command {
 		// get the track that's currently playing
 		AudioTrack track = scheduler.getNowPlaying();
 		if (track != null) {
-			String response = Emoji.NOTES + " Now playing **" + track.getInfo().title + "** by "
-					+ track.getInfo().author + " " + Emoji.NOTES;
+			String response = Emoji.NOTES + " Now playing " + CommandUtil.trackInfoWithCurrentTime(track) + " " + Emoji.NOTES;
 			return CommandResponse.create(response);
 		}
 		return CommandResponse.create("No track is currently playing");

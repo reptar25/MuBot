@@ -108,8 +108,16 @@ public final class CommandUtil {
 		return sb.toString();
 	}
 
-	public static String trackInfoString(AudioTrack track) {
+	public static String trackInfo(AudioTrack track) {
 		return "**" + track.getInfo().title + "** by " + track.getInfo().author;
+	}
+
+	public static String trackCurrentTime(AudioTrack track) {
+		return "[" + convertMillisToTime(track.getPosition()) + "/" + convertMillisToTime(track.getDuration()) + "]";
+	}
+
+	public static String trackInfoWithCurrentTime(AudioTrack track) {
+		return trackInfo(track) + " " + trackCurrentTime(track);
 	}
 
 }

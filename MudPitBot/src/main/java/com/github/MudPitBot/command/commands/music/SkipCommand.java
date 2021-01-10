@@ -44,7 +44,7 @@ public class SkipCommand extends Command {
 				}
 			}
 
-			String response = Emoji.NEXT_TRACK + " Skipping " + CommandUtil.trackInfoString(scheduler.getNowPlaying())
+			String response = Emoji.NEXT_TRACK + " Skipping " + CommandUtil.trackInfo(scheduler.getNowPlaying())
 					+ " " + Emoji.NEXT_TRACK;
 			scheduler.nextTrack();
 			return CommandResponse.create(response);
