@@ -69,10 +69,7 @@ public class MessageLogger {
 			String channelName = tuple.getT3();
 			String username;
 
-			if (user == null)
-				username = "Uknown Author";
-			else
-				username = user.getUsername();
+			username = user == null ? "Uknown Author" : user.getUsername();
 
 			StringBuilder sb = new StringBuilder("New message: ");
 			sb.append("(").append(guildName).append(")");

@@ -29,12 +29,8 @@ public class RepeatCommand extends Command {
 
 	private Mono<CommandResponse> repeat(@NonNull TrackScheduler scheduler) {
 		boolean repeatEnabled = scheduler.repeatEnabled();
-		String response;
-
-		if (repeatEnabled)
-			response = EmojiHelper.NO_ENTRY + " Repeat disabled " + EmojiHelper.NO_ENTRY;
-		else
-			response = EmojiHelper.REPEAT + " Repeat enabled " + EmojiHelper.REPEAT;
+		String response = repeatEnabled ? EmojiHelper.NO_ENTRY + " Repeat disabled " + EmojiHelper.NO_ENTRY
+				: EmojiHelper.REPEAT + " Repeat enabled " + EmojiHelper.REPEAT;
 
 		scheduler.setRepeat(!repeatEnabled);
 		return CommandResponse.create(response);
