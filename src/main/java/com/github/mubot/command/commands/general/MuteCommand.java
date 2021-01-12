@@ -75,16 +75,10 @@ public class MuteCommand extends Command {
 		String response;
 		Flux<Void> doMute;
 		if (mute) {
-			doMute = users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
-				LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
-				return member.edit(spec -> spec.setMute(true));
-			});
+			doMute = muteUsers(users, true);
 			response = EmojiHelper.MUTE + " Muting " + channel.getName() + " " + EmojiHelper.MUTE;
 		} else {
-			doMute = users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
-				LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
-				return member.edit(spec -> spec.setMute(false));
-			});
+			doMute = muteUsers(users, false);
 			response = EmojiHelper.SOUND + " Unmuting " + channel.getName() + " " + EmojiHelper.SOUND;
 		}
 		return doMute.then(CommandResponse.create(response));
@@ -94,6 +88,13 @@ public class MuteCommand extends Command {
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
 		return spec -> spec.setDescription(
 				"Mutes the voice channel of the user who used the command. Will also mute any new users that join that channel until this command is used again to unmute the channel.");
+	}
+
+	private Flux<Void> muteUsers(Flux<VoiceState> users, boolean mute) {
+		return users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
+			LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
+			return member.edit(spec -> spec.setMute(mute));
+		});
 	}
 
 }
