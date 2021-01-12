@@ -12,12 +12,14 @@ import discord4j.core.spec.EmbedCreateSpec;
 public class CommandHelpSpec {
 
 	private String commandName;
+	private List<String> aliases;
 	private String description;
 	private List<String> examples;
 	private List<Argument> arguments;
 
-	public CommandHelpSpec(String commandName) {
+	public CommandHelpSpec(String commandName, List<String> aliases) {
 		this.commandName = commandName;
+		this.aliases = aliases;
 		arguments = new ArrayList<>();
 		examples = new ArrayList<>();
 	}
@@ -37,22 +39,31 @@ public class CommandHelpSpec {
 		return this;
 	}
 
+	public CommandHelpSpec setAliases(List<String> aliases) {
+		this.aliases = aliases;
+		return this;
+	}
+
 	public Consumer<? super EmbedCreateSpec> build() {
 		return spec -> {
 			spec.setColor(DEFAULT_EMBED_COLOR);
 
 			spec.setTitle(DEFAULT_COMMAND_PREFIX + commandName);
+			if (aliases != null && !this.aliases.isEmpty()) {
+				spec.addField("Aliases", this.getAliases(), false);
+			}
+
 			spec.addField("Usage", getUsage(), false);
 
 			if (description != null && !this.description.isBlank()) {
 				spec.setDescription(description);
 			}
 
-			if (!this.getArguments().isEmpty()) {
+			if (this.arguments != null && !this.getArguments().isEmpty()) {
 				spec.addField("Arguments", this.getArguments(), false);
 			}
 
-			if (!this.getArguments().isEmpty()) {
+			if (this.examples != null && !this.getExamples().isEmpty()) {
 				spec.addField("Examples", this.getExamples(), false);
 			}
 		};
@@ -76,5 +87,10 @@ public class CommandHelpSpec {
 
 	private String getExamples() {
 		return examples.stream().map(example -> String.format("%n%s", example)).collect(Collectors.joining());
+	}
+
+	private String getAliases() {
+		return aliases.stream().map(alias -> String.format("`%s%s`", DEFAULT_COMMAND_PREFIX, alias))
+				.collect(Collectors.joining(", "));
 	}
 }

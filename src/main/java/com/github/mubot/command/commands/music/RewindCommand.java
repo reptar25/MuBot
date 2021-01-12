@@ -2,6 +2,7 @@ package com.github.mubot.command.commands.music;
 
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -17,7 +18,7 @@ import reactor.util.annotation.NonNull;
 public class RewindCommand extends Command {
 
 	public RewindCommand() {
-		super("rewind");
+		super("rewind", Arrays.asList("rw"));
 	}
 
 	@Override

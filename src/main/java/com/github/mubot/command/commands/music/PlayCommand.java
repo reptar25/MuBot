@@ -3,6 +3,7 @@ package com.github.mubot.command.commands.music;
 import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -23,7 +24,7 @@ public class PlayCommand extends Command {
 	private static final Logger LOGGER = Loggers.getLogger(PlayCommand.class);
 
 	public PlayCommand() {
-		super("play");
+		super("play", Arrays.asList("p", "add"));
 	}
 
 	@Override

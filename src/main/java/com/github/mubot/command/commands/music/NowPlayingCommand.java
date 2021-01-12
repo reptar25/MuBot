@@ -2,6 +2,7 @@ package com.github.mubot.command.commands.music;
 
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -20,7 +21,7 @@ import reactor.util.annotation.NonNull;
 public class NowPlayingCommand extends Command {
 
 	public NowPlayingCommand() {
-		super("nowplaying");
+		super("nowplaying", Arrays.asList("np", "playing"));
 	}
 
 	@Override
@@ -39,7 +40,8 @@ public class NowPlayingCommand extends Command {
 		// get the track that's currently playing
 		AudioTrack track = scheduler.getNowPlaying();
 		if (track != null) {
-			String response = EmojiHelper.NOTES + " Now playing " + CommandUtil.trackInfoWithCurrentTime(track) + " " + EmojiHelper.NOTES;
+			String response = EmojiHelper.NOTES + " Now playing " + CommandUtil.trackInfoWithCurrentTime(track) + " "
+					+ EmojiHelper.NOTES;
 			return CommandResponse.create(response);
 		}
 		return CommandResponse.create("No track is currently playing");

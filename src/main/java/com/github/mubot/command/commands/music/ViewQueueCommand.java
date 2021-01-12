@@ -3,6 +3,7 @@ package com.github.mubot.command.commands.music;
 import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -26,7 +27,7 @@ import reactor.util.annotation.NonNull;
 public class ViewQueueCommand extends Command {
 
 	public ViewQueueCommand() {
-		super("viewqueue");
+		super("viewqueue", Arrays.asList("vq", "queue", "q"));
 	}
 
 	@Override

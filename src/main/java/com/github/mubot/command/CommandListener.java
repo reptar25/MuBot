@@ -70,10 +70,10 @@ public class CommandListener {
 	 * @return Mono<Void>
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
-		return Mono.justOrEmpty(event.getMessage().getContent())
-				.map(content -> content.split(DEFAULT_COMMAND_PREFIX)).flatMapMany(Flux::fromArray)
-				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
-				.flatMap(commandString -> Mono.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
+		return Mono.justOrEmpty(event.getMessage().getContent()).map(content -> content.split(DEFAULT_COMMAND_PREFIX))
+				.flatMapMany(Flux::fromArray).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
+				.flatMap(commandString -> Mono
+						.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
 						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
 								splitCommand -> Mono.just(Arrays.copyOfRange(splitCommand, 1, splitCommand.length)))
 								.flatMap(commandArgs -> executeCommand(event, command, commandArgs)))
@@ -81,8 +81,8 @@ public class CommandListener {
 							LOGGER.error(error.getMessage());
 
 							// Send command errors back as a reply to the user who used the command
-							return sendReply(event, CommandResponse.createFlat(
-									EmojiHelper.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + EmojiHelper.NO_ENTRY));
+							return sendReply(event, CommandResponse.createFlat(EmojiHelper.NO_ENTRY + " "
+									+ error.getUserFriendlyMessage() + " " + EmojiHelper.NO_ENTRY));
 						}).defaultIfEmpty(CommandResponse.emptyFlat()).elapsed()
 						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to complete",
 								commandString.split(" ")[0].toLowerCase(), elapsed))))

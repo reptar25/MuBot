@@ -2,6 +2,7 @@ package com.github.mubot.command.commands.music;
 
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -19,7 +20,7 @@ import reactor.util.annotation.NonNull;
 public class SkipCommand extends Command {
 
 	public SkipCommand() {
-		super("skip");
+		super("skip", Arrays.asList("next"));
 	}
 
 	@Override
@@ -40,15 +41,15 @@ public class SkipCommand extends Command {
 			if (args.length > 0 && !args[0].isBlank()) {
 				try {
 					int element = Integer.parseInt(args[0]);
-					return CommandResponse.create(
-							EmojiHelper.NEXT_TRACK + " Skipping to " + scheduler.skipQueue(element) + " " + EmojiHelper.NEXT_TRACK);
+					return CommandResponse.create(EmojiHelper.NEXT_TRACK + " Skipping to "
+							+ scheduler.skipQueue(element) + " " + EmojiHelper.NEXT_TRACK);
 				} catch (NumberFormatException ignored) {
 					// if there isn't an int as the args than just skip the current song
 				}
 			}
 
-			String response = EmojiHelper.NEXT_TRACK + " Skipping " + CommandUtil.trackInfo(scheduler.getNowPlaying()) + " "
-					+ EmojiHelper.NEXT_TRACK;
+			String response = EmojiHelper.NEXT_TRACK + " Skipping " + CommandUtil.trackInfo(scheduler.getNowPlaying())
+					+ " " + EmojiHelper.NEXT_TRACK;
 			scheduler.nextTrack();
 			return CommandResponse.create(response);
 		} else {

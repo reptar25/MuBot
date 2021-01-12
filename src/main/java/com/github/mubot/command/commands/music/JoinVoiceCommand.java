@@ -4,6 +4,7 @@ import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissi
 import static com.github.mubot.command.util.PermissionsHelper.requireVoiceChannel;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -27,7 +28,7 @@ public class JoinVoiceCommand extends Command {
 	// Loggers.getLogger(JoinVoiceCommand.class);
 
 	public JoinVoiceCommand() {
-		super("join");
+		super("join", Arrays.asList("j"));
 	};
 
 	@Override
@@ -69,7 +70,8 @@ public class JoinVoiceCommand extends Command {
 
 	@Override
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Requests the bot to join the same voice channel as user who used the command.");
+		return spec -> spec
+				.setDescription("Requests the bot to join the same voice channel as user who used the command.");
 	}
 
 }
