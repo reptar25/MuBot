@@ -1,7 +1,5 @@
 package com.github.mubot.command.menu;
 
-import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.object.entity.Member;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -22,17 +20,14 @@ public abstract class SingleChoiceActionMenu extends ChoiceActionMenu {
 	 */
 	@Override
 	protected Mono<Void> addReactionListener() {
-		return message.getClient().on(ReactionAddEvent.class)
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
-				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
-				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT).take(1L).doOnTerminate(() -> {
-					message.removeAllReactions().subscribe();
-				}).flatMap(event -> {
-					return loadSelection(event);
-				}).onErrorResume(error -> {
-					LOGGER.error("Error in reaction listener.", error);
-					return Mono.empty();
-				}).then();
+		return getDefaultListener().take(1L).doOnTerminate(() -> {
+			message.removeAllReactions().subscribe();
+		}).flatMap(event -> {
+			return loadSelection(event);
+		}).onErrorResume(error -> {
+			LOGGER.error("Error in reaction listener.", error);
+			return Mono.empty();
+		}).then();
 	}
 
 }

@@ -5,6 +5,7 @@ import java.time.Duration;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -26,11 +27,8 @@ public abstract class ChoiceActionMenu extends Menu {
 	 * @return
 	 */
 	protected Mono<Void> addReactionListener() {
-		
-		return message.getClient().on(ReactionAddEvent.class)
-				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
-				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
-				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT).doOnTerminate(() -> {
+
+		return getDefaultListener().doOnTerminate(() -> {
 			message.removeAllReactions().subscribe();
 		}).flatMap(event -> {
 			return loadSelection(event);
@@ -38,6 +36,13 @@ public abstract class ChoiceActionMenu extends Menu {
 			LOGGER.error("Error adding reaction listener.", error);
 			return Mono.empty();
 		}).then();
+	}
+
+	protected Flux<ReactionAddEvent> getDefaultListener() {
+		return message.getClient().on(ReactionAddEvent.class)
+				.filter(e -> !e.getMember().map(Member::isBot).orElse(false))
+				.filter(e -> e.getMessageId().asLong() == message.getId().asLong())
+				.filter(e -> !e.getEmoji().asUnicodeEmoji().isEmpty()).take(TIMEOUT);
 	}
 
 	@Override
