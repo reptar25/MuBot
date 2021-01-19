@@ -21,7 +21,7 @@ public abstract class SingleChoiceActionMenu extends ChoiceActionMenu {
 	@Override
 	protected Mono<Void> addReactionListener() {
 		return getDefaultListener().take(1L).doOnTerminate(() -> {
-			message.removeAllReactions().subscribe();
+			message.removeAllReactions().doOnError(error -> Mono.empty()).subscribe();
 		}).flatMap(event -> {
 			return loadSelection(event);
 		}).onErrorResume(error -> {
