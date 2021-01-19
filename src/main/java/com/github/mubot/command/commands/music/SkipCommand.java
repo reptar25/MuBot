@@ -59,6 +59,8 @@ public class SkipCommand extends Command {
 
 	@Override
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Skips the currently playing song and plays the next song in the queue.");
+		return spec -> spec.setDescription(
+				"Skips the currently playing song and plays the next song in the queue or skips to the specific song number in the queue.")
+				.addArg("skipTo", "skips to the specific number in the queue", true).addExample("").addExample("3");
 	}
 }
