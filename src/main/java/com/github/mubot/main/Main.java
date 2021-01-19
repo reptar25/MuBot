@@ -45,10 +45,10 @@ public class Main {
 			} catch (NumberFormatException | IOException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
-			// only log messages on the local client
-			MessageLogger.create(client);
 		} else {
 			LOGGER.info("Not running on Heroku");
+			// only log messages on the local client
+			MessageLogger.create(client);
 		}
 
 		DatabaseManager.create();
