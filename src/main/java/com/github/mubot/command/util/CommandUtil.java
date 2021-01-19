@@ -4,25 +4,26 @@ import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissi
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.exceptions.SendMessagesException;
+import com.github.mubot.database.DatabaseManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
-import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 
 public final class CommandUtil {
 
-	public static final Color DEFAULT_EMBED_COLOR = Color.of(23, 53, 77);
-	public static final String DEFAULT_COMMAND_PREFIX = "!";
+	private static Pattern SPECIAL_REGEX_CHARS = Pattern.compile("[{}()\\[\\].+*?^$\\\\|]");
 
 	/**
 	 * Sends a reply to either the channel the command was sent in or in a private
@@ -74,7 +75,8 @@ public final class CommandUtil {
 				return privateChannel.createMessage(response.getSpec()).then();
 			else
 				return privateChannel
-						.createMessage(EmojiHelper.NO_ENTRY + " " + exception.getMessage() + " " + EmojiHelper.NO_ENTRY).then();
+						.createMessage(EmojiHelper.NO_ENTRY + " " + exception.getMessage() + " " + EmojiHelper.NO_ENTRY)
+						.then();
 		});
 
 	}
@@ -119,6 +121,19 @@ public final class CommandUtil {
 
 	public static String trackInfoWithCurrentTime(AudioTrack track) {
 		return trackInfo(track) + " " + trackCurrentTime(track);
+	}
+
+	public static String getGuildPrefixFromEvent(MessageCreateEvent event) {
+		return getGuildPrefixFromId(event.getGuildId().orElse(Snowflake.of(0)).asLong());
+	}
+
+	public static String getGuildPrefixFromId(long guildId) {
+		return escapeSpecialRegexChars(DatabaseManager.getPrefixCollection().getPrefix(guildId));
+	}
+
+	public static String escapeSpecialRegexChars(String str) {
+
+		return SPECIAL_REGEX_CHARS.matcher(str).replaceAll("\\\\$0");
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.github.mubot.command.CommandListener;
 import com.github.mubot.command.util.MuteHelper;
+import com.github.mubot.database.DatabaseManager;
 import com.github.mubot.eventlistener.MessageLogger;
 import com.github.mubot.eventlistener.ReadyListener;
 import com.github.mubot.eventlistener.VoiceStateUpdateListener;
@@ -44,15 +45,17 @@ public class Main {
 			} catch (NumberFormatException | IOException e) {
 				LOGGER.error(e.getMessage(), e);
 			}
+			// only log messages on the local client
+			MessageLogger.create(client);
 		} else {
 			LOGGER.info("Not running on Heroku");
 		}
 
+		DatabaseManager.create();
 		ReadyListener.create(client);
 		VoiceStateUpdateListener.create(client);
 		CommandListener.create(client);
 		MuteHelper.create(client);
-		MessageLogger.create(client);
 
 		LOGGER.info("Bot is ready");
 

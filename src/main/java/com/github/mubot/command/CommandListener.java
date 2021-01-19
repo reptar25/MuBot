@@ -1,14 +1,13 @@
 package com.github.mubot.command;
 
-import static com.github.mubot.command.util.CommandUtil.DEFAULT_COMMAND_PREFIX;
 import static com.github.mubot.command.util.CommandUtil.sendReply;
+import static com.github.mubot.command.util.CommandUtil.getGuildPrefixFromEvent;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
 
 import com.github.mubot.command.exceptions.CommandException;
 import com.github.mubot.command.util.EmojiHelper;
-
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.User;
@@ -70,8 +69,9 @@ public class CommandListener {
 	 * @return Mono<Void>
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
-		return Mono.justOrEmpty(event.getMessage().getContent()).map(content -> content.split(DEFAULT_COMMAND_PREFIX))
-				.flatMapMany(Flux::fromArray).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
+		return Mono.justOrEmpty(event.getMessage().getContent())
+				.map(content -> content.split(getGuildPrefixFromEvent(event))).flatMapMany(Flux::fromArray)
+				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
 				.flatMap(commandString -> Mono
 						.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
 						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
@@ -82,10 +82,8 @@ public class CommandListener {
 
 							// Send command errors back as a reply to the user who used the command
 							return sendReply(event, CommandResponse.createFlat(EmojiHelper.NO_ENTRY + " "
-									+ error.getUserFriendlyMessage() + " " + EmojiHelper.NO_ENTRY));
-						}).defaultIfEmpty(CommandResponse.emptyFlat()).elapsed()
-						.doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER.info("{} took {} ms to complete",
-								commandString.split(" ")[0].toLowerCase(), elapsed))))
+									+ error.getUserFriendlyMessage() + " " + EmojiHelper.NO_ENTRY)).then();
+						}))
 				.then();
 	}
 
@@ -97,9 +95,11 @@ public class CommandListener {
 	 * @param args    the parameters of the command
 	 * @return the response to the command
 	 */
-	private static Mono<CommandResponse> executeCommand(MessageCreateEvent event, Command command, String[] args) {
+	private static Mono<Void> executeCommand(MessageCreateEvent event, Command command, String[] args) {
 		return commandExecutor.executeCommand(event, command, args).flatMap(response -> {
 			return sendReply(event, response);
-		});
+		}).defaultIfEmpty(CommandResponse.emptyFlat()).elapsed().doOnNext(TupleUtils.consumer(
+				(elapsed, response) -> LOGGER.info("{} took {} ms to complete", command.getPrimaryTrigger(), elapsed)))
+				.then();
 	}
 }

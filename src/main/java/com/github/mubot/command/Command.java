@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.help.CommandHelpSpec;
-
 import reactor.core.publisher.Mono;
 
 public abstract class Command implements CommandInterface {
@@ -46,18 +45,19 @@ public abstract class Command implements CommandInterface {
 	 * @param spec the CommandHelpSpec to use to create the embed
 	 * @return the help embed as a CommandResponse
 	 */
-	private final Mono<CommandResponse> createCommandHelpEmbed(Consumer<? super CommandHelpSpec> spec) {
-		CommandHelpSpec mutatedSpec = new CommandHelpSpec(getPrimaryTrigger(), aliases);
+	private final Mono<CommandResponse> createCommandHelpEmbed(Consumer<? super CommandHelpSpec> spec, long guildId) {
+		CommandHelpSpec mutatedSpec = new CommandHelpSpec(getPrimaryTrigger(), aliases, guildId);
 		spec.accept(mutatedSpec);
 		return CommandResponse.create(s -> s.setEmbed(mutatedSpec.build()));
 	}
 
 	/**
 	 * 
+	 * @param guildId
 	 * @return the help embed for this command as a CommandResponse
 	 */
-	public Mono<CommandResponse> getHelp() {
-		return createCommandHelpEmbed(createHelpSpec());
+	public Mono<CommandResponse> getHelp(long guildId) {
+		return createCommandHelpEmbed(createHelpSpec(), guildId);
 
 	}
 

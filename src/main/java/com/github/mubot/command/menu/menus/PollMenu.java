@@ -1,7 +1,5 @@
 package com.github.mubot.command.menu.menus;
 
-import static com.github.mubot.command.util.CommandUtil.DEFAULT_EMBED_COLOR;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,12 +14,14 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
+import discord4j.rest.util.Color;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 public final class PollMenu extends Menu {
 
 	private static final Logger LOGGER = Loggers.getLogger(PollMenu.class);
+	public static final Color DEFAULT_POLL_EMBED_COLOR = Color.of(23, 53, 77);
 	private final int MAX_ANSWERS = 11;
 	private String[] args;
 	private Member member;
@@ -117,7 +117,7 @@ public final class PollMenu extends Menu {
 	}
 
 	private Consumer<? super EmbedCreateSpec> createEmbed() {
-		return embed -> embed.setColor(DEFAULT_EMBED_COLOR).setFooter("Poll created by " + authorName, authorIcon)
+		return embed -> embed.setColor(DEFAULT_POLL_EMBED_COLOR).setFooter("Poll created by " + authorName, authorIcon)
 				.setTimestamp(Instant.now()).setDescription(description);
 	}
 
