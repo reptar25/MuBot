@@ -1,25 +1,48 @@
 package com.github.mubot.database;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import io.r2dbc.client.R2dbc;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.postgresql.client.SSLMode;
 
 public class DatabaseManager {
-	private final static String USERNAME = System.getenv("DATABASE_USERNAME");
-	private final static String PWD = System.getenv("DATABASE_PWD");
-	private final static String HOST = System.getenv("DATABASE_HOST");
-	private final static String DATABASE_NAME = System.getenv("DATABASE_NAME");
+	// for heroku DATABASE_URL is stored as postgres://<username>:<password>@<host>/<dbname>
+	private final static String DB_URL = System.getenv("DATABASE_URL");
+	private final String USERNAME;
+	private final String PASSWORD;
+	private final String HOST;
+	private final int PORT;
+	private final String DATABASE_NAME;
 	private final String TABLE_NAME = "guilds";
 
 	private static PrefixCollection prefixCollection;
 	private static DatabaseManager instance;
 	private static R2dbc client;
 
+	private DatabaseManager() {
+		URI dbUri = null;
+		try {
+			dbUri = new URI(DB_URL);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+
+		this.USERNAME = dbUri.getUserInfo().split(":")[0];
+		this.PASSWORD = dbUri.getUserInfo().split(":")[1];
+		this.HOST = dbUri.getHost();
+		this.PORT = dbUri.getPort();
+		this.DATABASE_NAME = dbUri.getPath().replaceFirst("/", "");
+	}
+
 	public static void create() {
 		DatabaseManager.instance = new DatabaseManager();
 		DatabaseManager.client = new R2dbc(new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
-				.host(HOST).username(USERNAME).password(PWD).database(DATABASE_NAME).enableSsl().sslMode(SSLMode.REQUIRE).build()));
+				.host(DatabaseManager.instance.getHost()).port(DatabaseManager.instance.getPort())
+				.username(DatabaseManager.instance.getUsername()).password(DatabaseManager.instance.getPassword())
+				.database(DatabaseManager.instance.getDatabaseName()).enableSsl().sslMode(SSLMode.REQUIRE).build()));
 
 		DatabaseManager.prefixCollection = new PrefixCollection(DatabaseManager.instance);
 	}
@@ -38,5 +61,25 @@ public class DatabaseManager {
 
 	public static DatabaseManager getInstance() {
 		return DatabaseManager.instance;
+	}
+
+	public String getUsername() {
+		return USERNAME;
+	}
+
+	public String getPassword() {
+		return PASSWORD;
+	}
+
+	public String getHost() {
+		return HOST;
+	}
+
+	public String getDatabaseName() {
+		return DATABASE_NAME;
+	}
+
+	public int getPort() {
+		return PORT;
 	}
 }
