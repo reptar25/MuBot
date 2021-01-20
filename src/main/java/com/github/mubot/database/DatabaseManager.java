@@ -18,7 +18,7 @@ public class DatabaseManager {
 	public static void create() {
 		DatabaseManager.instance = new DatabaseManager();
 		DatabaseManager.client = new R2dbc(new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
-				.host(HOST).username(USERNAME).password(PWD).database(DATABASE_NAME).build()));
+				.host(HOST).username(USERNAME).password(PWD).database(DATABASE_NAME).enableSsl().build()));
 
 		DatabaseManager.prefixCollection = new PrefixCollection(DatabaseManager.instance);
 	}
