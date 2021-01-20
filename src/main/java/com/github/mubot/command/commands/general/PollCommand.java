@@ -15,6 +15,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class PollCommand extends Command {
 
@@ -39,6 +40,8 @@ public class PollCommand extends Command {
 	 */
 
 	private String[] pollArgs(String[] args) {
+		if (args.length <= 0)
+			return args;
 		String[] ret = args;
 		StringBuilder sb = new StringBuilder();
 		// unsplit the parameters
@@ -65,7 +68,9 @@ public class PollCommand extends Command {
 	 * @return null
 	 * 
 	 */
-	public Mono<CommandResponse> poll(String[] args, Member member) {
+	public Mono<CommandResponse> poll(@NonNull String[] args, @NonNull Member member) {
+		if (args.length <= 0)
+			return CommandResponse.empty();
 		// create a new poll object
 		PollMenu poll = new PollMenu(args, member);
 
