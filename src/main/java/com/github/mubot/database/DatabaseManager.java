@@ -3,6 +3,7 @@ package com.github.mubot.database;
 import io.r2dbc.client.R2dbc;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
+import io.r2dbc.postgresql.client.SSLMode;
 
 public class DatabaseManager {
 	private final static String USERNAME = System.getenv("DATABASE_USERNAME");
@@ -18,7 +19,7 @@ public class DatabaseManager {
 	public static void create() {
 		DatabaseManager.instance = new DatabaseManager();
 		DatabaseManager.client = new R2dbc(new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
-				.host(HOST).username(USERNAME).password(PWD).database(DATABASE_NAME).enableSsl().build()));
+				.host(HOST).username(USERNAME).password(PWD).database(DATABASE_NAME).sslMode(SSLMode.REQUIRE).build()));
 
 		DatabaseManager.prefixCollection = new PrefixCollection(DatabaseManager.instance);
 	}
