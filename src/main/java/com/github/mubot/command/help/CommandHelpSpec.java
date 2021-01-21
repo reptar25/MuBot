@@ -1,7 +1,7 @@
 package com.github.mubot.command.help;
 
-import static com.github.mubot.command.util.CommandUtil.getGuildPrefixFromId;
-
+import static com.github.mubot.command.util.CommandUtil.getEscapedGuildPrefixFromId;
+import static com.github.mubot.command.util.CommandUtil.getRawGuildPrefixFromId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -32,7 +32,7 @@ public class CommandHelpSpec {
 	}
 
 	public CommandHelpSpec addExample(String example) {
-		examples.add(getGuildPrefixFromId(guildId) + commandName + " " + example);
+		examples.add(getEscapedGuildPrefixFromId(guildId) + commandName + " " + example);
 		return this;
 	}
 
@@ -50,7 +50,7 @@ public class CommandHelpSpec {
 		return spec -> {
 			spec.setColor(DEFAULT_HELP_EMBED_COLOR);
 
-			spec.setTitle(getGuildPrefixFromId(guildId) + commandName);
+			spec.setTitle(getEscapedGuildPrefixFromId(guildId) + commandName);
 			if (aliases != null && !this.aliases.isEmpty()) {
 				spec.addField("Aliases", this.getAliases(), false);
 			}
@@ -73,12 +73,12 @@ public class CommandHelpSpec {
 
 	private String getUsage() {
 		if (this.arguments.isEmpty()) {
-			return String.format("`%s%s`", getGuildPrefixFromId(guildId), this.commandName);
+			return String.format("`%s%s`", getRawGuildPrefixFromId(guildId), this.commandName);
 		}
 
 		String usage = arguments.stream().map(arg -> String.format(arg.isOptional() ? "[<%s>]" : "<%s>", arg.getName()))
 				.collect(Collectors.joining(" "));
-		return String.format("`%s%s %s`", getGuildPrefixFromId(guildId), this.commandName, usage);
+		return String.format("`%s%s %s`", getRawGuildPrefixFromId(guildId), this.commandName, usage);
 	}
 
 	private String getArguments() {
@@ -92,7 +92,7 @@ public class CommandHelpSpec {
 	}
 
 	private String getAliases() {
-		return aliases.stream().map(alias -> String.format("`%s%s`", getGuildPrefixFromId(guildId), alias))
+		return aliases.stream().map(alias -> String.format("`%s%s`", getRawGuildPrefixFromId(guildId), alias))
 				.collect(Collectors.joining(", "));
 	}
 }

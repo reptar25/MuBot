@@ -123,12 +123,16 @@ public final class CommandUtil {
 		return trackInfo(track) + " " + trackCurrentTime(track);
 	}
 
-	public static String getGuildPrefixFromEvent(MessageCreateEvent event) {
-		return getGuildPrefixFromId(event.getGuildId().orElse(Snowflake.of(0)).asLong());
+	public static String getEscapedGuildPrefixFromEvent(MessageCreateEvent event) {
+		return getEscapedGuildPrefixFromId(event.getGuildId().orElse(Snowflake.of(0)).asLong());
 	}
 
-	public static String getGuildPrefixFromId(long guildId) {
-		return escapeSpecialRegexChars(DatabaseManager.getPrefixCollection().getPrefix(guildId));
+	public static String getEscapedGuildPrefixFromId(long guildId) {
+		return escapeSpecialRegexChars(getRawGuildPrefixFromId(guildId));
+	}
+
+	public static String getRawGuildPrefixFromId(long guildId) {
+		return DatabaseManager.getPrefixCollection().getPrefix(guildId);
 	}
 
 	public static String escapeSpecialRegexChars(String str) {
