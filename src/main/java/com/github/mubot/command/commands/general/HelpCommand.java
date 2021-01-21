@@ -3,7 +3,7 @@ package com.github.mubot.command.commands.general;
 import java.util.Arrays;
 import java.util.Map.Entry;
 
-import static com.github.mubot.command.util.CommandUtil.getGuildPrefixFromEvent;
+import static com.github.mubot.command.util.CommandUtil.getEscapedGuildPrefixFromEvent;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -39,7 +39,7 @@ public class HelpCommand extends Command {
 	public Mono<CommandResponse> help(MessageCreateEvent event) {
 		Set<Entry<String, Command>> entries = CommandsHelper.getEntries();
 		String commands = entries.stream()
-				.map(entry -> String.format("%n%s%s", getGuildPrefixFromEvent(event),
+				.map(entry -> String.format("%n%s%s", getEscapedGuildPrefixFromEvent(event),
 						entry.getValue().getPrimaryTrigger()))
 				.distinct().sorted().collect(Collectors.joining()).toString();
 

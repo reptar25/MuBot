@@ -40,8 +40,6 @@ public class PollCommand extends Command {
 	 */
 
 	private String[] pollArgs(String[] args) {
-		if (args.length <= 0)
-			return args;
 		String[] ret = args;
 		StringBuilder sb = new StringBuilder();
 		// unsplit the parameters
@@ -69,8 +67,8 @@ public class PollCommand extends Command {
 	 * 
 	 */
 	public Mono<CommandResponse> poll(@NonNull String[] args, @NonNull Member member) {
-		if (args.length <= 0)
-			return CommandResponse.empty();
+		if (args.length <= 0 || args[0].isBlank())
+			return getHelp(member.getGuildId().asLong());
 		// create a new poll object
 		PollMenu poll = new PollMenu(args, member);
 

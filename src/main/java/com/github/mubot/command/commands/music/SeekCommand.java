@@ -23,24 +23,26 @@ public class SeekCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> seek(scheduler, args));
+				.flatMap(scheduler -> seek(event, scheduler, args));
 	}
 
 	/**
+	 * @param event
 	 * @param event The message event
 	 * @param args  The position to move the current song to in seconds
 	 * @return null
 	 */
-	public Mono<CommandResponse> seek(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+	public Mono<CommandResponse> seek(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+			@NonNull String[] args) {
 		if (args.length > 0) {
 			try {
 				int positionInSeconds = Integer.parseInt(args[0]);
 				scheduler.seek(positionInSeconds);
 			} catch (NumberFormatException e) {
-				// just ignore commands with improper number
+				return getHelp(event);
 			}
 		}
-		return CommandResponse.empty();
+		return getHelp(event);
 	}
 
 	@Override

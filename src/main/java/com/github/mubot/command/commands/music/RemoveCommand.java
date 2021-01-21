@@ -25,24 +25,25 @@ public class RemoveCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> remove(scheduler, args));
+				.flatMap(scheduler -> remove(event, scheduler, args));
 	}
 
-	public Mono<CommandResponse> remove(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+	public Mono<CommandResponse> remove(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+			@NonNull String[] args) {
 		if (args.length >= 1) {
 			try {
 				int index = Integer.parseInt(args[0]);
 				AudioTrack removed = scheduler.removeFromQueue(index - 1);
 				if (removed != null)
-					return CommandResponse.create(
-							EmojiHelper.RED_X + " Removed \"" + removed.getInfo().title + "\" from the queue " + EmojiHelper.RED_X);
+					return CommandResponse.create(EmojiHelper.RED_X + " Removed \"" + removed.getInfo().title
+							+ "\" from the queue " + EmojiHelper.RED_X);
 				else
-					return CommandResponse.empty();
+					return getHelp(event);
 			} catch (NumberFormatException ignored) {
-				return CommandResponse.empty();
+				return getHelp(event);
 			}
 		}
-		return CommandResponse.empty();
+		return getHelp(event);
 	}
 
 	@Override

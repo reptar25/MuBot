@@ -46,13 +46,16 @@ public class PlayCommand extends Command {
 			@NonNull String[] args) {
 		// unpause
 		if (args.length == 0 || args[0].isEmpty()) {
-			if (scheduler.getNowPlaying() != null)
+			if (scheduler.getNowPlaying() != null) {
 				scheduler.pause(!scheduler.isPaused());
-			return CommandResponse.empty();
+				return CommandResponse.empty();
+			}
+			return getHelp(event);
+
 		}
 
 		if (args.length <= 0 || args[0].isEmpty()) {
-			return CommandResponse.empty();
+			return getHelp(event);
 		}
 
 		// if its a search recombine the args that were split by space

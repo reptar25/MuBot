@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.help.CommandHelpSpec;
+
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
 public abstract class Command implements CommandInterface {
@@ -52,7 +55,6 @@ public abstract class Command implements CommandInterface {
 	}
 
 	/**
-	 * 
 	 * @param guildId
 	 * @return the help embed for this command as a CommandResponse
 	 */
@@ -60,5 +62,15 @@ public abstract class Command implements CommandInterface {
 		return createCommandHelpEmbed(createHelpSpec(), guildId);
 
 	}
+	
+	/**
+	 * @param event
+	 * @return the help embed for this command as a CommandResponse
+	 */
+	public Mono<CommandResponse> getHelp(MessageCreateEvent event) {
+		return getHelp(event.getGuildId().orElse(Snowflake.of(-1)).asLong());
+
+	}
+	
 
 }

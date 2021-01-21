@@ -22,19 +22,21 @@ public class RollCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return roll(args);
+		return roll(event, args);
 	}
 
 	/**
 	 * Bot rolls dice and returns results
 	 * 
-	 * @param args The number and type of dice to roll, eg "1d20"
+	 * @param event
+	 * 
+	 * @param args  The number and type of dice to roll, eg "1d20"
 	 * @return The results of the dice roll
 	 */
-	public Mono<CommandResponse> roll(String[] args) {
+	public Mono<CommandResponse> roll(MessageCreateEvent event, String[] args) {
 
 		if (args == null || args.length <= 0) {
-			return CommandResponse.empty();
+			return getHelp(event);
 		}
 
 		String dice = args[0];
@@ -59,7 +61,7 @@ public class RollCommand extends Command {
 			return CommandResponse.create(sb.toString());
 		}
 
-		return CommandResponse.empty();
+		return getHelp(event);
 	}
 
 	@Override

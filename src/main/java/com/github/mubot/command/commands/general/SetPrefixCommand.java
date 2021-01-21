@@ -28,7 +28,7 @@ public class SetPrefixCommand extends Command {
 					.onErrorResume(error -> Mono.empty()).subscribe();
 			return CommandResponse.create("Set guild command prefix to " + args[0]);
 		}
-		return CommandResponse.empty();
+		return getHelp(event);
 	}
 
 	@Override

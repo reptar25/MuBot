@@ -24,15 +24,17 @@ public class RewindCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> rewind(scheduler, args));
+				.flatMap(scheduler -> rewind(event, scheduler, args));
 	}
 
 	/**
+	 * @param event
 	 * @param event The message event
 	 * @param args  The amount of time in seconds to rewind
 	 * @return null
 	 */
-	public Mono<CommandResponse> rewind(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+	public Mono<CommandResponse> rewind(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+			@NonNull String[] args) {
 		if (args.length > 0) {
 			try {
 				int amountInSeconds = Integer.parseInt(args[0]);
@@ -41,7 +43,7 @@ public class RewindCommand extends Command {
 				// just ignore commands with improper number
 			}
 		}
-		return CommandResponse.empty();
+		return getHelp(event);
 	}
 
 	@Override

@@ -24,15 +24,17 @@ public class FastForwardCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> fastForward(scheduler, args));
+				.flatMap(scheduler -> fastForward(event, scheduler, args));
 	}
 
 	/**
+	 * @param event
 	 * @param event The message event
 	 * @param args  The amount of time in seconds to fast forward
 	 * @return null
 	 */
-	public Mono<CommandResponse> fastForward(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+	public Mono<CommandResponse> fastForward(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
+			@NonNull String[] args) {
 		if (args.length > 0) {
 			try {
 				int amountInSeconds = Integer.parseInt(args[0]);
@@ -41,7 +43,7 @@ public class FastForwardCommand extends Command {
 				// just ignore commands with improper number
 			}
 		}
-		return CommandResponse.empty();
+		return getHelp(event);
 	}
 
 	@Override

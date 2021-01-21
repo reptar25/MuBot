@@ -14,12 +14,10 @@ public class PrefixCollection {
 	private static final String DEFAULT_COMMAND_PREFIX = "!";
 	private static final Logger LOGGER = Loggers.getLogger(PrefixCollection.class);
 	private static final ConcurrentHashMap<Long, String> PREFIX_MAP = new ConcurrentHashMap<Long, String>();
+	private final static String TABLE_NAME = "guilds";
 
-	private static final String getAllPrefixSQL = String.format("SELECT id, prefix FROM %s",
-			DatabaseManager.getTableName());
-	private static final String setPrefixSQL = String.format(
-			"INSERT INTO %s (id, prefix) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET prefix = $2",
-			DatabaseManager.getTableName());
+	private static final String GET_ALL_PREFIX_SQL = "SELECT id, prefix FROM %s JOIN prefixes ON ";
+	private static final String SET_PREFIX_SQL = "INSERT INTO $1 (id, prefix) VALUES ($2, $3) ON CONFLICT (id) DO UPDATE SET prefix = $3";
 
 	private DatabaseManager databaseManager;
 	private AtomicInteger counter;
@@ -31,8 +29,8 @@ public class PrefixCollection {
 	}
 
 	private void buildPrefixMap() {
-		this.databaseManager.getClient()
-				.inTransaction(handle -> handle.select(getAllPrefixSQL).mapResult(result -> result.map((row, rowMd) -> {
+		this.databaseManager.getClient().inTransaction(
+				handle -> handle.select(GET_ALL_PREFIX_SQL, TABLE_NAME).mapResult(result -> result.map((row, rowMd) -> {
 					return new Pair<Long, String>(row.get("id", Long.class), row.get("prefix", String.class));
 				}))).doOnTerminate(() -> {
 					LOGGER.info("PREFIX_MAP counter: " + counter.getAcquire());
@@ -58,8 +56,8 @@ public class PrefixCollection {
 
 		LOGGER.info(String.format("Adding prefix %s for server %d", prefix, id));
 
-		return databaseManager.getClient().inTransaction(handle -> handle.execute(setPrefixSQL, id, prefix))
-				.map(result -> {
+		return databaseManager.getClient()
+				.inTransaction(handle -> handle.execute(SET_PREFIX_SQL, TABLE_NAME, id, prefix)).map(result -> {
 					PREFIX_MAP.put(id, prefix);
 					return result;
 				});
