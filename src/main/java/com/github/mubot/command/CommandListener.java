@@ -1,7 +1,7 @@
 package com.github.mubot.command;
 
 import static com.github.mubot.command.util.CommandUtil.sendReply;
-import static com.github.mubot.command.util.CommandUtil.getGuildPrefixFromEvent;
+import static com.github.mubot.command.util.CommandUtil.getEscapedGuildPrefixFromEvent;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -70,8 +70,13 @@ public class CommandListener {
 	 */
 	private static Mono<Void> receiveMessage(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMessage().getContent())
-				.map(content -> content.split(getGuildPrefixFromEvent(event))).flatMapMany(Flux::fromArray)
-				.filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
+				.map(content -> content.split(" (?=" + getEscapedGuildPrefixFromEvent(event) + ")"))
+				.flatMapMany(Flux::fromArray).map(content -> {
+					if (content.startsWith(getEscapedGuildPrefixFromEvent(event)))
+						return content.replaceAll(getEscapedGuildPrefixFromEvent(event), "");
+					else
+						return "";
+				}).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
 				.flatMap(commandString -> Mono
 						.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
 						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
