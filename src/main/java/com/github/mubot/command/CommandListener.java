@@ -2,6 +2,7 @@ package com.github.mubot.command;
 
 import static com.github.mubot.command.util.CommandUtil.sendReply;
 import static com.github.mubot.command.util.CommandUtil.getEscapedGuildPrefixFromEvent;
+import static com.github.mubot.command.util.CommandUtil.getRawGuildPrefixFromEvent;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -72,7 +73,7 @@ public class CommandListener {
 		return Mono.justOrEmpty(event.getMessage().getContent())
 				.map(content -> content.split(" (?=" + getEscapedGuildPrefixFromEvent(event) + ")"))
 				.flatMapMany(Flux::fromArray).map(content -> {
-					if (content.startsWith(getEscapedGuildPrefixFromEvent(event)))
+					if (content.startsWith(getRawGuildPrefixFromEvent(event)))
 						return content.replaceAll(getEscapedGuildPrefixFromEvent(event), "");
 					else
 						return "";

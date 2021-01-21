@@ -131,6 +131,10 @@ public final class CommandUtil {
 		return escapeSpecialRegexChars(getRawGuildPrefixFromId(guildId));
 	}
 
+	public static String getRawGuildPrefixFromEvent(MessageCreateEvent event) {
+		return getRawGuildPrefixFromId(event.getGuildId().orElse(Snowflake.of(0)).asLong());
+	}
+
 	public static String getRawGuildPrefixFromId(long guildId) {
 		return DatabaseManager.getPrefixCollection().getPrefix(guildId);
 	}
