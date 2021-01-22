@@ -17,7 +17,8 @@ public class PrefixCollection {
 	private final static String TABLE_NAME = "guilds";
 
 	private static final String GET_ALL_PREFIX_SQL = "SELECT id, prefix FROM %s JOIN prefixes ON ";
-	private static final String SET_PREFIX_SQL = "INSERT INTO $1 (id, prefix) VALUES ($2, $3) ON CONFLICT (id) DO UPDATE SET prefix = $3";
+	private static final String SET_PREFIX_SQL = "INSERT INTO " + TABLE_NAME
+			+ " (id, prefix) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET prefix = $2";
 
 	private DatabaseManager databaseManager;
 	private AtomicInteger counter;
