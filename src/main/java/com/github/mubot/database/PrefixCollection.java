@@ -16,7 +16,7 @@ public class PrefixCollection {
 	private static final ConcurrentHashMap<Long, String> PREFIX_MAP = new ConcurrentHashMap<Long, String>();
 	private final static String TABLE_NAME = "guilds";
 
-	private static final String GET_ALL_PREFIX_SQL = "SELECT id, prefix FROM %s JOIN prefixes ON ";
+	private static final String GET_ALL_PREFIX_SQL = "SELECT id, prefix FROM "+ TABLE_NAME;
 	private static final String SET_PREFIX_SQL = "INSERT INTO " + TABLE_NAME
 			+ " (id, prefix) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET prefix = $2";
 
