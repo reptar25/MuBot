@@ -12,7 +12,7 @@ import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.commands.music.StopCommand;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.util.EmojiHelper;
-import com.github.mubot.command.util.MuteHelper;
+import com.github.mubot.eventlistener.MuteOnJoinListener;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -56,7 +56,7 @@ public class MuteCommand extends Command {
 		Flux<VoiceState> users = channel.getVoiceStates();
 
 		boolean mute = true;
-		ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(guildId);
+		ArrayList<Snowflake> channelIds = MuteOnJoinListener.mutedChannels.get(guildId);
 		if (channelIds != null) {
 			// channel is muted, so unmute
 			if (channelIds.contains(id)) {
@@ -69,7 +69,7 @@ public class MuteCommand extends Command {
 			// channel should be muted
 			ArrayList<Snowflake> ids = new ArrayList<Snowflake>();
 			ids.add(id);
-			MuteHelper.mutedChannels.put(guildId, ids);
+			MuteOnJoinListener.mutedChannels.put(guildId, ids);
 		}
 
 		String response;

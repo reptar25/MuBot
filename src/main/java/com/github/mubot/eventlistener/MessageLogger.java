@@ -1,6 +1,5 @@
 package com.github.mubot.eventlistener;
 
-import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.User;
@@ -13,38 +12,23 @@ import reactor.util.Loggers;
 /**
  * This class will log any messages that the can see
  */
-public class MessageLogger {
+public class MessageLogger implements EventListener<MessageCreateEvent> {
 
-	private static MessageLogger instance;
-	private GatewayDiscordClient client;
 	private static final Logger LOGGER = Loggers.getLogger(MessageLogger.class);
 
-	static public MessageLogger create(GatewayDiscordClient client) {
-		if (instance == null)
-			instance = new MessageLogger(client);
-
-		return instance;
+	@Override
+	public Class<MessageCreateEvent> getEventType() {
+		return MessageCreateEvent.class;
 	}
 
-	private MessageLogger(GatewayDiscordClient client) {
-		this.client = client;
-
-		setupListener();
-	}
-
-	/**
-	 * setup listener on event dispatcher for message create events
-	 */
-	private void setupListener() {
-		if (client.getEventDispatcher() != null) {
-			client.getEventDispatcher().on(MessageCreateEvent.class)
-					// ignore messages from bots
-					.filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true)).flatMap(event -> {
-						final String content = event.getMessage().getContent();
-						// print out new message to logs
-						return logMessage(event, content);
-					}).subscribe(null, error -> LOGGER.error(error.getMessage(), error));
-		}
+	@Override
+	public Mono<Void> consume(MessageCreateEvent e) {
+		return Mono.just(e).filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true))
+				.flatMap(event -> {
+					final String content = event.getMessage().getContent();
+					// print out new message to logs
+					return logMessage(event, content);
+				});
 	}
 
 	/**
@@ -54,7 +38,7 @@ public class MessageLogger {
 	 * @param content content of the message
 	 * @return
 	 */
-	public Mono<Object> logMessage(MessageCreateEvent event, String content) {
+	private Mono<Void> logMessage(MessageCreateEvent event, String content) {
 		Mono<User> getUser = Mono.justOrEmpty(event.getMessage().getAuthor()).defaultIfEmpty(null);
 		Mono<String> getGuildName = event.getGuild().map(Guild::getName).defaultIfEmpty("Private Message");
 		Mono<String> getGuildChannelName = event.getMessage().getChannel().flatMap(channel -> {
@@ -78,6 +62,7 @@ public class MessageLogger {
 			sb.append(" - \"").append(content).append("\"");
 			LOGGER.info(sb.toString());
 			return Mono.empty();
-		});
+		}).then();
 	}
+
 }
