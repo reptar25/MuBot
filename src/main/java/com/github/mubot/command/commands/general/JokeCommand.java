@@ -58,7 +58,7 @@ public class JokeCommand extends Command {
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
 		return spec -> spec.setDescription("Tells a random joke from the chosen category of jokes.")
 				.addArg("unsafe", "Allows \"unsafe\" jokes to be returned by the bot.", true)
-				.addArg("category", "Gets a joke of only the given category.", true).addExample("puns")
+				.addArg("category", "Gets a joke of only the given category.", true).addExample("pun")
 				.addExample("unsafe").addExample("unsafe any").addExample("misc unsafe");
 	}
 
