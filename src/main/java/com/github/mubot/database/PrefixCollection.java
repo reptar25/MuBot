@@ -31,7 +31,7 @@ public class PrefixCollection {
 
 	private void buildPrefixMap() {
 		this.databaseManager.getClient().inTransaction(
-				handle -> handle.select(GET_ALL_PREFIX_SQL, TABLE_NAME).mapResult(result -> result.map((row, rowMd) -> {
+				handle -> handle.select(GET_ALL_PREFIX_SQL).mapResult(result -> result.map((row, rowMd) -> {
 					return new Pair<Long, String>(row.get("id", Long.class), row.get("prefix", String.class));
 				}))).doOnTerminate(() -> {
 					LOGGER.info("PREFIX_MAP counter: " + counter.getAcquire());
@@ -58,7 +58,7 @@ public class PrefixCollection {
 		LOGGER.info(String.format("Adding prefix %s for server %d", prefix, id));
 
 		return databaseManager.getClient()
-				.inTransaction(handle -> handle.execute(SET_PREFIX_SQL, TABLE_NAME, id, prefix)).map(result -> {
+				.inTransaction(handle -> handle.execute(SET_PREFIX_SQL, id, prefix)).map(result -> {
 					PREFIX_MAP.put(id, prefix);
 					return result;
 				});
