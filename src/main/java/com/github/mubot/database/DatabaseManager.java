@@ -49,7 +49,6 @@ public class DatabaseManager {
 		ConnectionPool poolConfig = new ConnectionPool(ConnectionPoolConfiguration.builder(factory).initialSize(1)
 				.maxIdleTime(Duration.ofSeconds(30)).maxSize(Integer.parseInt(MAX_CONNECTIONS)).build());
 
-		// databaseClient = new R2dbc(poolConfig);
 		databaseClient = DatabaseClient.create(poolConfig);
 	}
 
