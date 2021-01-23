@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 
 import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
-import com.github.mubot.command.commands.music.StopCommand;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.util.EmojiHelper;
 import com.github.mubot.eventlistener.MuteOnJoinListener;
@@ -27,7 +26,7 @@ import reactor.util.Loggers;
 
 public class MuteCommand extends Command {
 
-	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
+	private static final Logger LOGGER = Loggers.getLogger(MuteCommand.class);
 
 	public MuteCommand() {
 		super("mute");

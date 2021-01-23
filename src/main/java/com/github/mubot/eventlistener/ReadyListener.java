@@ -33,14 +33,14 @@ public class ReadyListener implements EventListener<ReadyEvent> {
 	 * @return
 	 */
 	private static Flux<Object> processReadyEvent(ReadyEvent event) {
+		LOGGER.info("Ready Event consumed.");
 		return Flux.fromIterable(event.getGuilds()).flatMap(guild -> {
 			return event.getSelf().asMember(guild.getId()).flatMap(Member::getVoiceState)
 					.flatMap(VoiceState::getChannel).flatMap(channel -> {
 						return GuildMusicManager.getOrCreate(channel.getGuildId()).flatMap(
 								guildMusic -> channel.join(spec -> spec.setProvider(guildMusic.getAudioProvider())));
-					}).elapsed()
-					.doOnNext(TupleUtils.consumer(
-							(elapsed, response) -> LOGGER.info("ReadyEvent took {} ms to be processed", elapsed)))
+					}).elapsed().doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
+							.info("ReadyEvent channel reconnect took {} ms to be processed", elapsed)))
 					.then();
 		});
 	}
