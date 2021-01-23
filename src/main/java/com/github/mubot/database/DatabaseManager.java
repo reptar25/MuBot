@@ -2,25 +2,32 @@ package com.github.mubot.database;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 
-import io.r2dbc.client.R2dbc;
+import org.springframework.r2dbc.core.DatabaseClient;
+
+import com.github.mubot.database.cache.GuildCache;
+import com.github.mubot.database.cache.PrefixCache;
+import io.r2dbc.pool.ConnectionPool;
+import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.postgresql.client.SSLMode;
+import io.r2dbc.spi.ConnectionFactory;
 
 public class DatabaseManager {
-	// for heroku DATABASE_URL is stored as postgres://<username>:<password>@<host>/<dbname>
+	// for heroku DATABASE_URL is stored as
+	// postgres://<username>:<password>@<host>/<dbname>
 	private final static String DB_URL = System.getenv("DATABASE_URL");
-	private final String USERNAME;
-	private final String PASSWORD;
-	private final String HOST;
-	private final int PORT;
-	private final String DATABASE_NAME;
 	private final String TABLE_NAME = "guilds";
 
-	private static PrefixCollection prefixCollection;
+	private String MAX_CONNECTIONS = System.getenv("DATABASE_MAX_CONNECTIONS");
+
 	private static DatabaseManager instance;
-	private static R2dbc client;
+	private DatabaseClient databaseClient;
+
+	private static PrefixCache prefixCache;
+	private static GuildCache guildCache;
 
 	private DatabaseManager() {
 		URI dbUri = null;
@@ -30,29 +37,40 @@ public class DatabaseManager {
 			e.printStackTrace();
 		}
 
-		this.USERNAME = dbUri.getUserInfo().split(":")[0];
-		this.PASSWORD = dbUri.getUserInfo().split(":")[1];
-		this.HOST = dbUri.getHost();
-		this.PORT = dbUri.getPort();
-		this.DATABASE_NAME = dbUri.getPath().replaceFirst("/", "");
+		if (MAX_CONNECTIONS == null) {
+			MAX_CONNECTIONS = "10";
+		}
+
+		ConnectionFactory factory = new PostgresqlConnectionFactory(
+				PostgresqlConnectionConfiguration.builder().host(dbUri.getHost()).port(dbUri.getPort())
+						.username(dbUri.getUserInfo().split(":")[0]).password(dbUri.getUserInfo().split(":")[1])
+						.database(dbUri.getPath().replaceFirst("/", "")).enableSsl().sslMode(SSLMode.REQUIRE).build());
+
+		ConnectionPool poolConfig = new ConnectionPool(ConnectionPoolConfiguration.builder(factory).initialSize(1)
+				.maxIdleTime(Duration.ofSeconds(30)).maxSize(Integer.parseInt(MAX_CONNECTIONS)).build());
+
+		// databaseClient = new R2dbc(poolConfig);
+		databaseClient = DatabaseClient.create(poolConfig);
 	}
 
 	public static void create() {
-		DatabaseManager.instance = new DatabaseManager();
-		DatabaseManager.client = new R2dbc(new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
-				.host(DatabaseManager.instance.getHost()).port(DatabaseManager.instance.getPort())
-				.username(DatabaseManager.instance.getUsername()).password(DatabaseManager.instance.getPassword())
-				.database(DatabaseManager.instance.getDatabaseName()).enableSsl().sslMode(SSLMode.REQUIRE).build()));
-
-		DatabaseManager.prefixCollection = new PrefixCollection(DatabaseManager.instance);
+		if (instance == null) {
+			instance = new DatabaseManager();
+			prefixCache = new PrefixCache(instance);
+			guildCache = new GuildCache(instance);
+		}
 	}
 
-	public R2dbc getClient() {
-		return client;
+	public DatabaseClient getClient() {
+		return databaseClient;
 	}
 
-	public static PrefixCollection getPrefixCollection() {
-		return DatabaseManager.prefixCollection;
+	public PrefixCache getPrefixCache() {
+		return prefixCache;
+	}
+
+	public GuildCache getGuildCache() {
+		return guildCache;
 	}
 
 	public static String getTableName() {
@@ -61,25 +79,5 @@ public class DatabaseManager {
 
 	public static DatabaseManager getInstance() {
 		return DatabaseManager.instance;
-	}
-
-	public String getUsername() {
-		return USERNAME;
-	}
-
-	public String getPassword() {
-		return PASSWORD;
-	}
-
-	public String getHost() {
-		return HOST;
-	}
-
-	public String getDatabaseName() {
-		return DATABASE_NAME;
-	}
-
-	public int getPort() {
-		return PORT;
 	}
 }

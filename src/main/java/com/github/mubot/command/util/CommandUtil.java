@@ -136,7 +136,7 @@ public final class CommandUtil {
 	}
 
 	public static String getRawGuildPrefixFromId(long guildId) {
-		return DatabaseManager.getPrefixCollection().getPrefix(guildId);
+		return DatabaseManager.getInstance().getPrefixCache().getPrefix(guildId);
 	}
 
 	public static String escapeSpecialRegexChars(String str) {

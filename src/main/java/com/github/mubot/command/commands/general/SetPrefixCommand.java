@@ -23,9 +23,9 @@ public class SetPrefixCommand extends Command {
 
 	private Mono<CommandResponse> prefix(MessageCreateEvent event, String[] args) {
 		if (args.length >= 1) {
-
-			DatabaseManager.getPrefixCollection().setPrefix(event.getGuildId().get().asLong(), args[0])
+			DatabaseManager.getInstance().getPrefixCache().addPrefix(event.getGuildId().get().asLong(), args[0])
 					.onErrorResume(error -> Mono.empty()).subscribe();
+
 			return CommandResponse.create("Set guild command prefix to " + args[0]);
 		}
 		return getHelp(event);
