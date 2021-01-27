@@ -60,7 +60,6 @@ public abstract class Command implements CommandInterface {
 	 */
 	public Mono<CommandResponse> getHelp(long guildId) {
 		return createCommandHelpEmbed(createHelpSpec(), guildId);
-
 	}
 	
 	/**
@@ -68,7 +67,7 @@ public abstract class Command implements CommandInterface {
 	 * @return the help embed for this command as a CommandResponse
 	 */
 	public Mono<CommandResponse> getHelp(MessageCreateEvent event) {
-		return getHelp(event.getGuildId().orElse(Snowflake.of(-1)).asLong());
+		return getHelp(event.getGuildId().orElse(Snowflake.of(0)).asLong());
 
 	}
 	
