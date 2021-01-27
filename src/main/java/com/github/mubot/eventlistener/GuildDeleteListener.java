@@ -19,7 +19,7 @@ public class GuildDeleteListener implements EventListener<GuildDeleteEvent> {
 	@Override
 	public Mono<Void> consume(GuildDeleteEvent e) {
 		return Mono.just(e).flatMap(event -> {
-			LOGGER.info("GuildCreateEvent consumed: " + event.getGuildId().asLong());
+			LOGGER.info("GuildDeleteEvent consumed: " + event.getGuildId().asLong());
 			return DatabaseManager.getInstance().getGuildCache().removeGuild(event.getGuildId().asLong());
 		});
 	}
