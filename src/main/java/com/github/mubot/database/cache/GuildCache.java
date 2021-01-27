@@ -18,6 +18,7 @@ public class GuildCache extends DatabaseCache {
 	private static final String INSERT_GUILD_SQL = "INSERT INTO " + TABLE_NAME
 			+ " (guild_id, guild_name) VALUES ($1, $2) ON CONFLICT (guild_id) DO UPDATE SET guild_name = $2";
 	private static final String DELETE_GUILD_SQL = "DELETE FROM " + TABLE_NAME + " WHERE guild_id = $1";
+	private static final String UPDATE_GUILD_NAME_SQL = "UPDATE " + TABLE_NAME + " SET guild_name = $2 WHERE guild_id = $1";
 
 	public GuildCache(DatabaseManager databaseManager) {
 		super(databaseManager);
@@ -41,10 +42,11 @@ public class GuildCache extends DatabaseCache {
 	}
 
 	public Mono<Void> offerGuild(Guild guild) {
-		if (GUILD_CACHE.get(guild.getId().asLong()) == null) {
-			long guildId = guild.getId().asLong();
-			String guildName = guild.getName();
-			return addGuild(guildId, guildName);
+		String cachedName = GUILD_CACHE.get(guild.getId().asLong());
+		if (cachedName == null) {
+			return addGuild(guild.getId().asLong(), guild.getName());
+		} else if (!cachedName.equals(guild.getName())) {
+			return updateGuild(guild.getId().asLong(), guild.getName());
 		}
 		return Mono.empty();
 	}
@@ -53,6 +55,15 @@ public class GuildCache extends DatabaseCache {
 		return databaseManager.getClient().sql(INSERT_GUILD_SQL).bind("$1", guildId).bind("$2", guildName).fetch()
 				.rowsUpdated().map(result -> {
 					LOGGER.info(String.format("Adding guild %s with id %d", guildName, guildId));
+					GUILD_CACHE.put(guildId, guildName);
+					return result;
+				}).then();
+	}
+
+	private Mono<Void> updateGuild(long guildId, String guildName) {
+		return databaseManager.getClient().sql(UPDATE_GUILD_NAME_SQL).bind("$1", guildId).bind("$2", guildName).fetch()
+				.rowsUpdated().map(result -> {
+					LOGGER.info(String.format("Updating guild with id %d with new name %s", guildId, guildName));
 					GUILD_CACHE.put(guildId, guildName);
 					return result;
 				}).then();
