@@ -64,7 +64,11 @@ public class CommandListener implements EventListener<MessageCreateEvent> {
 								splitCommand -> Mono.just(Arrays.copyOfRange(splitCommand, 1, splitCommand.length)))
 								.flatMap(commandArgs -> executeCommand(event, command, commandArgs)))
 						.onErrorResume(CommandException.class, error -> {
-							LOGGER.error(error.getMessage());
+							long guildId = 0;
+							if (event.getGuildId().isPresent())
+								guildId = event.getGuildId().get().asLong();
+							LOGGER.error("GuildId: " + guildId + ", EventMessage: " + event.getMessage().getContent()
+									+ ", ErrorMessage: " + error.getMessage());
 
 							// Send command errors back as a reply to the user who used the command
 							return sendReply(event, CommandResponse.createFlat(EmojiHelper.NO_ENTRY + " "
