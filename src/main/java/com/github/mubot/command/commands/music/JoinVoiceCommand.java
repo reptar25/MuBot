@@ -1,6 +1,6 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireVoiceChannel;
 
 import java.time.Duration;
@@ -34,7 +34,7 @@ public class JoinVoiceCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event)
-				.flatMap(channel -> requireBotPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
+				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
 						.flatMap(ignored -> join(channel)));
 	}
 

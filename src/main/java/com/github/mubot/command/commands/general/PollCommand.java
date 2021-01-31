@@ -1,7 +1,7 @@
 package com.github.mubot.command.commands.general;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivate;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
 
 import java.util.function.Consumer;
 
@@ -27,8 +27,8 @@ public class PollCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivate(event).flatMap(ignored -> event.getMessage().getChannel())
-				.flatMap(channel -> requireBotPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
+		return requireNotPrivateMessage(event).flatMap(ignored -> event.getMessage().getChannel())
+				.flatMap(channel -> requireBotChannelPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
 				.flatMap(ignored -> poll(pollArgs(args), event.getMember().orElse(null)));
 	}
 

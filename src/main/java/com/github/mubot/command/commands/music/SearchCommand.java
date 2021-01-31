@@ -1,6 +1,6 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
 import java.util.Arrays;
@@ -27,7 +27,7 @@ public class SearchCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
-				.flatMap(channel -> requireBotPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES)
+				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES)
 						.thenReturn(channel))
 				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
 				.flatMap(scheduler -> search(scheduler, args));

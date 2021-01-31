@@ -1,6 +1,6 @@
 package com.github.mubot.command.util;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -46,7 +46,7 @@ public final class CommandUtil {
 			CommandResponse response) {
 		return channelMono.flatMap(channel -> {
 			Mono<PermissionSet> permissions = channel instanceof PrivateChannel ? Mono.just(PermissionSet.all())
-					: requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
+					: requireBotChannelPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
 
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {

@@ -13,7 +13,7 @@ import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.CommandsHelper;
 import com.github.mubot.command.help.CommandHelpSpec;
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivate;
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
@@ -26,7 +26,7 @@ public class HelpCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivate(event).flatMap(ignored -> help(event));
+		return requireNotPrivateMessage(event).flatMap(ignored -> help(event));
 	}
 
 	/**

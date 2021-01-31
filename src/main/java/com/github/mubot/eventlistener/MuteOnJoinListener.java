@@ -1,6 +1,6 @@
 package com.github.mubot.eventlistener;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +56,7 @@ public class MuteOnJoinListener implements EventListener<VoiceStateUpdateEvent> 
 	 */
 	private Mono<Void> muteOnJoin(VoiceState voiceState) {
 		return voiceState.getChannel()
-				.flatMap(voiceChannel -> requireBotPermissions(voiceChannel, Permission.MUTE_MEMBERS))
+				.flatMap(voiceChannel -> requireBotChannelPermissions(voiceChannel, Permission.MUTE_MEMBERS))
 				.flatMap(ignored -> voiceState.getChannel().map(VoiceChannel::getId)).flatMap(currentChannelId -> {
 					// if user join same channel as mute channel
 					if (mutedChannels.containsKey(voiceState.getGuildId())) {

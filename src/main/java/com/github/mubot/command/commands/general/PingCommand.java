@@ -11,7 +11,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.gateway.GatewayClient;
 import reactor.core.publisher.Mono;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivate;
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
 
 public class PingCommand extends Command {
 
@@ -21,7 +21,7 @@ public class PingCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivate(event).flatMap(ignored -> ping(event));
+		return requireNotPrivateMessage(event).flatMap(ignored -> ping(event));
 	}
 
 	private Mono<CommandResponse> ping(MessageCreateEvent event) {

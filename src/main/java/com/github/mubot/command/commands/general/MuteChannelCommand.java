@@ -1,6 +1,6 @@
 package com.github.mubot.command.commands.general;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireVoiceChannel;
 
 import java.util.ArrayList;
@@ -24,18 +24,18 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class MuteCommand extends Command {
+public class MuteChannelCommand extends Command {
 
-	private static final Logger LOGGER = Loggers.getLogger(MuteCommand.class);
+	private static final Logger LOGGER = Loggers.getLogger(MuteChannelCommand.class);
 
-	public MuteCommand() {
-		super("mute");
+	public MuteChannelCommand() {
+		super("muteChannel");
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event).flatMap(
-				channel -> requireBotPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
+				channel -> requireBotChannelPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
 	}
 
 	/**

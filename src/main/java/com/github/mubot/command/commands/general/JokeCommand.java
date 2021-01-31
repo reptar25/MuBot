@@ -11,8 +11,8 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivate;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,8 +28,8 @@ public class JokeCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return event.getGuild().flatMap(guild -> guild.getChannelById(event.getMessage().getChannelId()))
-				.flatMap(channel -> requireBotPermissions(channel, Permission.MANAGE_MESSAGES)
-						.then(requireNotPrivate(event).flatMap(ignored -> joke(args))));
+				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES)
+						.then(requireNotPrivateMessage(event).flatMap(ignored -> joke(args))));
 	}
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {
