@@ -50,6 +50,17 @@ public class CommandListener implements EventListener<MessageCreateEvent> {
 	 * @return Mono<Void>
 	 */
 	private Mono<Void> receiveMessage(MessageCreateEvent event) {
+		return parseComamnds(event).flatMap(commandString -> Mono
+				.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
+				.flatMap(command -> Mono.just(commandString.trim().split(" "))
+						.flatMap(splitCommand -> Mono.just(Arrays.copyOfRange(splitCommand, 1, splitCommand.length)))
+						.flatMap(commandArgs -> executeCommand(event, command, commandArgs)))
+				.onErrorResume(CommandException.class, error -> {
+					return onCommandException(event, error);
+				})).then();
+	}
+
+	private Flux<String> parseComamnds(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMessage().getContent())
 				.map(content -> content.split(" (?=" + getEscapedGuildPrefixFromEvent(event) + ")"))
 				.flatMapMany(Flux::fromArray).map(content -> {
@@ -57,24 +68,22 @@ public class CommandListener implements EventListener<MessageCreateEvent> {
 						return content.replaceAll(getEscapedGuildPrefixFromEvent(event), "");
 					else
 						return "";
-				}).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE)
-				.flatMap(commandString -> Mono
-						.justOrEmpty(CommandsHelper.get(commandString.split(" ")[0].toLowerCase()))
-						.flatMap(command -> Mono.just(commandString.trim().split(" ")).flatMap(
-								splitCommand -> Mono.just(Arrays.copyOfRange(splitCommand, 1, splitCommand.length)))
-								.flatMap(commandArgs -> executeCommand(event, command, commandArgs)))
-						.onErrorResume(CommandException.class, error -> {
-							long guildId = 0;
-							if (event.getGuildId().isPresent())
-								guildId = event.getGuildId().get().asLong();
-							LOGGER.error("GuildId: " + guildId + ", EventMessage: " + event.getMessage().getContent()
-									+ ", ErrorMessage: " + error.getMessage());
+				}).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE);
+	}
 
-							// Send command errors back as a reply to the user who used the command
-							return sendReply(event, CommandResponse.createFlat(EmojiHelper.NO_ENTRY + " "
-									+ error.getUserFriendlyMessage() + " " + EmojiHelper.NO_ENTRY)).then();
-						}))
-				.then();
+	private Mono<Void> onCommandException(MessageCreateEvent event, CommandException error) {
+		long guildId = 0;
+		if (event.getGuildId().isPresent())
+			guildId = event.getGuildId().get().asLong();
+		LOGGER.error("GuildId: " + guildId + ", EventMessage: " + event.getMessage().getContent() + ", ErrorMessage: "
+				+ error.getMessage());
+
+		// Send command errors back as a reply to the user who used the command
+		return sendReply(event,
+				CommandResponse.createFlat(
+						EmojiHelper.NO_ENTRY + " " + error.getUserFriendlyMessage() + " " + EmojiHelper.NO_ENTRY))
+								.then();
+
 	}
 
 	/**

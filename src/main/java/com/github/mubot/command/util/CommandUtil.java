@@ -50,14 +50,7 @@ public final class CommandUtil {
 
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {
-					return channel.createMessage(response.getSpec()).flatMap(message -> {
-						// if the response contains a menu
-						if (response.getMenu() != null) {
-							// set message on the menu
-							response.getMenu().setMessage(message);
-						}
-						return Mono.just(response);
-					});
+					createMessage(channel, response);
 				}
 				return Mono.empty();
 			}).then();
@@ -65,6 +58,17 @@ public final class CommandUtil {
 				exception -> Mono.justOrEmpty(memberOpt)
 						.flatMap(member -> sendPrivateReply(exception, member.getPrivateChannel(), response)))
 				.thenReturn(response);
+	}
+
+	private static Mono<CommandResponse> createMessage(MessageChannel channel, CommandResponse response) {
+		return channel.createMessage(response.getSpec()).flatMap(message -> {
+			// if the response contains a menu
+			if (response.getMenu() != null) {
+				// set message on the menu
+				response.getMenu().setMessage(message);
+			}
+			return Mono.just(response);
+		});
 	}
 
 	private static Mono<Void> sendPrivateReply(SendMessagesException exception, Mono<PrivateChannel> privateChannelMono,

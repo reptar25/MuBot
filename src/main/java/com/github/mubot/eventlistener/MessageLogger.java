@@ -47,6 +47,12 @@ public class MessageLogger implements EventListener<MessageCreateEvent> {
 			return Mono.just((GuildChannel) channel);
 		}).map(GuildChannel::getName).defaultIfEmpty("Private Message");
 
+		return zipMessage(content, getUser, getGuildName, getGuildChannelName);
+	}
+
+	private Mono<Void> zipMessage(String content, Mono<User> getUser, Mono<String> getGuildName,
+			Mono<String> getGuildChannelName) {
+
 		return Mono.zip(getUser, getGuildName, getGuildChannelName).map(tuple -> {
 			User user = tuple.getT1();
 			String guildName = tuple.getT2();
