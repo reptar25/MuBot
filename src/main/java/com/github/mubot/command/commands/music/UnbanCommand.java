@@ -23,10 +23,10 @@ public class UnbanCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return event.getMessage().getAuthorAsMember()
-				.flatMap(member -> requireGuildPermissions(false, member, Permission.BAN_MEMBERS)
+				.flatMap(member -> requireGuildPermissions(member, Permission.BAN_MEMBERS)
 						.flatMap(ignored -> event.getClient().getMemberById(event.getGuildId().get(),
 								event.getClient().getSelfId()))
-						.flatMap(botMember -> requireGuildPermissions(true, botMember, Permission.BAN_MEMBERS)))
+						.flatMap(botMember -> requireGuildPermissions(botMember, Permission.BAN_MEMBERS)))
 				.flatMap(ignored -> unban(event, args));
 
 	}

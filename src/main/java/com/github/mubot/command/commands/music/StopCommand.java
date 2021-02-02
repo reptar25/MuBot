@@ -2,6 +2,7 @@ package com.github.mubot.command.commands.music;
 
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -22,7 +23,7 @@ public class StopCommand extends Command {
 	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
 
 	public StopCommand() {
-		super("stop");
+		super("stop", Arrays.asList("random"));
 	}
 
 	@Override

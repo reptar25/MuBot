@@ -13,11 +13,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.rest.http.client.ClientException;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
-import reactor.util.Logger;
-import reactor.util.Loggers;
 
 public class BanCommand extends Command {
-	private static final Logger LOGGER = Loggers.getLogger(BanCommand.class);
 
 	public BanCommand() {
 		super("ban");
@@ -26,10 +23,10 @@ public class BanCommand extends Command {
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return event.getMessage().getAuthorAsMember()
-				.flatMap(member -> requireGuildPermissions(false, member, Permission.BAN_MEMBERS)
+				.flatMap(member -> requireGuildPermissions(member, Permission.BAN_MEMBERS)
 						.flatMap(ignored -> event.getClient().getMemberById(event.getGuildId().get(),
 								event.getClient().getSelfId()))
-						.flatMap(botMember -> requireGuildPermissions(true, botMember, Permission.BAN_MEMBERS)))
+						.flatMap(botMember -> requireGuildPermissions(botMember, Permission.BAN_MEMBERS)))
 				.flatMap(ignored -> ban(event, args));
 
 	}
