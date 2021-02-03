@@ -4,10 +4,7 @@ import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelP
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
 import java.util.List;
-import java.util.function.Consumer;
-
 import com.github.mubot.command.CommandResponse;
-import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.music.GuildMusicManager;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.rest.util.Permission;
@@ -32,11 +29,5 @@ public abstract class MusicPermissionCommand extends MusicCommand {
 				.flatMap(channel -> requireBotChannelPermissions(channel, this.permissions).thenReturn(channel))
 				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
 						.flatMap(scheduler -> action(event, args, scheduler, channel)));
-	}
-
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
