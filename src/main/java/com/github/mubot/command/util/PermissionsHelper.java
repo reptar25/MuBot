@@ -1,6 +1,5 @@
 package com.github.mubot.command.util;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 import com.github.mubot.command.exceptions.BotPermissionException;
@@ -20,18 +19,6 @@ import reactor.core.publisher.Mono;
 
 public final class PermissionsHelper {
 
-	private static HashMap<Permission, String> permissionErrorMessages = new HashMap<Permission, String>();
-
-	static {
-		permissionErrorMessages.put(Permission.CONNECT, "connect to");
-		permissionErrorMessages.put(Permission.SPEAK, "speak in");
-		permissionErrorMessages.put(Permission.VIEW_CHANNEL, "view");
-		permissionErrorMessages.put(Permission.MUTE_MEMBERS, "mute members in");
-		permissionErrorMessages.put(Permission.ADD_REACTIONS, "add message reactions in");
-		permissionErrorMessages.put(Permission.MANAGE_MESSAGES, "manage messages in");
-		permissionErrorMessages.put(Permission.SEND_MESSAGES, "send messages in");
-	}
-
 	/**
 	 * Returns the voice channel the message sender is in or empty if they are not
 	 * in a voice channel
@@ -40,7 +27,7 @@ public final class PermissionsHelper {
 	 * @return the voice channel of the message sender
 	 */
 	public static Mono<VoiceChannel> requireVoiceChannel(MessageCreateEvent event) {
-		return requireNotPrivate(event).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
+		return requireNotPrivateMessage(event).flatMap(Member::getVoiceState).map(VoiceState::getChannelId)
 				.switchIfEmpty(Mono.error(new CommandException("Voice command used without voice channel",
 						"You have to be in a voice channel to use this command")))
 				.flatMap(Mono::justOrEmpty).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
@@ -67,7 +54,12 @@ public final class PermissionsHelper {
 		final Mono<Optional<Snowflake>> getUserVoiceChannelId = Mono.justOrEmpty(event.getMember())
 				.flatMap(Member::getVoiceState).map(VoiceState::getChannelId).defaultIfEmpty(Optional.empty());
 
-		return requireNotPrivate(event)
+		return checkSameVoiceChannel(event, getBotVoiceChannelId, getUserVoiceChannelId);
+	}
+
+	private static Mono<VoiceChannel> checkSameVoiceChannel(MessageCreateEvent event,
+			Mono<Optional<Snowflake>> getBotVoiceChannelId, Mono<Optional<Snowflake>> getUserVoiceChannelId) {
+		return requireNotPrivateMessage(event)
 				.then(Mono.zip(getBotVoiceChannelId, getUserVoiceChannelId).flatMap(tuple -> {
 					final Optional<Snowflake> botVoiceChannelId = tuple.getT1();
 					final Optional<Snowflake> userVoiceChannelId = tuple.getT2();
@@ -78,13 +70,10 @@ public final class PermissionsHelper {
 								"You have to be in a voice channel to use this command");
 					}
 
-					// if the bot is not in a voice channel give a chance to join before erring
-					if (botVoiceChannelId.isEmpty()) {
-						return Mono.empty();
-					}
-
-					// If the user and the bot are not in the same voice channel
-					if (!userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
+					// if the bot is not in a voice channel or If the user and the bot are not in
+					// the same voice channel, give it a chance to join before erring
+					else if (botVoiceChannelId.isEmpty()
+							|| !userVoiceChannelId.map(botVoiceChannelId.get()::equals).orElse(false)) {
 						return Mono.empty();
 					}
 
@@ -103,7 +92,7 @@ public final class PermissionsHelper {
 	 * @param event the MessageCreateEvent
 	 * @return returns the Member if not a private message, or errors if it is
 	 */
-	public static Mono<Member> requireNotPrivate(MessageCreateEvent event) {
+	public static Mono<Member> requireNotPrivateMessage(MessageCreateEvent event) {
 		return Mono.justOrEmpty(event.getMember())
 				.switchIfEmpty(Mono.error(new CommandException("Voice command in private message",
 						"You can't use this command in a private message")));
@@ -117,9 +106,10 @@ public final class PermissionsHelper {
 	 *         does not have the requested permissions
 	 */
 
-	public static Mono<PermissionSet> requireBotPermissions(GuildChannel channel, Permission... requestedPermissions) {
+	public static Mono<PermissionSet> requireBotChannelPermissions(GuildChannel channel,
+			Permission... requestedPermissions) {
 		return channel.getEffectivePermissions(channel.getClient().getSelfId()).flatMap(permissions -> {
-			return checkPermissions(true, channel.getName(), permissions, requestedPermissions);
+			return checkChannelPermissions(true, channel.getName(), permissions, requestedPermissions);
 		});
 	}
 
@@ -132,15 +122,15 @@ public final class PermissionsHelper {
 	 *         member does not have the requested permissions
 	 */
 
-	public static Mono<PermissionSet> requireMemberPermissions(GuildChannel channel, Snowflake memberId,
+	public static Mono<PermissionSet> requireMemberChannelPermissions(GuildChannel channel, Snowflake memberId,
 			Permission... requestedPermissions) {
 		return channel.getEffectivePermissions(memberId).flatMap(permissions -> {
-			return checkPermissions(false, channel.getName(), permissions, requestedPermissions);
+			return checkChannelPermissions(false, channel.getName(), permissions, requestedPermissions);
 		});
 	}
 
 	/**
-	 * Checks the given permissions set agains the requested permission
+	 * Checks the given permissions set against the requested permission
 	 * 
 	 * @param channelName          the name of the channel permissions are being
 	 *                             checked for
@@ -152,12 +142,12 @@ public final class PermissionsHelper {
 	 *         doesn't have one of the requested permissions for this channel
 	 */
 
-	private static Mono<PermissionSet> checkPermissions(boolean bot, String channelName, PermissionSet permissions,
-			Permission... requestedPermissions) {
+	private static Mono<PermissionSet> checkChannelPermissions(boolean bot, String channelName,
+			PermissionSet permissions, Permission... requestedPermissions) {
 		for (Permission permission : requestedPermissions) {
 			if (!permissions.contains(permission)) {
 				RuntimeException exception;
-				String exceptionMessage = getPermissionErrorMessage(bot, permission, channelName);
+				String exceptionMessage = getChannelPermissionErrorMessage(bot, permission, channelName);
 				if (permission.equals(Permission.SEND_MESSAGES)) {
 					exception = new SendMessagesException(exceptionMessage);
 				} else {
@@ -169,19 +159,47 @@ public final class PermissionsHelper {
 		return Mono.just(permissions);
 	}
 
-	public static String getPermissionErrorMessage(boolean bot, Permission permission, String channelName) {
+	public static Mono<PermissionSet> requireGuildPermissions(Member m, Permission... requestedPermissions) {
+		return m.getBasePermissions().flatMap(memberPermissions -> {
+			for (Permission permission : requestedPermissions) {
+				if (!memberPermissions.contains(permission)) {
+					RuntimeException exception;
+					String exceptionMessage = getGuildPermissionErrorMessage(m.isBot(), permission);
+					if (permission.equals(Permission.SEND_MESSAGES)) {
+						exception = new SendMessagesException(exceptionMessage);
+					} else {
+						exception = new BotPermissionException(exceptionMessage);
+					}
+					return Mono.error(exception);
+				}
+			}
+			return Mono.just(memberPermissions);
+		});
+
+	}
+
+	public static String getGuildPermissionErrorMessage(boolean bot, Permission permission) {
 		StringBuilder sb;
 		if (bot)
 			sb = new StringBuilder("I don't have permission to ");
 		else
 			sb = new StringBuilder("You don't have permission to ");
-		String errorMessage = permissionErrorMessages.get(permission);
-		if (errorMessage != null)
-			sb.append(errorMessage);
-		else
-			sb.append("do that in");
 
-		sb.append(" " + channelName);
+		sb.append(permission.toString());
+
+		return sb.toString();
+	}
+
+	public static String getChannelPermissionErrorMessage(boolean bot, Permission permission, String channelName) {
+		StringBuilder sb;
+		if (bot)
+			sb = new StringBuilder("I don't have permission to ");
+		else
+			sb = new StringBuilder("You don't have permission to ");
+
+		sb.append(permission.toString());
+
+		sb.append(" in " + channelName);
 		return sb.toString();
 	}
 }

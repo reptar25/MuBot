@@ -1,30 +1,30 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
-
+import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
+import com.github.mubot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 
-public class LeaveVoiceCommand extends Command {
+public class LeaveVoiceCommand extends MusicCommand {
 
 	// private static final Logger LOGGER =
 	// Loggers.getLogger(LeaveVoiceCommand.class);
 
 	public LeaveVoiceCommand() {
-		super("leave");
+		super("leave", Arrays.asList("quit", "q", "l"));
 	};
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> leave(channel));
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		return leave(channel);
 	}
 
 	/**
@@ -42,4 +42,5 @@ public class LeaveVoiceCommand extends Command {
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
 		return spec -> spec.setDescription("Requests the bot to leave its' current voice channel.");
 	}
+
 }

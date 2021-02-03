@@ -1,7 +1,7 @@
 package com.github.mubot.command.commands.general;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivate;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
 
 import java.util.function.Consumer;
 
@@ -15,6 +15,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
+import reactor.util.annotation.NonNull;
 
 public class PollCommand extends Command {
 
@@ -26,8 +27,8 @@ public class PollCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivate(event).flatMap(ignored -> event.getMessage().getChannel())
-				.flatMap(channel -> requireBotPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
+		return requireNotPrivateMessage(event).flatMap(ignored -> event.getMessage().getChannel())
+				.flatMap(channel -> requireBotChannelPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
 				.flatMap(ignored -> poll(pollArgs(args), event.getMember().orElse(null)));
 	}
 
@@ -65,7 +66,9 @@ public class PollCommand extends Command {
 	 * @return null
 	 * 
 	 */
-	public Mono<CommandResponse> poll(String[] args, Member member) {
+	public Mono<CommandResponse> poll(@NonNull String[] args, @NonNull Member member) {
+		if (args.length <= 0 || args[0].isBlank())
+			return getHelp(member.getGuildId().asLong());
 		// create a new poll object
 		PollMenu poll = new PollMenu(args, member);
 

@@ -1,12 +1,12 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.menu.menus.Paginator;
@@ -18,23 +18,30 @@ import com.github.mubot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-public class ViewQueueCommand extends Command {
+public class ViewQueueCommand extends MusicCommand {
 
 	public ViewQueueCommand() {
-		super("viewqueue");
+		super("viewqueue", Arrays.asList("vq", "queue", "q"));
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event)
-				.flatMap(channel -> requireBotPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> viewQueue(scheduler, event.getMessage().getChannel()));
+		return requireSameVoiceChannel(event).flatMap(
+				channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
+						.flatMap(scheduler -> action(event, args, scheduler, channel)));
+	}
+
+	@Override
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		return viewQueue(scheduler, event.getMessage().getChannel());
 	}
 
 	/**

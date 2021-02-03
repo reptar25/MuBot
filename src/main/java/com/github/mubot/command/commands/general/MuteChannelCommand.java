@@ -1,6 +1,6 @@
 package com.github.mubot.command.commands.general;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireVoiceChannel;
 
 import java.util.ArrayList;
@@ -9,10 +9,9 @@ import java.util.function.Predicate;
 
 import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
-import com.github.mubot.command.commands.music.StopCommand;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.util.EmojiHelper;
-import com.github.mubot.command.util.MuteHelper;
+import com.github.mubot.eventlistener.MuteOnJoinListener;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -25,18 +24,18 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-public class MuteCommand extends Command {
+public class MuteChannelCommand extends Command {
 
-	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
+	private static final Logger LOGGER = Loggers.getLogger(MuteChannelCommand.class);
 
-	public MuteCommand() {
-		super("mute");
+	public MuteChannelCommand() {
+		super("mutechannel");
 	}
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event).flatMap(
-				channel -> requireBotPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
+				channel -> requireBotChannelPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
 	}
 
 	/**
@@ -56,7 +55,7 @@ public class MuteCommand extends Command {
 		Flux<VoiceState> users = channel.getVoiceStates();
 
 		boolean mute = true;
-		ArrayList<Snowflake> channelIds = MuteHelper.mutedChannels.get(guildId);
+		ArrayList<Snowflake> channelIds = MuteOnJoinListener.mutedChannels.get(guildId);
 		if (channelIds != null) {
 			// channel is muted, so unmute
 			if (channelIds.contains(id)) {
@@ -69,22 +68,16 @@ public class MuteCommand extends Command {
 			// channel should be muted
 			ArrayList<Snowflake> ids = new ArrayList<Snowflake>();
 			ids.add(id);
-			MuteHelper.mutedChannels.put(guildId, ids);
+			MuteOnJoinListener.mutedChannels.put(guildId, ids);
 		}
 
 		String response;
 		Flux<Void> doMute;
 		if (mute) {
-			doMute = users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
-				LOGGER.info(new StringBuilder("Muting ").append(member.getUsername()).toString());
-				return member.edit(spec -> spec.setMute(true));
-			});
+			doMute = muteUsers(users, true);
 			response = EmojiHelper.MUTE + " Muting " + channel.getName() + " " + EmojiHelper.MUTE;
 		} else {
-			doMute = users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
-				LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
-				return member.edit(spec -> spec.setMute(false));
-			});
+			doMute = muteUsers(users, false);
 			response = EmojiHelper.SOUND + " Unmuting " + channel.getName() + " " + EmojiHelper.SOUND;
 		}
 		return doMute.then(CommandResponse.create(response));
@@ -94,6 +87,13 @@ public class MuteCommand extends Command {
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
 		return spec -> spec.setDescription(
 				"Mutes the voice channel of the user who used the command. Will also mute any new users that join that channel until this command is used again to unmute the channel.");
+	}
+
+	private Flux<Void> muteUsers(Flux<VoiceState> users, boolean mute) {
+		return users.flatMap(VoiceState::getMember).filter(Predicate.not(Member::isBot)).flatMap(member -> {
+			LOGGER.info(new StringBuilder("Unmuting ").append(member.getUsername()).toString());
+			return member.edit(spec -> spec.setMute(mute));
+		});
 	}
 
 }

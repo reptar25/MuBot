@@ -1,16 +1,17 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 import static com.github.mubot.command.util.PermissionsHelper.requireVoiceChannel;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.exceptions.CommandException;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.music.GuildMusicManager;
+import com.github.mubot.music.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -21,20 +22,26 @@ import discord4j.rest.util.Permission;
 import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 
-public class JoinVoiceCommand extends Command {
+public class JoinVoiceCommand extends MusicCommand {
 
 	// private static final Logger LOGGER =
 	// Loggers.getLogger(JoinVoiceCommand.class);
 
 	public JoinVoiceCommand() {
-		super("join");
+		super("join", Arrays.asList("j"));
 	};
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event)
-				.flatMap(channel -> requireBotPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
-						.flatMap(ignored -> join(channel)));
+				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
+						.flatMap(ignored -> action(event, args, null, channel)));
+	}
+
+	@Override
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		return join(channel);
 	}
 
 	/**
@@ -69,7 +76,8 @@ public class JoinVoiceCommand extends Command {
 
 	@Override
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Requests the bot to join the same voice channel as user who used the command.");
+		return spec -> spec
+				.setDescription("Requests the bot to join the same voice channel as user who used the command.");
 	}
 
 }

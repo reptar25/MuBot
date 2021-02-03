@@ -1,10 +1,8 @@
 package com.github.mubot.jokeapi;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.mubot.jokeapi.util.JokeEnums.BlacklistFlag;
 import com.github.mubot.jokeapi.util.JokeEnums.JokeLanguage;
 import com.github.mubot.jokeapi.util.JokeEnums.JokeType;
 import com.github.mubot.jokeapi.util.JokeEnums.ResponseFormat;
@@ -15,116 +13,46 @@ import reactor.util.Loggers;
 public class JokeRequest {
 
 	private static final Logger LOGGER = Loggers.getLogger(JokeRequest.class);
-	private final List<String> categories;
-	private final List<String> blacklistFlags;
-	private final JokeLanguage language;
-	private final ResponseFormat responseFormat;
-	private final JokeType jokeType;
-	private final String contains;
-	private final int amount;
-	private final boolean safeMode;
 	private final ArrayList<String> parameters;
+	private final JokeRequestOptions options;
 
 	public static JokeRequest createDefaultRequest() {
-		return new JokeRequest.Builder().build();
+		return new JokeRequest(new JokeRequestOptions());
 	}
 
-	private JokeRequest(Builder b) {
-		this.categories = b.categories;
-		this.blacklistFlags = b.blacklistFlags;
-		this.language = b.language;
-		this.responseFormat = b.responseFormat;
-		this.jokeType = b.jokeType;
-		this.contains = b.contains;
-		this.amount = b.amount;
-		this.safeMode = b.safeMode;
-
+	public JokeRequest(JokeRequestOptions options) {
+		this.options = options;
 		parameters = new ArrayList<String>();
 		buildParameters();
 	}
 
 	private void buildParameters() {
-		if (!blacklistFlags.isEmpty()) {
-			parameters.add("blacklistFlags=" + blacklistFlags.stream().collect(Collectors.joining(",")));
+		if (!options.getBlacklistFlags().isEmpty()) {
+			parameters.add("blacklistFlags=" + options.getBlacklistFlags().stream().collect(Collectors.joining(",")));
 		}
 
-		if (!language.equals(JokeLanguage.DEFAULT)) {
-			parameters.add(language.toString());
+		if (!options.getLanguage().equals(JokeLanguage.DEFAULT)) {
+			parameters.add(options.getLanguage().toString());
 		}
 
-		if (!responseFormat.equals(ResponseFormat.DEFAULT)) {
-			parameters.add(responseFormat.toString());
+		if (!options.getResponseFormat().equals(ResponseFormat.DEFAULT)) {
+			parameters.add(options.getResponseFormat().toString());
 		}
 
-		if (!jokeType.equals(JokeType.DEFAULT)) {
-			parameters.add(jokeType.toString());
+		if (!options.getJokeType().equals(JokeType.DEFAULT)) {
+			parameters.add(options.getJokeType().toString());
 		}
 
-		if (!contains.isEmpty()) {
-			parameters.add("contains=" + contains);
+		if (!options.getContains().isEmpty()) {
+			parameters.add("contains=" + options.getContains());
 		}
 
-		if (amount > 1) {
-			parameters.add("amount=" + amount);
+		if (options.getAmount() > 1) {
+			parameters.add("amount=" + options.getAmount());
 		}
 
-		if (safeMode) {
+		if (options.isSafeMode()) {
 			parameters.add("safe-mode");
-		}
-	}
-
-	public static class Builder {
-		private List<String> categories = new ArrayList<String>();
-		private List<String> blacklistFlags = new ArrayList<String>();
-		private JokeLanguage language = JokeLanguage.DEFAULT;
-		private ResponseFormat responseFormat = ResponseFormat.DEFAULT;
-		private JokeType jokeType = JokeType.DEFAULT;
-		private String contains = "";
-		private int amount = 1;
-		private boolean safeMode = false;
-
-		public Builder addCategory(String category) {
-			this.categories.add(category);
-			return this;
-		}
-
-		public Builder addBlacklistFlag(BlacklistFlag flag) {
-			blacklistFlags.add(flag.toString());
-			return this;
-		}
-
-		public Builder withJokeLanguage(JokeLanguage language) {
-			this.language = language;
-			return this;
-		}
-
-		public Builder withResponseFormat(ResponseFormat responseFormat) {
-			this.responseFormat = responseFormat;
-			return this;
-		}
-
-		public Builder withJokeType(JokeType jokeType) {
-			this.jokeType = jokeType;
-			return this;
-		}
-
-		public Builder withContains(String contains) {
-			this.contains = contains;
-			return this;
-		}
-
-		public Builder withAmount(int amount) {
-			this.amount = amount;
-			return this;
-		}
-
-		public Builder safeMode(boolean safeMode) {
-			this.safeMode = safeMode;
-			return this;
-		}
-
-		public JokeRequest build() {
-			return new JokeRequest(this);
 		}
 	}
 
@@ -132,8 +60,8 @@ public class JokeRequest {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("/");
 
-		if (!categories.isEmpty()) {
-			sb.append(categories.stream().collect(Collectors.joining(",")));
+		if (!options.getCategories().isEmpty()) {
+			sb.append(options.getCategories().stream().collect(Collectors.joining(",")));
 		} else {
 			sb.append("Any");
 		}

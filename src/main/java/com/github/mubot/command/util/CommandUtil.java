@@ -1,28 +1,29 @@
 package com.github.mubot.command.util;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.exceptions.SendMessagesException;
+import com.github.mubot.database.DatabaseManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
-import discord4j.rest.util.Color;
 import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
 import reactor.core.publisher.Mono;
 
 public final class CommandUtil {
 
-	public static final Color DEFAULT_EMBED_COLOR = Color.of(23, 53, 77);
-	public static final String DEFAULT_COMMAND_PREFIX = "!";
+	private static Pattern SPECIAL_REGEX_CHARS = Pattern.compile("[{}()\\[\\].+*?^$\\\\|]");
 
 	/**
 	 * Sends a reply to either the channel the command was sent in or in a private
@@ -45,18 +46,11 @@ public final class CommandUtil {
 			CommandResponse response) {
 		return channelMono.flatMap(channel -> {
 			Mono<PermissionSet> permissions = channel instanceof PrivateChannel ? Mono.just(PermissionSet.all())
-					: requireBotPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
+					: requireBotChannelPermissions((GuildChannel) channel, Permission.SEND_MESSAGES);
 
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {
-					return channel.createMessage(response.getSpec()).flatMap(message -> {
-						// if the response contains a menu
-						if (response.getMenu() != null) {
-							// set message on the menu
-							response.getMenu().setMessage(message);
-						}
-						return Mono.just(response);
-					});
+					return createMessage(channel, response);
 				}
 				return Mono.empty();
 			}).then();
@@ -64,6 +58,17 @@ public final class CommandUtil {
 				exception -> Mono.justOrEmpty(memberOpt)
 						.flatMap(member -> sendPrivateReply(exception, member.getPrivateChannel(), response)))
 				.thenReturn(response);
+	}
+
+	private static Mono<CommandResponse> createMessage(MessageChannel channel, CommandResponse response) {
+		return channel.createMessage(response.getSpec()).flatMap(message -> {
+			// if the response contains a menu
+			if (response.getMenu() != null) {
+				// set message on the menu
+				response.getMenu().setMessage(message);
+			}
+			return Mono.just(response);
+		});
 	}
 
 	private static Mono<Void> sendPrivateReply(SendMessagesException exception, Mono<PrivateChannel> privateChannelMono,
@@ -74,7 +79,8 @@ public final class CommandUtil {
 				return privateChannel.createMessage(response.getSpec()).then();
 			else
 				return privateChannel
-						.createMessage(EmojiHelper.NO_ENTRY + " " + exception.getMessage() + " " + EmojiHelper.NO_ENTRY).then();
+						.createMessage(EmojiHelper.NO_ENTRY + " " + exception.getMessage() + " " + EmojiHelper.NO_ENTRY)
+						.then();
 		});
 
 	}
@@ -119,6 +125,27 @@ public final class CommandUtil {
 
 	public static String trackInfoWithCurrentTime(AudioTrack track) {
 		return trackInfo(track) + " " + trackCurrentTime(track);
+	}
+
+	public static String getEscapedGuildPrefixFromEvent(MessageCreateEvent event) {
+		return getEscapedGuildPrefixFromId(event.getGuildId().orElse(Snowflake.of(0)).asLong());
+	}
+
+	public static String getEscapedGuildPrefixFromId(long guildId) {
+		return escapeSpecialRegexChars(getRawGuildPrefixFromId(guildId));
+	}
+
+	public static String getRawGuildPrefixFromEvent(MessageCreateEvent event) {
+		return getRawGuildPrefixFromId(event.getGuildId().orElse(Snowflake.of(0)).asLong());
+	}
+
+	public static String getRawGuildPrefixFromId(long guildId) {
+		return DatabaseManager.getInstance().getPrefixCache().getPrefix(guildId);
+	}
+
+	public static String escapeSpecialRegexChars(String str) {
+
+		return SPECIAL_REGEX_CHARS.matcher(str).replaceAll("\\\\$0");
 	}
 
 }

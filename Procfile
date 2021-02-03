@@ -1,1 +1,1 @@
-web: java -jar bin/mubot-0.0.1-SNAPSHOT-shaded.jar $token
+web: java -jar bin/mubot-1.0.0-SNAPSHOT.jar $token

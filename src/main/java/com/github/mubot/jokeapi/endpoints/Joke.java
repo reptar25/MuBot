@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.mubot.jokeapi.JokeClient;
 import com.github.mubot.jokeapi.JokeRequest;
+import com.github.mubot.jokeapi.JokeRequestOptions;
 import com.github.mubot.jokeapi.util.JokeJson;
 
 import reactor.core.publisher.Mono;
@@ -14,11 +15,11 @@ public class Joke {
 	private static final String JOKE_URI = "/joke";
 
 	public static Mono<List<String>> getJoke(String category) {
-		return getJoke(new JokeRequest.Builder().addCategory(category).build());
+		return getJoke(new JokeRequest(new JokeRequestOptions().addCategory(category)));
 	}
 
 	public static Mono<List<String>> getJoke() {
-		return getJoke(new JokeRequest.Builder().addCategory("Any").build());
+		return getJoke(new JokeRequest(new JokeRequestOptions().addCategory("Any")));
 	}
 
 	public static Mono<List<String>> getJoke(JokeRequest request) {

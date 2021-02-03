@@ -1,12 +1,12 @@
 package com.github.mubot.command.help;
 
-public class Argument {
+public class CommandArgument {
 
 	private String name;
 	private String description;
 	private boolean optional;
 
-	public Argument(String name, String description, boolean optional) {
+	public CommandArgument(String name, String description, boolean optional) {
 		super();
 		this.name = name;
 		this.description = description;

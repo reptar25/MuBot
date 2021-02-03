@@ -1,30 +1,29 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
-
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.music.GuildMusicManager;
 import com.github.mubot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-public class VolumeCommand extends Command {
+public class VolumeCommand extends MusicCommand {
 
 	public VolumeCommand() {
-		super("volume");
+		super("volume", Arrays.asList("vol"));
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> volume(scheduler, args));
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		return volume(args, scheduler);
 	}
 
 	/**
@@ -35,7 +34,7 @@ public class VolumeCommand extends Command {
 	 * @param args  The new volume setting
 	 * @return Responds with new volume setting
 	 */
-	public Mono<CommandResponse> volume(@NonNull TrackScheduler scheduler, @NonNull String[] args) {
+	public Mono<CommandResponse> volume(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
 		StringBuilder sb = new StringBuilder();
 		if (args.length == 0) {
 			return CommandResponse
@@ -62,5 +61,4 @@ public class VolumeCommand extends Command {
 						"Volume to set the bot to from 0 to 100 or \"reset\" to reset the volume to default.", true)
 				.addExample("50").addExample("reset");
 	}
-
 }

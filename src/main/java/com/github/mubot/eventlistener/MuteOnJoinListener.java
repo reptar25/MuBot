@@ -1,12 +1,11 @@
-package com.github.mubot.command.util;
+package com.github.mubot.eventlistener;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
@@ -21,47 +20,31 @@ import reactor.util.Loggers;
  * Helper class for the mute function
  *
  */
-public class MuteHelper {
+public class MuteOnJoinListener implements EventListener<VoiceStateUpdateEvent> {
 
+	private static final Logger LOGGER = Loggers.getLogger(MuteOnJoinListener.class);
 	/**
 	 * Map of guild ids and list of channel ids of channels that should be muted in
 	 * that guild
 	 */
 	public static HashMap<Snowflake, ArrayList<Snowflake>> mutedChannels = new HashMap<Snowflake, ArrayList<Snowflake>>();
-	private static MuteHelper instance;
-	private GatewayDiscordClient client;
-	private static final Logger LOGGER = Loggers.getLogger(MuteHelper.class);
 
-	public static MuteHelper create(GatewayDiscordClient client) {
-		if (instance == null)
-			instance = new MuteHelper(client);
-
-		return instance;
+	@Override
+	public Class<VoiceStateUpdateEvent> getEventType() {
+		return VoiceStateUpdateEvent.class;
 	}
 
-	private MuteHelper(GatewayDiscordClient client) {
-		this.client = client;
-		setupMuteListener();
-	}
-
-	/*
-	 * Add listener for members joining/changing voice channels.
-	 */
-	private void setupMuteListener() {
-		if (client.getEventDispatcher() != null) {
-			client.getEventDispatcher().on(VoiceStateUpdateEvent.class)
-					// filter out bots' events
-					.filterWhen(event -> event.getCurrent().getMember().map(m -> !m.isBot())).flatMap(event -> {
-						if ((event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent())
-								&& MuteHelper.mutedChannels.containsKey(event.getCurrent().getGuildId())) {
-							// Checks whether a member should be muted on joining a voice channel and mutes
-							// them if so
-							return muteOnJoin(event.getCurrent());
-						}
-						return Mono.empty();
-					}).subscribe(null, error -> LOGGER.error(error.getMessage()));
-		}
-
+	@Override
+	public Mono<Void> consume(VoiceStateUpdateEvent e) {
+		return Mono.just(e).filterWhen(event -> event.getCurrent().getMember().map(m -> !m.isBot())).flatMap(event -> {
+			if ((event.isJoinEvent() || event.isMoveEvent() || event.isLeaveEvent())
+					&& mutedChannels.containsKey(event.getCurrent().getGuildId())) {
+				// Checks whether a member should be muted on joining a voice channel and mutes
+				// them if so
+				return muteOnJoin(event.getCurrent());
+			}
+			return Mono.empty();
+		});
 	}
 
 	/**
@@ -73,11 +56,11 @@ public class MuteHelper {
 	 */
 	private Mono<Void> muteOnJoin(VoiceState voiceState) {
 		return voiceState.getChannel()
-				.flatMap(voiceChannel -> requireBotPermissions(voiceChannel, Permission.MUTE_MEMBERS))
+				.flatMap(voiceChannel -> requireBotChannelPermissions(voiceChannel, Permission.MUTE_MEMBERS))
 				.flatMap(ignored -> voiceState.getChannel().map(VoiceChannel::getId)).flatMap(currentChannelId -> {
 					// if user join same channel as mute channel
-					if (MuteHelper.mutedChannels.containsKey(voiceState.getGuildId())) {
-						if (MuteHelper.mutedChannels.get(voiceState.getGuildId()).contains(currentChannelId)) {
+					if (mutedChannels.containsKey(voiceState.getGuildId())) {
+						if (mutedChannels.get(voiceState.getGuildId()).contains(currentChannelId)) {
 							// mute the member that just joined
 							return muteUser(voiceState.getMember());
 						} else {

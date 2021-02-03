@@ -49,11 +49,14 @@ public final class CommandsHelper {
 				Class<?> clazz = Class.forName(c.getName());
 				Constructor<?> constructor = clazz.getConstructor();
 				Command instance = (Command) constructor.newInstance();
-				COMMANDS.put(instance.getCommandTrigger().toLowerCase(), instance);
-
-			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) {
+				for (String trigger : instance.getCommandTriggers()) {
+					COMMANDS.put(trigger, instance);
+				}
+			} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | ClassNotFoundException e) {
 				LOGGER.error(e.getMessage(), e);
+			} catch (NoSuchMethodException e) {
+				continue;
 			}
 		}
 	}

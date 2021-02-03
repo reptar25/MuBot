@@ -1,34 +1,38 @@
 package com.github.mubot.command.help;
 
-import static com.github.mubot.command.util.CommandUtil.DEFAULT_COMMAND_PREFIX;
-import static com.github.mubot.command.util.CommandUtil.DEFAULT_EMBED_COLOR;
-
+import static com.github.mubot.command.util.CommandUtil.getEscapedGuildPrefixFromId;
+import static com.github.mubot.command.util.CommandUtil.getRawGuildPrefixFromId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Color;
 
 public class CommandHelpSpec {
-
+	public static final Color DEFAULT_HELP_EMBED_COLOR = Color.of(23, 53, 77);
 	private String commandName;
+	private List<String> aliases;
 	private String description;
 	private List<String> examples;
-	private List<Argument> arguments;
+	private List<CommandArgument> arguments;
+	private long guildId;
 
-	public CommandHelpSpec(String commandName) {
+	public CommandHelpSpec(String commandName, List<String> aliases, long guildId) {
 		this.commandName = commandName;
+		this.aliases = aliases;
+		this.guildId = guildId;
 		arguments = new ArrayList<>();
 		examples = new ArrayList<>();
 	}
 
 	public CommandHelpSpec addArg(String name, String desc, boolean optional) {
-		arguments.add(new Argument(name, desc, optional));
+		arguments.add(new CommandArgument(name, desc, optional));
 		return this;
 	}
 
 	public CommandHelpSpec addExample(String example) {
-		examples.add(DEFAULT_COMMAND_PREFIX + commandName + " " + example);
+		examples.add(getEscapedGuildPrefixFromId(guildId) + commandName + " " + example);
 		return this;
 	}
 
@@ -37,22 +41,31 @@ public class CommandHelpSpec {
 		return this;
 	}
 
+	public CommandHelpSpec setAliases(List<String> aliases) {
+		this.aliases = aliases;
+		return this;
+	}
+
 	public Consumer<? super EmbedCreateSpec> build() {
 		return spec -> {
-			spec.setColor(DEFAULT_EMBED_COLOR);
+			spec.setColor(DEFAULT_HELP_EMBED_COLOR);
 
-			spec.setTitle(DEFAULT_COMMAND_PREFIX + commandName);
+			spec.setTitle(getEscapedGuildPrefixFromId(guildId) + commandName);
+			if (aliases != null && !this.aliases.isEmpty()) {
+				spec.addField("Aliases", this.getAliases(), false);
+			}
+
 			spec.addField("Usage", getUsage(), false);
 
 			if (description != null && !this.description.isBlank()) {
 				spec.setDescription(description);
 			}
 
-			if (!this.getArguments().isEmpty()) {
+			if (this.arguments != null && !this.getArguments().isEmpty()) {
 				spec.addField("Arguments", this.getArguments(), false);
 			}
 
-			if (!this.getArguments().isEmpty()) {
+			if (this.examples != null && !this.getExamples().isEmpty()) {
 				spec.addField("Examples", this.getExamples(), false);
 			}
 		};
@@ -60,12 +73,12 @@ public class CommandHelpSpec {
 
 	private String getUsage() {
 		if (this.arguments.isEmpty()) {
-			return String.format("`%s%s`", DEFAULT_COMMAND_PREFIX, this.commandName);
+			return String.format("`%s%s`", getRawGuildPrefixFromId(guildId), this.commandName);
 		}
 
 		String usage = arguments.stream().map(arg -> String.format(arg.isOptional() ? "[<%s>]" : "<%s>", arg.getName()))
 				.collect(Collectors.joining(" "));
-		return String.format("`%s%s %s`", DEFAULT_COMMAND_PREFIX, this.commandName, usage);
+		return String.format("`%s%s %s`", getRawGuildPrefixFromId(guildId), this.commandName, usage);
 	}
 
 	private String getArguments() {
@@ -76,5 +89,10 @@ public class CommandHelpSpec {
 
 	private String getExamples() {
 		return examples.stream().map(example -> String.format("%n%s", example)).collect(Collectors.joining());
+	}
+
+	private String getAliases() {
+		return aliases.stream().map(alias -> String.format("`%s%s`", getRawGuildPrefixFromId(guildId), alias))
+				.collect(Collectors.joining(", "));
 	}
 }

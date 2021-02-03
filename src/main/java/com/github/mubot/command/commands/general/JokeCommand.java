@@ -7,10 +7,12 @@ import com.github.mubot.command.menu.menus.JokeMenu;
 import com.github.mubot.jokeapi.JokeClient;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivate;
+import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +27,9 @@ public class JokeCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivate(event).flatMap(ignored -> joke(args));
+		return event.getGuild().flatMap(guild -> guild.getChannelById(event.getMessage().getChannelId()))
+				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES)
+						.then(requireNotPrivateMessage(event).flatMap(ignored -> joke(args))));
 	}
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {
@@ -58,7 +62,7 @@ public class JokeCommand extends Command {
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
 		return spec -> spec.setDescription("Tells a random joke from the chosen category of jokes.")
 				.addArg("unsafe", "Allows \"unsafe\" jokes to be returned by the bot.", true)
-				.addArg("category", "Gets a joke of only the given category.", true).addExample("puns")
+				.addArg("category", "Gets a joke of only the given category.", true).addExample("pun")
 				.addExample("unsafe").addExample("unsafe any").addExample("misc unsafe");
 	}
 
