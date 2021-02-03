@@ -18,6 +18,7 @@ public class KickCommand extends RequireMemberAndBotPermissionsCommand {
 		super("kick", Permission.KICK_MEMBERS);
 	}
 
+	@Override
 	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args) {
 		StringBuilder sb = new StringBuilder();
 		if (args.length >= 2) {
