@@ -22,7 +22,7 @@ public class MuBot {
 
 	private static final Logger LOGGER = Loggers.getLogger(MuBot.class);
 
-	GatewayDiscordClient client;
+	private GatewayDiscordClient client;
 
 	public MuBot(GatewayDiscordClient client) {
 		this.client = client;
