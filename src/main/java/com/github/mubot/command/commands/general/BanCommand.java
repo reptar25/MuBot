@@ -1,4 +1,4 @@
-package com.github.mubot.command.commands.music;
+package com.github.mubot.command.commands.general;
 
 import java.util.Arrays;
 import java.util.function.Consumer;

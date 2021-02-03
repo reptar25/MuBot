@@ -1,4 +1,4 @@
-package com.github.mubot.command.commands.music;
+package com.github.mubot.command.commands.general;
 
 import static com.github.mubot.command.util.PermissionsHelper.requireGuildPermissions;
 

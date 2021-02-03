@@ -7,11 +7,11 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.exceptions.CommandException;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.music.GuildMusicManager;
+import com.github.mubot.music.TrackScheduler;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -22,7 +22,7 @@ import discord4j.rest.util.Permission;
 import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 
-public class JoinVoiceCommand extends Command {
+public class JoinVoiceCommand extends MusicCommand {
 
 	// private static final Logger LOGGER =
 	// Loggers.getLogger(JoinVoiceCommand.class);
@@ -35,7 +35,13 @@ public class JoinVoiceCommand extends Command {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireVoiceChannel(event)
 				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.CONNECT, Permission.VIEW_CHANNEL)
-						.flatMap(ignored -> join(channel)));
+						.flatMap(ignored -> action(event, args, null, channel)));
+	}
+
+	@Override
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		return join(channel);
 	}
 
 	/**

@@ -29,7 +29,7 @@ public class MuteChannelCommand extends Command {
 	private static final Logger LOGGER = Loggers.getLogger(MuteChannelCommand.class);
 
 	public MuteChannelCommand() {
-		super("muteChannel");
+		super("mutechannel");
 	}
 
 	@Override

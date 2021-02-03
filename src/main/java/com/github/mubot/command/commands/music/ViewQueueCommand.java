@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.menu.menus.Paginator;
@@ -19,12 +18,13 @@ import com.github.mubot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-public class ViewQueueCommand extends Command {
+public class ViewQueueCommand extends MusicCommand {
 
 	public ViewQueueCommand() {
 		super("viewqueue", Arrays.asList("vq", "queue", "q"));
@@ -32,10 +32,17 @@ public class ViewQueueCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event)
-				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> viewQueue(scheduler, event.getMessage().getChannel()));
+		return requireSameVoiceChannel(event).flatMap(
+				channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
+						.flatMap(scheduler -> action(event, args, scheduler, channel)));
+	}
+
+	@Override
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		// TODO Auto-generated method stub
+		return viewQueue(scheduler, event.getMessage().getChannel());
 	}
 
 	/**

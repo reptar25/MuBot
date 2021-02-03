@@ -1,4 +1,4 @@
-package com.github.mubot.command.commands.music;
+package com.github.mubot.command.commands.general;
 
 import java.util.function.Consumer;
 
@@ -16,6 +16,7 @@ public class UnbanCommand extends AbstractBanCommand {
 		super("unban");
 	}
 
+	@Override
 	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args) {
 		return event.getGuild().flatMapMany(guild -> guild.getBans().map(ban -> {
 			if (ban.getUser().getMention().equals(args[0]))

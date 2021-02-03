@@ -33,7 +33,7 @@ public class SetPrefixCommand extends Command {
 
 	@Override
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Set or get the command-prefix of this server.")
+		return spec -> spec.setDescription("Set the command-prefix of this server.")
 				.addArg("prefix", "New prefix for bot-commands.", false).addExample("$").addExample("!");
 	}
 

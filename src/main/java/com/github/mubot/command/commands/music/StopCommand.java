@@ -1,24 +1,21 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
-
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.util.EmojiHelper;
-import com.github.mubot.music.GuildMusicManager;
 import com.github.mubot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 import reactor.util.annotation.NonNull;
 
-public class StopCommand extends Command {
+public class StopCommand extends MusicCommand {
 
 	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
 
@@ -27,9 +24,10 @@ public class StopCommand extends Command {
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> stop(scheduler));
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		// TODO Auto-generated method stub
+		return stop(scheduler);
 	}
 
 	/**

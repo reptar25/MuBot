@@ -6,20 +6,20 @@ import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceCh
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.music.GuildMusicManager;
 import com.github.mubot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 import reactor.util.annotation.NonNull;
 
-public class PlayCommand extends Command {
+public class PlayCommand extends MusicCommand {
 
 	private static final Logger LOGGER = Loggers.getLogger(PlayCommand.class);
 
@@ -31,8 +31,14 @@ public class PlayCommand extends Command {
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
 		return requireSameVoiceChannel(event)
 				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.SPEAK).thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel))
-				.flatMap(scheduler -> play(event, scheduler, args));
+				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
+						.flatMap(scheduler -> action(event, args, scheduler, channel)));
+	}
+
+	@Override
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+			VoiceChannel channel) {
+		return play(event, args, scheduler);
 	}
 
 	/**
@@ -42,8 +48,8 @@ public class PlayCommand extends Command {
 	 * @param args  The link of the audio
 	 * @return null
 	 */
-	public Mono<CommandResponse> play(MessageCreateEvent event, @NonNull TrackScheduler scheduler,
-			@NonNull String[] args) {
+	public Mono<CommandResponse> play(MessageCreateEvent event, @NonNull String[] args,
+			@NonNull TrackScheduler scheduler) {
 		// unpause
 		if (args.length == 0 || args[0].isEmpty()) {
 			if (scheduler.getNowPlaying() != null) {
