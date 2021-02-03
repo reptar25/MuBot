@@ -50,7 +50,7 @@ public final class CommandUtil {
 
 			return permissions.flatMap(ignored -> {
 				if (response.getSpec() != null) {
-					createMessage(channel, response);
+					return createMessage(channel, response);
 				}
 				return Mono.empty();
 			}).then();

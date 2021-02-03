@@ -52,9 +52,11 @@ public final class CommandsHelper {
 				for (String trigger : instance.getCommandTriggers()) {
 					COMMANDS.put(trigger, instance);
 				}
-			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) {
+			} catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | ClassNotFoundException e) {
 				LOGGER.error(e.getMessage(), e);
+			} catch (NoSuchMethodException e) {
+				continue;
 			}
 		}
 	}
