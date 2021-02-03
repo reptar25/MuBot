@@ -23,7 +23,6 @@ public class SkipCommand extends MusicCommand {
 	@Override
 	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
 			VoiceChannel channel) {
-		// TODO Auto-generated method stub
 		return skip(args, scheduler);
 	}
 
