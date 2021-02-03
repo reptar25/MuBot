@@ -1,8 +1,5 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -13,7 +10,6 @@ import com.github.mubot.command.menu.menus.Paginator;
 import com.github.mubot.command.menu.menus.Paginator.Builder;
 import com.github.mubot.command.util.CommandUtil;
 import com.github.mubot.command.util.EmojiHelper;
-import com.github.mubot.music.GuildMusicManager;
 import com.github.mubot.music.TrackScheduler;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -24,18 +20,10 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-public class ViewQueueCommand extends MusicCommand {
+public class ViewQueueCommand extends MusicPermissionCommand {
 
 	public ViewQueueCommand() {
-		super("viewqueue", Arrays.asList("vq", "queue", "q"));
-	}
-
-	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event).flatMap(
-				channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES).thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
-						.flatMap(scheduler -> action(event, args, scheduler, channel)));
+		super("viewqueue", Arrays.asList("vq", "queue", "q"), Permission.MANAGE_MESSAGES);
 	}
 
 	@Override

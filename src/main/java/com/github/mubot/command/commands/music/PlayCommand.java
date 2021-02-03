@@ -1,8 +1,5 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
-
 import java.util.Arrays;
 import java.util.function.Consumer;
 
@@ -19,20 +16,12 @@ import reactor.util.Logger;
 import reactor.util.Loggers;
 import reactor.util.annotation.NonNull;
 
-public class PlayCommand extends MusicCommand {
+public class PlayCommand extends MusicPermissionCommand {
 
 	private static final Logger LOGGER = Loggers.getLogger(PlayCommand.class);
 
 	public PlayCommand() {
-		super("play", Arrays.asList("p", "add"));
-	}
-
-	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event)
-				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.SPEAK).thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
-						.flatMap(scheduler -> action(event, args, scheduler, channel)));
+		super("play", Arrays.asList("p", "add"), Permission.SPEAK);
 	}
 
 	@Override
