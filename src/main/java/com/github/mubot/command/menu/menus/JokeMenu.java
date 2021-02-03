@@ -8,6 +8,7 @@ import com.github.mubot.command.menu.SingleChoiceActionMenu;
 import com.github.mubot.command.util.EmojiHelper;
 import com.github.mubot.jokeapi.JokeClient;
 import com.github.mubot.jokeapi.JokeRequest;
+import com.github.mubot.jokeapi.JokeRequestOptions;
 import com.github.mubot.jokeapi.util.JokeEnums.BlacklistFlag;
 
 import discord4j.core.event.domain.message.ReactionAddEvent;
@@ -75,8 +76,8 @@ public class JokeMenu extends SingleChoiceActionMenu {
 
 	private Mono<Void> loadJoke(String category) {
 		// no racist or sexist jokes allowed
-		JokeRequest request = new JokeRequest.Builder().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST)
-				.addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category).build();
+		JokeRequest request = new JokeRequest(new JokeRequestOptions().safeMode(!unsafe).addBlacklistFlag(BlacklistFlag.RACIST)
+				.addBlacklistFlag(BlacklistFlag.SEXIST).addCategory(category));
 		return JokeClient.getJokeService().getJoke(request).flatMap(jokeLines -> {
 			if (jokeLines.size() == 1)
 				return message.edit(spec -> spec.setContent(jokeLines.get(0)).setEmbed(null)).then();
