@@ -8,12 +8,13 @@ import com.github.mubot.command.exceptions.CommandException;
 import com.github.mubot.command.help.CommandHelpSpec;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.rest.http.client.ClientException;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 
-public class BanCommand extends AbstractBanCommand {
+public class BanCommand extends RequireMemberAndBotPermissionsCommand {
 
 	public BanCommand() {
-		super("ban");
+		super("ban", Permission.BAN_MEMBERS);
 	}
 
 	@Override
@@ -28,7 +29,7 @@ public class BanCommand extends AbstractBanCommand {
 
 		String reason = sb.toString().isEmpty() ? "Reason not specified" : sb.toString().trim();
 
-		return event.getMessage().getGuild()
+		return event.getGuild()
 				.flatMap(guild -> event.getMessage().getUserMentions().take(1)
 						.switchIfEmpty(Mono.error(new CommandException("User not found on server.")))
 						.flatMap(user -> guild.ban(user.getId(), s -> s.setReason(reason).setDeleteMessageDays(7)))

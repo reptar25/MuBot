@@ -1,35 +1,28 @@
 package com.github.mubot.command.commands.general;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
-
 import java.util.function.Consumer;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.menu.menus.PollMenu;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.channel.GuildChannel;
 import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-public class PollCommand extends Command {
+public class PollCommand extends RequireBotPermissionsCommand {
 
 	private final String REGEX_SPLIT = " (?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)";
 
 	public PollCommand() {
-		super("poll");
+		super("poll", Permission.MANAGE_MESSAGES);
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireNotPrivateMessage(event).flatMap(ignored -> event.getMessage().getChannel())
-				.flatMap(channel -> requireBotChannelPermissions((GuildChannel) channel, Permission.MANAGE_MESSAGES))
-				.flatMap(ignored -> poll(pollArgs(args), event.getMember().orElse(null)));
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args) {
+		return poll(pollArgs(args), event.getMember().orElse(null));
 	}
 
 	/**
@@ -85,5 +78,4 @@ public class PollCommand extends Command {
 				.addArg("Choice X", "The X-th choice of the poll in quotes(\").", true)
 				.addExample("\"question\" \"choice 1\" \"choice 2\"");
 	}
-
 }
