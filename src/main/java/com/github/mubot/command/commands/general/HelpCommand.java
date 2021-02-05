@@ -44,7 +44,7 @@ public class HelpCommand extends Command {
 				.distinct().sorted().collect(Collectors.joining()).toString();
 
 		return CommandResponse.create(message -> message.setEmbed(
-				embed -> embed.setTitle("Use ***help*** with any command to get more information on that command.")
+				embed -> embed.setTitle(String.format("Use ***help*** with any command to get more information on that command, for example `%splay help`.", getEscapedGuildPrefixFromEvent(event)))
 						.addField("Available commands: ", commands, false)));
 	}
 
