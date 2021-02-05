@@ -10,12 +10,15 @@ public class Main {
 	private static final Logger LOGGER = Loggers.getLogger(Main.class);
 
 	public static void main(String[] args) {
-		String discordApiToken = null;
-
-		discordApiToken = args[0];
-
-		if (discordApiToken == null)
-			discordApiToken = System.getenv("token");
+		String discordApiToken = System.getenv("token");
+		try {
+			if (discordApiToken == null)
+				discordApiToken = args[0];
+		} catch (ArrayIndexOutOfBoundsException ignored) {
+			LOGGER.error(
+					"No Discord api token found. Your Discord api token needs to be first argument or an env var named \"token\"");
+			return;
+		}
 
 		// no token found
 		if (discordApiToken == null) {
