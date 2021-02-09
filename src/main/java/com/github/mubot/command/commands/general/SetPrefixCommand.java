@@ -1,5 +1,7 @@
 package com.github.mubot.command.commands.general;
 
+import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
+
 import java.util.function.Consumer;
 
 import com.github.mubot.command.Command;
@@ -18,7 +20,7 @@ public class SetPrefixCommand extends Command {
 
 	@Override
 	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return prefix(event, args);
+		return requireNotPrivateMessage(event).flatMap(ignored -> prefix(event, args));
 	}
 
 	private Mono<CommandResponse> prefix(MessageCreateEvent event, String[] args) {
