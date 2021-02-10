@@ -17,7 +17,7 @@ public abstract class RequireBotPermissionsCommand extends RequirePermissionsCom
 		super(commandTrigger, permissions);
 	}
 
-	public RequireBotPermissionsCommand(String commandTrigger, List<String> aliases, Permission[] permissions) {
+	public RequireBotPermissionsCommand(String commandTrigger, List<String> aliases, Permission... permissions) {
 		super(commandTrigger, aliases, permissions);
 	}
 

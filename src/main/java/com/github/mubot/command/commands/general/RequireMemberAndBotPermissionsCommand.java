@@ -20,7 +20,7 @@ public abstract class RequireMemberAndBotPermissionsCommand extends RequirePermi
 	}
 
 	public RequireMemberAndBotPermissionsCommand(String commandTrigger, List<String> aliases,
-			Permission[] permissions) {
+			Permission... permissions) {
 		super(commandTrigger, aliases, permissions);
 	}
 
