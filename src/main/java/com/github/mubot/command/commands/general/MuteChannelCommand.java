@@ -38,13 +38,12 @@ public class MuteChannelCommand extends Command {
 				channel -> requireBotChannelPermissions(channel, Permission.MUTE_MEMBERS).flatMap(ignored -> mute(channel)));
 	}
 
+
 	/**
 	 * Mutes all {@link Member} in the channel besides bots
-	 * 
-	 * @param event The message event
-	 * @return null
+	 * @param channel the channel to mute
+	 * @return
 	 */
-
 	public Mono<CommandResponse> mute(VoiceChannel channel) {
 		/*
 		 * gets the member's channel who sent the message, and then all the VoiceStates

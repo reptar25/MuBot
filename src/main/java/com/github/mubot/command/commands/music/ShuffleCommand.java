@@ -24,11 +24,12 @@ public class ShuffleCommand extends MusicCommand {
 			VoiceChannel channel) {
 		return shuffleQueue(scheduler);
 	}
+
 	/**
 	 * Shuffles the songs currently in the queue
 	 * 
-	 * @param event The message event
-	 * @return null
+	 * @param scheduler the track scheduler
+	 * @return
 	 */
 	public Mono<CommandResponse> shuffleQueue(@NonNull TrackScheduler scheduler) {
 		scheduler.shuffleQueue();
@@ -39,6 +40,5 @@ public class ShuffleCommand extends MusicCommand {
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
 		return spec -> spec.setDescription("Shuffles the songs that are in the queue.");
 	}
-
 
 }

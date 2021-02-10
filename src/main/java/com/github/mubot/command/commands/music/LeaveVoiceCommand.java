@@ -31,8 +31,8 @@ public class LeaveVoiceCommand extends MusicCommand {
 	 * Bot leaves any voice channel it is connected to in the same guild. Also
 	 * clears the queue of items.
 	 * 
-	 * @param event The message event
-	 * @return null
+	 * @param channel the channel to leave
+	 * @return
 	 */
 	public Mono<CommandResponse> leave(VoiceChannel channel) {
 		return channel.getVoiceConnection().flatMap(VoiceConnection::disconnect).then(CommandResponse.empty());

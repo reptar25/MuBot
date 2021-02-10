@@ -20,7 +20,7 @@ public class NowPlayingCommand extends MusicCommand {
 	public NowPlayingCommand() {
 		super("nowplaying", Arrays.asList("np", "playing"));
 	}
-	
+
 	@Override
 	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
 			VoiceChannel channel) {
@@ -30,8 +30,8 @@ public class NowPlayingCommand extends MusicCommand {
 	/**
 	 * Return the info for the currently playing song
 	 * 
-	 * @param event The message event
-	 * @return Info of song currently playing
+	 * @param scheduler the track scheduler
+	 * @return
 	 */
 	public Mono<CommandResponse> nowPlaying(@NonNull TrackScheduler scheduler) {
 		// get the track that's currently playing

@@ -23,11 +23,11 @@ public class ClearCommand extends MusicCommand {
 		return clearQueue(scheduler);
 	}
 
+
 	/**
-	 * Clears the current queue of all objects
-	 * 
-	 * @param event The message event
-	 * @return "Queue cleared" if successful, null if not
+	 * Clears the current queue of all tracks
+	 * @param scheduler the track scheduler to clear
+	 * @return
 	 */
 	public Mono<CommandResponse> clearQueue(@NonNull TrackScheduler scheduler) {
 		scheduler.clearQueue();

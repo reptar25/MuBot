@@ -81,9 +81,9 @@ public class MuteOnJoinListener implements EventListener<VoiceStateUpdateEvent> 
 	}
 
 	/**
-	 * Mutes the user of the given VoiceStateUpdateEvent
+	 * Mutes the given member
 	 * 
-	 * @param memeberMono the VoiceStateUpdateEvent of the user
+	 * @param memberMono the member to mute
 	 * @return
 	 */
 	private Mono<Void> muteUser(Mono<Member> memberMono) {
@@ -94,15 +94,16 @@ public class MuteOnJoinListener implements EventListener<VoiceStateUpdateEvent> 
 	}
 
 	/**
-	 * Unmutes the user of the given VoiceStateUpdateEvent
+	 * Unmutes the given member
 	 * 
-	 * @param event the VoiceStateUpdateEvent of the user
+	 * @param memberMono the member to unmute
+	 * @param getGuild   the guild of the member
 	 * @return
 	 */
-	private Mono<Void> unmuteUser(Mono<Member> getMember, Mono<Guild> getGuild) {
-		Mono<VoiceState> getVoiceState = getMember.flatMap(Member::getVoiceState);
+	private Mono<Void> unmuteUser(Mono<Member> memberMono, Mono<Guild> getGuild) {
+		Mono<VoiceState> getVoiceState = memberMono.flatMap(Member::getVoiceState);
 
-		return Mono.zip(getMember, getGuild, getVoiceState).flatMap(tuple -> {
+		return Mono.zip(memberMono, getGuild, getVoiceState).flatMap(tuple -> {
 			Member member = tuple.getT1();
 			Guild guild = tuple.getT2();
 			VoiceState vs = tuple.getT3();

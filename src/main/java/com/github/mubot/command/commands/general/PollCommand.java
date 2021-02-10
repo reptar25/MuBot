@@ -53,11 +53,9 @@ public class PollCommand extends RequireBotPermissionsCommand {
 	/**
 	 * Creates a poll in the channel
 	 * 
-	 * @param member
-	 * 
-	 * @param event  The message event
-	 * @return null
-	 * 
+	 * @param args the arguments of the poll
+	 * @param member the member who used the command
+	 * @return
 	 */
 	public Mono<CommandResponse> poll(@NonNull String[] args, @NonNull Member member) {
 		if (args.length <= 0 || args[0].isBlank())
