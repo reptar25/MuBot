@@ -30,26 +30,25 @@ public class DatabaseManager {
 	private static GuildCache guildCache;
 
 	private DatabaseManager() {
-		URI dbUri = null;
 		try {
-			dbUri = new URI(DB_URL);
+			URI dbUri = new URI(DB_URL);
+
+			if (MAX_CONNECTIONS == null) {
+				MAX_CONNECTIONS = "10";
+			}
+
+			ConnectionFactory factory = new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
+					.host(dbUri.getHost()).port(dbUri.getPort()).username(dbUri.getUserInfo().split(":")[0])
+					.password(dbUri.getUserInfo().split(":")[1]).database(dbUri.getPath().replaceFirst("/", ""))
+					.enableSsl().sslMode(SSLMode.REQUIRE).build());
+
+			ConnectionPool poolConfig = new ConnectionPool(ConnectionPoolConfiguration.builder(factory).initialSize(1)
+					.maxIdleTime(Duration.ofSeconds(30)).maxSize(Integer.parseInt(MAX_CONNECTIONS)).build());
+
+			databaseClient = DatabaseClient.create(poolConfig);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-
-		if (MAX_CONNECTIONS == null) {
-			MAX_CONNECTIONS = "10";
-		}
-
-		ConnectionFactory factory = new PostgresqlConnectionFactory(
-				PostgresqlConnectionConfiguration.builder().host(dbUri.getHost()).port(dbUri.getPort())
-						.username(dbUri.getUserInfo().split(":")[0]).password(dbUri.getUserInfo().split(":")[1])
-						.database(dbUri.getPath().replaceFirst("/", "")).enableSsl().sslMode(SSLMode.REQUIRE).build());
-
-		ConnectionPool poolConfig = new ConnectionPool(ConnectionPoolConfiguration.builder(factory).initialSize(1)
-				.maxIdleTime(Duration.ofSeconds(30)).maxSize(Integer.parseInt(MAX_CONNECTIONS)).build());
-
-		databaseClient = DatabaseClient.create(poolConfig);
 	}
 
 	public static void create() {
