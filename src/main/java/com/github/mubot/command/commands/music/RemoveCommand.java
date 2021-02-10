@@ -33,7 +33,7 @@ public class RemoveCommand extends MusicCommand {
 				return removeAll(scheduler);
 			} else {
 				try {
-					return remove(Integer.parseInt(args[0]), scheduler, event);
+					return remove(Integer.parseInt(args[0]), scheduler);
 				} catch (NumberFormatException ignored) {
 					return getHelp(event);
 				}
@@ -42,7 +42,7 @@ public class RemoveCommand extends MusicCommand {
 		return getHelp(event);
 	}
 
-	private Mono<CommandResponse> remove(int index, TrackScheduler scheduler, MessageCreateEvent event) {
+	private Mono<CommandResponse> remove(int index, TrackScheduler scheduler) {
 		AudioTrack removed = scheduler.removeFromQueue(index - 1);
 		if (removed != null)
 			return CommandResponse.create(EmojiHelper.RED_X + " Removed \"" + removed.getInfo().title
