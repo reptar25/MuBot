@@ -32,8 +32,8 @@ public class StopCommand extends MusicCommand {
 	/**
 	 * Stops the LavaPlayer if it is playing anything
 	 * 
-	 * @param event The message event
-	 * @return "Player stopped" if successful, null if not
+	 * @param scheduler the track scheduler
+	 * @return
 	 */
 	public Mono<CommandResponse> stop(@NonNull TrackScheduler scheduler) {
 		scheduler.getPlayer().stopTrack();

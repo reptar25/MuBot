@@ -30,9 +30,10 @@ public class VolumeCommand extends MusicCommand {
 	 * Sets the volume of the
 	 * {@link com.sedmelluq.discord.lavaplayer.player.AudioPlayer}
 	 * 
-	 * @param event The message event
-	 * @param args  The new volume setting
-	 * @return Responds with new volume setting
+	 * @param args      the volume to set to, reset to reset to default, or nothing
+	 *                  to get current volume
+	 * @param scheduler the track scheduler
+	 * @return
 	 */
 	public Mono<CommandResponse> volume(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
 		StringBuilder sb = new StringBuilder();

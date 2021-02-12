@@ -29,7 +29,7 @@ public abstract class ChoiceActionMenu extends Menu {
 	protected Mono<Void> addReactionListener() {
 
 		return getDefaultListener().doOnTerminate(() -> {
-			message.removeAllReactions().doOnError(error -> Mono.empty()).subscribe();
+			message.removeAllReactions().onErrorResume(error -> Mono.empty()).subscribe();
 		}).flatMap(event -> {
 			return loadSelection(event);
 		}).onErrorResume(error -> {

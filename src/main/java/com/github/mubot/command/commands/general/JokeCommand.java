@@ -1,6 +1,5 @@
 package com.github.mubot.command.commands.general;
 
-import com.github.mubot.command.Command;
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.menu.menus.JokeMenu;
@@ -11,25 +10,20 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireNotPrivateMessage;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class JokeCommand extends Command {
+public class JokeCommand extends RequireBotPermissionsCommand {
 
 	public JokeCommand() {
-		super("joke");
+		super("joke", Permission.MANAGE_MESSAGES);
 	}
 
 	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return event.getGuild().flatMap(guild -> guild.getChannelById(event.getMessage().getChannelId()))
-				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.MANAGE_MESSAGES)
-						.then(requireNotPrivateMessage(event).flatMap(ignored -> joke(args))));
+	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args) {
+		return joke(args);
 	}
 
 	private Mono<CommandResponse> joke(@NonNull String[] args) {

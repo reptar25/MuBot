@@ -29,8 +29,9 @@ public class SkipCommand extends MusicCommand {
 	/**
 	 * Stops the current song and plays the next in queue if there is any
 	 * 
-	 * @param event The message event
-	 * @return The message event
+	 * @param args      the track to skip to or nothing to skip the current track
+	 * @param scheduler the track scheduler
+	 * @return
 	 */
 	public Mono<CommandResponse> skip(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
 		if (scheduler.getNowPlaying() != null) {

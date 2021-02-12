@@ -159,6 +159,18 @@ public final class PermissionsHelper {
 		return Mono.just(permissions);
 	}
 
+	public static Mono<PermissionSet> requireBotGuildPermissions(MessageCreateEvent event,
+			Permission... requestedPermissions) {
+		return event.getClient().getMemberById(event.getGuildId().get(), event.getClient().getSelfId())
+				.flatMap(member -> requireGuildPermissions(member, requestedPermissions));
+	}
+
+	public static Mono<PermissionSet> requireUserGuildPermissions(MessageCreateEvent event,
+			Permission... requestedPermissions) {
+		return event.getMessage().getAuthorAsMember()
+				.flatMap(member -> requireGuildPermissions(member, requestedPermissions));
+	}
+
 	public static Mono<PermissionSet> requireGuildPermissions(Member m, Permission... requestedPermissions) {
 		return m.getBasePermissions().flatMap(memberPermissions -> {
 			for (Permission permission : requestedPermissions) {

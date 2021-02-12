@@ -8,12 +8,13 @@ import com.github.mubot.command.help.CommandHelpSpec;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.rest.http.client.ClientException;
+import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 
-public class UnbanCommand extends AbstractBanCommand {
+public class UnbanCommand extends RequireMemberAndBotPermissionsCommand {
 
 	public UnbanCommand() {
-		super("unban");
+		super("unban", Permission.BAN_MEMBERS);
 	}
 
 	@Override

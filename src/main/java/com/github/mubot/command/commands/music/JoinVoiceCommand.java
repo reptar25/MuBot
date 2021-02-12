@@ -47,15 +47,15 @@ public class JoinVoiceCommand extends MusicCommand {
 	/**
 	 * Bot joins the same voice channel as the user who uses the command.
 	 * 
-	 * @param event The message event
-	 * @return null
+	 * @param channel the channel to join
+	 * @return
 	 */
 	public Mono<CommandResponse> join(VoiceChannel channel) {
 
 		/*
 		 * Work around for disconnect when moving channels. Disconnect from any channel
 		 * first and then connect to new channel. Should be able to just join new
-		 * channel but D4J is bugged.
+		 * channel but D4J 3.1.x is bugged. Fixed in 3.2.x
 		 */
 		final Mono<Snowflake> checkSameVoiceChannel = channel.getClient().getSelf()
 				.flatMap(user -> user.asMember(channel.getGuildId())).flatMap(Member::getVoiceState)

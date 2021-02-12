@@ -1,15 +1,11 @@
 package com.github.mubot.command.commands.music;
 
-import static com.github.mubot.command.util.PermissionsHelper.requireBotChannelPermissions;
-import static com.github.mubot.command.util.PermissionsHelper.requireSameVoiceChannel;
-
 import java.util.Arrays;
 import java.util.function.Consumer;
 
 import com.github.mubot.command.CommandResponse;
 import com.github.mubot.command.help.CommandHelpSpec;
 import com.github.mubot.command.menu.menus.SearchMenu;
-import com.github.mubot.music.GuildMusicManager;
 import com.github.mubot.music.TrackScheduler;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -18,19 +14,10 @@ import discord4j.rest.util.Permission;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-public class SearchCommand extends MusicCommand {
+public class SearchCommand extends MusicPermissionCommand {
 
 	public SearchCommand() {
-		super("search", Arrays.asList("find"));
-	}
-
-	@Override
-	public Mono<CommandResponse> execute(MessageCreateEvent event, String[] args) {
-		return requireSameVoiceChannel(event)
-				.flatMap(channel -> requireBotChannelPermissions(channel, Permission.SPEAK, Permission.MANAGE_MESSAGES)
-						.thenReturn(channel))
-				.flatMap(channel -> GuildMusicManager.getScheduler(channel)
-						.flatMap(scheduler -> action(event, args, scheduler, channel)));
+		super("search", Arrays.asList("find"), Permission.SPEAK, Permission.MANAGE_MESSAGES);
 	}
 
 	@Override

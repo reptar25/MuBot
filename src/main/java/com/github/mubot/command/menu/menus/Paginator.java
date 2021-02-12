@@ -76,7 +76,10 @@ public class Paginator extends ChoiceActionMenu {
 
 	@Override
 	protected Mono<Void> addReactions() {
-		return message.addReaction(EmojiHelper.LEFT_ARROW).then(message.addReaction(EmojiHelper.RIGHT_ARROW));
+		if (totalPages > 1)
+			return message.addReaction(EmojiHelper.LEFT_ARROW).then(message.addReaction(EmojiHelper.RIGHT_ARROW));
+		else
+			return Mono.empty();
 	}
 
 	@Override
