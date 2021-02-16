@@ -17,9 +17,7 @@ public class HerokuServer {
 	private static HerokuServer instance;
 
 	private static final String INVITE_LINK = "https://discord.com/api/oauth2/authorize?client_id=776639160164941824&permissions=8&scope=bot";
-	private static final String homeHtml = "<a href=\"" + INVITE_LINK + "\">Invite!</a>"
-			+ "<img style=\"-webkit-user-select: none;margin: auto;\""
-			+ " src=\"https://i.ytimg.com/vi/4Qto049GEkA/maxresdefault.jpg\" width=\"235\" height=\"132\">";
+	private static final String homeHtml = "<a href=\"" + INVITE_LINK + "\">Invite!</a>";
 
 	private static final String inviteHtml = "<html>\r\n" + "   <head>\r\n" + "      <title>HTML Meta Tag</title>\r\n"
 			+ "      <meta http-equiv = \"refresh\" content = \"0; url = " + INVITE_LINK + "\" />\r\n"
