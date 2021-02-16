@@ -26,7 +26,7 @@ public class PauseCommand extends MusicCommand {
 	/**
 	 * Pauses/unpauses the player
 	 * 
-	 * @param event the track scheduler
+	 * @param scheduler the track scheduler
 	 * @return null
 	 */
 	public Mono<CommandResponse> pause(@NonNull TrackScheduler scheduler) {
