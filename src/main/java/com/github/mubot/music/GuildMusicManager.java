@@ -4,12 +4,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.mubot.command.util.SoundCloudHtmlLoader;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 
 import discord4j.common.util.Snowflake;
@@ -37,8 +35,6 @@ public class GuildMusicManager {
 	static {
 		// Creates AudioPlayer instances and translates URLs to AudioTrack instances
 		playerManager = new DefaultAudioPlayerManager();
-		playerManager.registerSourceManager(
-				SoundCloudAudioSourceManager.builder().withHtmlDataLoader(new SoundCloudHtmlLoader()).build());
 		// This is an optimization strategy that Discord4J can utilize. It is not
 		// important to understand
 		playerManager.getConfiguration().setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
