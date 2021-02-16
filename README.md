@@ -4,7 +4,7 @@
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/reptar25/MuBot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/reptar25/MuBot/context:java)
 ![build](https://github.com/reptar25/MuBot/workflows/build/badge.svg)
 
-A discord bot built with <li><a href="https://github.com/Discord4J/Discord4J">Discord4J</a> reactive framework.
+A discord bot built with <a href="https://github.com/Discord4J/Discord4J">Discord4J</a> reactive framework.<br/>
 Can play music from YouTube/SoundCloud/Twitch/ect and even search YouTube for songs. Intuitive, reaction based menus for things like viewing the queue or search for music.
 Can tell you jokes!
 A full list of commands can be acquired using the `!help` command. 
