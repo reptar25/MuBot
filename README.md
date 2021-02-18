@@ -4,7 +4,7 @@
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/reptar25/MuBot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/reptar25/MuBot/context:java)
 ![build](https://github.com/reptar25/MuBot/workflows/build/badge.svg)
 
-A discord built with <a href="https://github.com/Discord4J/Discord4J">Discord4J</a> reactive framework.<br/><br/>
+A discord bot built with <a href="https://github.com/Discord4J/Discord4J">Discord4J</a> reactive framework.<br/><br/>
 
 A full list of commands can be acquired using the `!help` command. 
 You can use `help` after any command to get more information on how that command works, for example `!ban help`. Any feedback/issues/feature request are appreciated. 

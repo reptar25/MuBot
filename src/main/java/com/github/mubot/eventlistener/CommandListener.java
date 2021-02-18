@@ -37,7 +37,7 @@ public class CommandListener implements EventListener<MessageCreateEvent> {
 	public Mono<Void> consume(MessageCreateEvent e) {
 		return Mono.just(e).filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true))
 				.flatMap(this::receiveMessage).onErrorResume(error -> {
-					LOGGER.error("Error receiving message.", error);
+					LOGGER.error("Error receiving message.\nMessage: "+e.getMessage().getContent()+"\nError: "+error.getMessage());
 					return Mono.empty();
 				}).then();
 	}

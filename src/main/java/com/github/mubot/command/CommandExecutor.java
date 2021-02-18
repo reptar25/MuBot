@@ -13,6 +13,8 @@ public class CommandExecutor {
 			LOGGER.info("Help called for " + command.getPrimaryTrigger());
 			return command.getHelp(event);
 		}
+
+		LOGGER.info("Command executed: " + event.getMessage().getContent());
 		return command.execute(event, args);
 	}
 

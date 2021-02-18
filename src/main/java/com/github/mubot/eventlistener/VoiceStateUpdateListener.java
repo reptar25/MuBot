@@ -30,7 +30,7 @@ public class VoiceStateUpdateListener implements EventListener<VoiceStateUpdateE
 	private static Mono<Void> processBotVoiceStateUpdateEvent(VoiceStateUpdateEvent event) {
 		final Snowflake guildId = event.getCurrent().getGuildId();
 		if (event.isLeaveEvent()) {
-			LOGGER.info("{Guild ID: {}} Voice channel left {}", guildId.asLong(), event);
+			LOGGER.info("{Guild ID: {}} Voice channel left", guildId.asLong());
 			GuildMusicManager.destroy(guildId);
 		} else if (event.isJoinEvent()) {
 			LOGGER.info("{Guild ID: {}} Voice channel joined", guildId.asLong());
