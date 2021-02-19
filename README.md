@@ -22,13 +22,13 @@ List of current commands:<br/>
 `!leave` - Requests the bot to leave its' current voice channel.<br/>
 `!mutechannel` - Mutes the voice channel of the user who used the command. Will also mute any new users that join that channel until this command is used again to unmute the channel.<br/>
 `!nowplaying` - Displays currently playing song.<br/>
-`!pause` - Pauses currently playing track.<br/>
+`!pause` - Pauses the currently playing track.<br/>
 `!play` - Plays the song(s) from the given url.<br/>
 `!poll` - Creates a simple poll in the channel the command was used in. Allows up to 10 choices. All arguments must be contained in quotes to allow for spaces.<br/>
 `!remove` - Removes the song at the given position number from the queue.<br/>
 `!repeat` - Toggles repeating the currently playing song. Use this command again to enable/disable repeating.<br/>
 `!rewind` - Rewinds the currently playing song by the given amount of seconds.<br/>
-`!roll` - Rolls a dice of the given amount.<br/>
+`!roll` - Rolls a die of the given amount.<br/>
 `!search` - Searches YouTube for the given terms and returns the top 5 results as choices that can be added to the queue of songs.<br/>
 `!seek` - Moves the currently playing song to the given time.<br/>
 `!setprefix` - Set the command-prefix of this server.<br/>

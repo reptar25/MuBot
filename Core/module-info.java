@@ -1,0 +1,3 @@
+module Core {
+	requires jokeapi;
+}
