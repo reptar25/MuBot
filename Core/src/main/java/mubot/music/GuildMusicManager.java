@@ -20,14 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GuildMusicManager {
 
-    private static final AudioPlayerManager playerManager;
-
     public static final int DEFAULT_VOLUME = 15;
-
+    private static final AudioPlayerManager playerManager;
     /**
      * Maps a GuildMusic object for each new guild joined. Key is guild id snowflake
      */
     private static final Map<Snowflake, GuildMusic> guildMusicMap = new ConcurrentHashMap<>();
+    private static final int RETRY_AMOUNT = 100;
 
     static {
         // Creates AudioPlayer instances and translates URLs to AudioTrack instances
@@ -72,9 +71,6 @@ public class GuildMusicManager {
         if (guildMusic != null)
             guildMusic.destroy();
     }
-
-
-    private static final int RETRY_AMOUNT = 100;
 
     /**
      * Gets the {@link TrackScheduler} that was mapped when the bot joined a voice

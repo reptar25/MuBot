@@ -14,30 +14,30 @@ import java.util.function.Consumer;
 
 public class ShuffleCommand extends MusicCommand {
 
-	public ShuffleCommand() {
-		super("shuffle", Collections.singletonList("random"));
-	}
+    public ShuffleCommand() {
+        super("shuffle", Collections.singletonList("random"));
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return shuffleQueue(scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return shuffleQueue(scheduler);
+    }
 
-	/**
-	 * Shuffles the songs currently in the queue
-	 * 
-	 * @param scheduler the track scheduler
-	 * @return the shuffle response
-	 */
-	public Mono<CommandResponse> shuffleQueue(@NonNull TrackScheduler scheduler) {
-		scheduler.shuffleQueue();
-		return CommandResponse.create(EmojiHelper.SHUFFLE + " Queue shuffled " + EmojiHelper.SHUFFLE);
-	}
+    /**
+     * Shuffles the songs currently in the queue
+     *
+     * @param scheduler the track scheduler
+     * @return the shuffle response
+     */
+    public Mono<CommandResponse> shuffleQueue(@NonNull TrackScheduler scheduler) {
+        scheduler.shuffleQueue();
+        return CommandResponse.create(EmojiHelper.SHUFFLE + " Queue shuffled " + EmojiHelper.SHUFFLE);
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Shuffles the songs that are in the queue.");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription("Shuffles the songs that are in the queue.");
+    }
 
 }

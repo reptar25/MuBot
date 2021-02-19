@@ -12,30 +12,31 @@ import java.util.function.Consumer;
 
 public class ClearCommand extends MusicCommand {
 
-	public ClearCommand() {
-		super("clear");
-	}
+    public ClearCommand() {
+        super("clear");
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return clearQueue(scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return clearQueue(scheduler);
+    }
 
 
-	/**
-	 * Clears the current queue of all tracks
-	 * @param scheduler the track scheduler to clear
-	 * @return the response to clearing the queue
-	 */
-	public Mono<CommandResponse> clearQueue(@NonNull TrackScheduler scheduler) {
-		scheduler.clearQueue();
-		return CommandResponse.create("Queue cleared");
-	}
+    /**
+     * Clears the current queue of all tracks
+     *
+     * @param scheduler the track scheduler to clear
+     * @return the response to clearing the queue
+     */
+    public Mono<CommandResponse> clearQueue(@NonNull TrackScheduler scheduler) {
+        scheduler.clearQueue();
+        return CommandResponse.create("Queue cleared");
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Clears the queue of all songs.");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription("Clears the queue of all songs.");
+    }
 
 }

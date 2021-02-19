@@ -18,6 +18,8 @@ import java.util.Optional;
 
 public final class PermissionsHelper {
 
+    private final static int MAX_RETRIES = 25000;
+
     /**
      * Returns the voice channel the message sender is in or empty if they are not
      * in a voice channel
@@ -31,9 +33,6 @@ public final class PermissionsHelper {
                         "You have to be in a voice channel to use this command")))
                 .flatMap(Mono::justOrEmpty).flatMap(event.getClient()::getChannelById).cast(VoiceChannel.class);
     }
-
-
-    private final static int MAX_RETRIES = 25000;
 
     /**
      * @param event the message event

@@ -5,8 +5,8 @@ import reactor.core.publisher.Mono;
 
 public interface EventListener<T extends Event> {
 
-	Class<T> getEventType();
+    Class<T> getEventType();
 
-	Mono<Void> consume(T event);
+    Mono<Void> consume(T event);
 
 }

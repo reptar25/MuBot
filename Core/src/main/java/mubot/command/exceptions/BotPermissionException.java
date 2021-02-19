@@ -2,14 +2,14 @@ package mubot.command.exceptions;
 
 public class BotPermissionException extends CommandException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public BotPermissionException(String message) {
-		super(message);
-	}
+    public BotPermissionException(String message) {
+        super(message);
+    }
 
-	public BotPermissionException(String message, String userFriendlyMessage) {
-		super(message, userFriendlyMessage);
-	}
+    public BotPermissionException(String message, String userFriendlyMessage) {
+        super(message, userFriendlyMessage);
+    }
 
 }

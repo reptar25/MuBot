@@ -16,34 +16,34 @@ import java.util.function.Consumer;
 
 public class StopCommand extends MusicCommand {
 
-	private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
+    private static final Logger LOGGER = Loggers.getLogger(StopCommand.class);
 
-	public StopCommand() {
-		super("stop", Collections.singletonList("random"));
-	}
+    public StopCommand() {
+        super("stop", Collections.singletonList("random"));
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return stop(scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return stop(scheduler);
+    }
 
-	/**
-	 * Stops the LavaPlayer if it is playing anything
-	 * 
-	 * @param scheduler the track scheduler
-	 * @return the response to stopping
-	 */
-	public Mono<CommandResponse> stop(@NonNull TrackScheduler scheduler) {
-		scheduler.getPlayer().stopTrack();
-		scheduler.clearQueue();
-		LOGGER.info("Stopped music");
-		return CommandResponse.create(EmojiHelper.STOP_SIGN + " Player stopped " + EmojiHelper.STOP_SIGN);
-	}
+    /**
+     * Stops the LavaPlayer if it is playing anything
+     *
+     * @param scheduler the track scheduler
+     * @return the response to stopping
+     */
+    public Mono<CommandResponse> stop(@NonNull TrackScheduler scheduler) {
+        scheduler.getPlayer().stopTrack();
+        scheduler.clearQueue();
+        LOGGER.info("Stopped music");
+        return CommandResponse.create(EmojiHelper.STOP_SIGN + " Player stopped " + EmojiHelper.STOP_SIGN);
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Stops the currently playing song and clears all songs from the queue.");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription("Stops the currently playing song and clears all songs from the queue.");
+    }
 
 }

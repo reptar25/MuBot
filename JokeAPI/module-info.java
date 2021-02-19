@@ -1,3 +1,3 @@
 module jokeapi {
-	exports jokeapi;
+    exports jokeapi;
 }

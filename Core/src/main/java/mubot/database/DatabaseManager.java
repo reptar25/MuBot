@@ -15,66 +15,63 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 
 public class DatabaseManager {
-	// for heroku DATABASE_URL is stored as
-	// postgres://<username>:<password>@<host>/<dbname>
-	private final static String DB_URL = System.getenv("DATABASE_URL");
-	private final String TABLE_NAME = "guilds";
+    // for heroku DATABASE_URL is stored as
+    // postgres://<username>:<password>@<host>/<dbname>
+    private final static String DB_URL = System.getenv("DATABASE_URL");
+    private static DatabaseManager instance;
+    private static PrefixCache prefixCache;
+    private static GuildCache guildCache;
+    private final String TABLE_NAME = "guilds";
+    private String MAX_CONNECTIONS = System.getenv("DATABASE_MAX_CONNECTIONS");
+    private DatabaseClient databaseClient;
 
-	private String MAX_CONNECTIONS = System.getenv("DATABASE_MAX_CONNECTIONS");
+    private DatabaseManager() {
+        try {
+            URI dbUri = new URI(DB_URL);
 
-	private static DatabaseManager instance;
-	private DatabaseClient databaseClient;
+            if (MAX_CONNECTIONS == null) {
+                MAX_CONNECTIONS = "10";
+            }
 
-	private static PrefixCache prefixCache;
-	private static GuildCache guildCache;
+            ConnectionFactory factory = new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
+                    .host(dbUri.getHost()).port(dbUri.getPort()).username(dbUri.getUserInfo().split(":")[0])
+                    .password(dbUri.getUserInfo().split(":")[1]).database(dbUri.getPath().replaceFirst("/", ""))
+                    .enableSsl().sslMode(SSLMode.REQUIRE).build());
 
-	private DatabaseManager() {
-		try {
-			URI dbUri = new URI(DB_URL);
+            ConnectionPool poolConfig = new ConnectionPool(ConnectionPoolConfiguration.builder(factory).initialSize(1)
+                    .maxIdleTime(Duration.ofSeconds(30)).maxSize(Integer.parseInt(MAX_CONNECTIONS)).build());
 
-			if (MAX_CONNECTIONS == null) {
-				MAX_CONNECTIONS = "10";
-			}
+            databaseClient = DatabaseClient.create(poolConfig);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
 
-			ConnectionFactory factory = new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
-					.host(dbUri.getHost()).port(dbUri.getPort()).username(dbUri.getUserInfo().split(":")[0])
-					.password(dbUri.getUserInfo().split(":")[1]).database(dbUri.getPath().replaceFirst("/", ""))
-					.enableSsl().sslMode(SSLMode.REQUIRE).build());
+    public static void create() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+            prefixCache = new PrefixCache(instance);
+            guildCache = new GuildCache(instance);
+        }
+    }
 
-			ConnectionPool poolConfig = new ConnectionPool(ConnectionPoolConfiguration.builder(factory).initialSize(1)
-					.maxIdleTime(Duration.ofSeconds(30)).maxSize(Integer.parseInt(MAX_CONNECTIONS)).build());
+    public static String getTableName() {
+        return DatabaseManager.instance.TABLE_NAME;
+    }
 
-			databaseClient = DatabaseClient.create(poolConfig);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-	}
+    public static DatabaseManager getInstance() {
+        return DatabaseManager.instance;
+    }
 
-	public static void create() {
-		if (instance == null) {
-			instance = new DatabaseManager();
-			prefixCache = new PrefixCache(instance);
-			guildCache = new GuildCache(instance);
-		}
-	}
+    public DatabaseClient getClient() {
+        return databaseClient;
+    }
 
-	public DatabaseClient getClient() {
-		return databaseClient;
-	}
+    public PrefixCache getPrefixCache() {
+        return prefixCache;
+    }
 
-	public PrefixCache getPrefixCache() {
-		return prefixCache;
-	}
-
-	public GuildCache getGuildCache() {
-		return guildCache;
-	}
-
-	public static String getTableName() {
-		return DatabaseManager.instance.TABLE_NAME;
-	}
-
-	public static DatabaseManager getInstance() {
-		return DatabaseManager.instance;
-	}
+    public GuildCache getGuildCache() {
+        return guildCache;
+    }
 }

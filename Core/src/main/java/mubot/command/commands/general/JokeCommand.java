@@ -17,47 +17,47 @@ import java.util.stream.Collectors;
 
 public class JokeCommand extends RequireBotPermissionsCommand {
 
-	public JokeCommand() {
-		super("joke", Permission.MANAGE_MESSAGES);
-	}
+    public JokeCommand() {
+        super("joke", Permission.MANAGE_MESSAGES);
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args) {
-		return joke(args);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args) {
+        return joke(args);
+    }
 
-	private Mono<CommandResponse> joke(@NonNull String[] args) {
-		boolean unsafe = false;
-		JokeMenu menu = null;
-		if (args.length > 0) {
-			List<String> argList = Arrays.asList(args);
-			unsafe = argList.contains("unsafe");
-			List<String> categories = JokeClient.getJokeService().getCategories().map(List::stream)
-					.map(s -> s.map(String::toLowerCase).collect(Collectors.toList())).block();
-			for (String arg : argList) {
-				if (Objects.requireNonNull(categories).contains(arg.toLowerCase())) {
-					// no safe-dark jokes, so ignore
-					if (arg.equals("dark") && !unsafe)
-						break;
+    private Mono<CommandResponse> joke(@NonNull String[] args) {
+        boolean unsafe = false;
+        JokeMenu menu = null;
+        if (args.length > 0) {
+            List<String> argList = Arrays.asList(args);
+            unsafe = argList.contains("unsafe");
+            List<String> categories = JokeClient.getJokeService().getCategories().map(List::stream)
+                    .map(s -> s.map(String::toLowerCase).collect(Collectors.toList())).block();
+            for (String arg : argList) {
+                if (Objects.requireNonNull(categories).contains(arg.toLowerCase())) {
+                    // no safe-dark jokes, so ignore
+                    if (arg.equals("dark") && !unsafe)
+                        break;
 
-					menu = new JokeMenu(unsafe, arg);
-					break;
-				}
-			}
-		}
+                    menu = new JokeMenu(unsafe, arg);
+                    break;
+                }
+            }
+        }
 
-		if (menu == null)
-			menu = new JokeMenu(unsafe);
+        if (menu == null)
+            menu = new JokeMenu(unsafe);
 
-		return CommandResponse.create(menu.createMessage(), menu);
-	}
+        return CommandResponse.create(menu.createMessage(), menu);
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Tells a random joke from the chosen category of jokes.")
-				.addArg("unsafe", "Allows \"unsafe\" jokes to be returned by the bot.", true)
-				.addArg("category", "Gets a joke of only the given category.", true).addExample("pun")
-				.addExample("unsafe").addExample("unsafe any").addExample("misc unsafe");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription("Tells a random joke from the chosen category of jokes.")
+                .addArg("unsafe", "Allows \"unsafe\" jokes to be returned by the bot.", true)
+                .addArg("category", "Gets a joke of only the given category.", true).addExample("pun")
+                .addExample("unsafe").addExample("unsafe any").addExample("misc unsafe");
+    }
 
 }

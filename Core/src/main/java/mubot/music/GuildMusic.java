@@ -4,30 +4,30 @@ import discord4j.common.util.Snowflake;
 
 public class GuildMusic {
 
-	private final long guildId;
-	private final TrackScheduler trackScheduler;
-	private final LavaPlayerAudioProvider audioProvider;
+    private final long guildId;
+    private final TrackScheduler trackScheduler;
+    private final LavaPlayerAudioProvider audioProvider;
 
-	public GuildMusic(Snowflake guildId, TrackScheduler trackScheduler, LavaPlayerAudioProvider audioProvider) {
-		this.guildId = guildId.asLong();
-		this.trackScheduler = trackScheduler;
-		this.audioProvider = audioProvider;
-	}
-	
-	public LavaPlayerAudioProvider getAudioProvider() {
-		return audioProvider;
-	}
+    public GuildMusic(Snowflake guildId, TrackScheduler trackScheduler, LavaPlayerAudioProvider audioProvider) {
+        this.guildId = guildId.asLong();
+        this.trackScheduler = trackScheduler;
+        this.audioProvider = audioProvider;
+    }
 
-	public TrackScheduler getTrackScheduler() {
-		return trackScheduler;
-	}
+    public LavaPlayerAudioProvider getAudioProvider() {
+        return audioProvider;
+    }
 
-	public void destroy() {
-		trackScheduler.destroy();
-	}
+    public TrackScheduler getTrackScheduler() {
+        return trackScheduler;
+    }
 
-	public long getGuildId() {
-		return guildId;
-	}
+    public void destroy() {
+        trackScheduler.destroy();
+    }
+
+    public long getGuildId() {
+        return guildId;
+    }
 
 }

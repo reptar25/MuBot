@@ -15,34 +15,34 @@ import java.util.function.Consumer;
 
 public class SearchCommand extends MusicPermissionCommand {
 
-	public SearchCommand() {
-		super("search", Collections.singletonList("find"), Permission.SPEAK, Permission.MANAGE_MESSAGES);
-	}
+    public SearchCommand() {
+        super("search", Collections.singletonList("find"), Permission.SPEAK, Permission.MANAGE_MESSAGES);
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return search(args, scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return search(args, scheduler);
+    }
 
-	private Mono<CommandResponse> search(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
-		SearchMenu menu = new SearchMenu(scheduler, unsplitArgs(args));
-		return CommandResponse.create(menu.createMessage(), menu);
-	}
+    private Mono<CommandResponse> search(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
+        SearchMenu menu = new SearchMenu(scheduler, unsplitArgs(args));
+        return CommandResponse.create(menu.createMessage(), menu);
+    }
 
-	private String unsplitArgs(String[] args) {
-		StringBuilder sb = new StringBuilder();
-		for (String param : args) {
-			sb.append(param).append(" ");
-		}
-		return sb.toString();
-	}
+    private String unsplitArgs(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        for (String param : args) {
+            sb.append(param).append(" ");
+        }
+        return sb.toString();
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription(
-				"Searches YouTube for the given terms and returns the top 5 results as choices that can be added to the queue of songs.")
-				.addArg("terms", "terms to search YouTube with", false).addExample("something the beatles");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription(
+                "Searches YouTube for the given terms and returns the top 5 results as choices that can be added to the queue of songs.")
+                .addArg("terms", "terms to search YouTube with", false).addExample("something the beatles");
+    }
 
 }

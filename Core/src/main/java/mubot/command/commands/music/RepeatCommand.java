@@ -14,29 +14,29 @@ import java.util.function.Consumer;
 
 public class RepeatCommand extends MusicCommand {
 
-	public RepeatCommand() {
-		super("repeat", Collections.singletonList("loop"));
-	}
+    public RepeatCommand() {
+        super("repeat", Collections.singletonList("loop"));
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return repeat(scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return repeat(scheduler);
+    }
 
-	private Mono<CommandResponse> repeat(@NonNull TrackScheduler scheduler) {
-		boolean repeatEnabled = scheduler.repeatEnabled();
-		String response = repeatEnabled ? EmojiHelper.NO_ENTRY + " Repeat disabled " + EmojiHelper.NO_ENTRY
-				: EmojiHelper.REPEAT + " Repeat enabled " + EmojiHelper.REPEAT;
+    private Mono<CommandResponse> repeat(@NonNull TrackScheduler scheduler) {
+        boolean repeatEnabled = scheduler.repeatEnabled();
+        String response = repeatEnabled ? EmojiHelper.NO_ENTRY + " Repeat disabled " + EmojiHelper.NO_ENTRY
+                : EmojiHelper.REPEAT + " Repeat enabled " + EmojiHelper.REPEAT;
 
-		scheduler.setRepeat(!repeatEnabled);
-		return CommandResponse.create(response);
-	}
+        scheduler.setRepeat(!repeatEnabled);
+        return CommandResponse.create(response);
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription(
-				"Toggles repeating the currently playing song. Use this command again to enable/disable repeating.");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription(
+                "Toggles repeating the currently playing song. Use this command again to enable/disable repeating.");
+    }
 
 }

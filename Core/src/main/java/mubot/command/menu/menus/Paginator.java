@@ -11,80 +11,79 @@ import java.util.function.Consumer;
 
 public class Paginator extends ChoiceActionMenu {
 
-	private final int itemsPerPage;
-	private final String content;
-	private final String[] entries;
+    private final int itemsPerPage;
+    private final String content;
+    private final String[] entries;
+    private final int totalPages;
+    private int currentPageNum = 1;
+    private String description;
 
-	private int currentPageNum = 1;
-	private final int totalPages;
-	private String description;
+    private Paginator(Builder b) {
+        this.itemsPerPage = b.itemsPerPage;
+        this.content = b.content;
+        this.entries = b.entries;
 
-	private Paginator(Builder b) {
-		this.itemsPerPage = b.itemsPerPage;
-		this.content = b.content;
-		this.entries = b.entries;
+        this.totalPages = (int) Math.ceil((double) entries.length / itemsPerPage);
+    }
 
-		this.totalPages = (int) Math.ceil((double) entries.length / itemsPerPage);
-	}
+    private Consumer<? super EmbedCreateSpec> createEmbed() {
+        buildDescription();
+        return embed -> embed.setDescription(description).setFooter("Page " + currentPageNum + "/" + totalPages, null);
+    }
 
-	private Consumer<? super EmbedCreateSpec> createEmbed() {
-		buildDescription();
-		return embed -> embed.setDescription(description).setFooter("Page " + currentPageNum + "/" + totalPages, null);
-	}
+    @Override
+    public Consumer<? super MessageCreateSpec> createMessage() {
+        return spec -> spec.setEmbed(createEmbed()).setContent(content);
+    }
 
-	@Override
-	public Consumer<? super MessageCreateSpec> createMessage() {
-		return spec -> spec.setEmbed(createEmbed()).setContent(content);
-	}
+    private void buildDescription() {
+        int start = (currentPageNum - 1) * itemsPerPage;
+        int end = Math.min(entries.length, currentPageNum * itemsPerPage);
 
-	private void buildDescription() {
-		int start = (currentPageNum - 1) * itemsPerPage;
-		int end = Math.min(entries.length, currentPageNum * itemsPerPage);
+        StringBuilder sb = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            sb.append(entries[i]);
+        }
+        description = sb.toString();
+    }
 
-		StringBuilder sb = new StringBuilder();
-		for (int i = start; i < end; i++) {
-			sb.append(entries[i]);
-		}
-		description = sb.toString();
-	}
+    @Override
+    protected Mono<Void> addReactions() {
+        if (totalPages > 1)
+            return message.addReaction(EmojiHelper.LEFT_ARROW).then(message.addReaction(EmojiHelper.RIGHT_ARROW));
+        else
+            return Mono.empty();
+    }
 
-	public static class Builder {
-		private final int itemsPerPage = 10;
-		private String content = "";
-		private String[] entries;
+    @Override
+    protected Mono<Void> loadSelection(ReactionAddEvent event) {
+        if (event.getEmoji().asUnicodeEmoji().orElseThrow().equals(EmojiHelper.LEFT_ARROW) && currentPageNum > 1) {
+            currentPageNum--;
+        } else if (event.getEmoji().asUnicodeEmoji().orElseThrow().equals(EmojiHelper.RIGHT_ARROW)
+                && currentPageNum < totalPages) {
+            currentPageNum++;
+        }
+        return message.removeReaction(event.getEmoji(), event.getUserId())
+                .then(message.edit(edit -> edit.setEmbed(createEmbed()))).then();
+    }
 
-		public void withMessageContent(String content) {
-			this.content = content;
-		}
+    public static class Builder {
+        private final int itemsPerPage = 10;
+        private String content = "";
+        private String[] entries;
 
-		public Builder withEntries(String[] entries) {
-			this.entries = entries;
-			return this;
-		}
+        public void withMessageContent(String content) {
+            this.content = content;
+        }
 
-		public Paginator build() {
-			return new Paginator(this);
-		}
-	}
+        public Builder withEntries(String[] entries) {
+            this.entries = entries;
+            return this;
+        }
 
-	@Override
-	protected Mono<Void> addReactions() {
-		if (totalPages > 1)
-			return message.addReaction(EmojiHelper.LEFT_ARROW).then(message.addReaction(EmojiHelper.RIGHT_ARROW));
-		else
-			return Mono.empty();
-	}
-
-	@Override
-	protected Mono<Void> loadSelection(ReactionAddEvent event) {
-		if (event.getEmoji().asUnicodeEmoji().orElseThrow().equals(EmojiHelper.LEFT_ARROW) && currentPageNum > 1) {
-			currentPageNum--;
-		} else if (event.getEmoji().asUnicodeEmoji().orElseThrow().equals(EmojiHelper.RIGHT_ARROW)
-				&& currentPageNum < totalPages) {
-			currentPageNum++;
-		}
-		return message.removeReaction(event.getEmoji(), event.getUserId())
-				.then(message.edit(edit -> edit.setEmbed(createEmbed()))).then();
-	}
+        public Paginator build() {
+            return new Paginator(this);
+        }
+    }
 
 }

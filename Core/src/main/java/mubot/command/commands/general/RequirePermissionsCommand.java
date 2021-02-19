@@ -10,17 +10,17 @@ import java.util.List;
 
 public abstract class RequirePermissionsCommand extends Command {
 
-	protected Permission[] permissions;
+    protected Permission[] permissions;
 
-	public RequirePermissionsCommand(String commandTrigger, Permission... permissions) {
-		super(commandTrigger);
-		this.permissions = permissions;
-	}
+    public RequirePermissionsCommand(String commandTrigger, Permission... permissions) {
+        super(commandTrigger);
+        this.permissions = permissions;
+    }
 
-	public RequirePermissionsCommand(String commandTrigger, List<String> aliases, Permission... permissions) {
-		super(commandTrigger, aliases);
-		this.permissions = permissions;
-	}
+    public RequirePermissionsCommand(String commandTrigger, List<String> aliases, Permission... permissions) {
+        super(commandTrigger, aliases);
+        this.permissions = permissions;
+    }
 
-	protected abstract Mono<CommandResponse> action(MessageCreateEvent event, String[] args);
+    protected abstract Mono<CommandResponse> action(MessageCreateEvent event, String[] args);
 }

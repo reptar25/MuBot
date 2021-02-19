@@ -1,3 +1,3 @@
 module Core {
-	requires jokeapi;
+    requires jokeapi;
 }

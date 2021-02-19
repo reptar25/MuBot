@@ -14,60 +14,60 @@ import reactor.util.Loggers;
  */
 public class MessageLogger implements EventListener<MessageCreateEvent> {
 
-	private static final Logger LOGGER = Loggers.getLogger(MessageLogger.class);
+    private static final Logger LOGGER = Loggers.getLogger(MessageLogger.class);
 
-	@Override
-	public Class<MessageCreateEvent> getEventType() {
-		return MessageCreateEvent.class;
-	}
+    @Override
+    public Class<MessageCreateEvent> getEventType() {
+        return MessageCreateEvent.class;
+    }
 
-	@Override
-	public Mono<Void> consume(MessageCreateEvent e) {
-		return Mono.just(e).filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true))
-				.flatMap(event -> {
-					final String content = event.getMessage().getContent();
-					// print out new message to logs
-					return logMessage(event, content);
-				});
-	}
+    @Override
+    public Mono<Void> consume(MessageCreateEvent e) {
+        return Mono.just(e).filter(event -> !event.getMessage().getAuthor().map(User::isBot).orElse(true))
+                .flatMap(event -> {
+                    final String content = event.getMessage().getContent();
+                    // print out new message to logs
+                    return logMessage(event, content);
+                });
+    }
 
-	/**
-	 * Formats and logs the message content and author
-	 * 
-	 * @param event   even of the message
-	 * @param content content of the message
-	 * @return the mono to log the message
-	 */
-	private Mono<Void> logMessage(MessageCreateEvent event, String content) {
-		Mono<User> getUser = Mono.justOrEmpty(event.getMessage().getAuthor());
-		Mono<String> getGuildName = event.getGuild().map(Guild::getName).defaultIfEmpty("Private Message");
-		Mono<String> getGuildChannelName = event.getMessage().getChannel().flatMap(channel -> {
-			if (channel instanceof PrivateChannel)
-				return Mono.empty();
-			return Mono.just((GuildChannel) channel);
-		}).map(GuildChannel::getName).defaultIfEmpty("Private Message");
+    /**
+     * Formats and logs the message content and author
+     *
+     * @param event   even of the message
+     * @param content content of the message
+     * @return the mono to log the message
+     */
+    private Mono<Void> logMessage(MessageCreateEvent event, String content) {
+        Mono<User> getUser = Mono.justOrEmpty(event.getMessage().getAuthor());
+        Mono<String> getGuildName = event.getGuild().map(Guild::getName).defaultIfEmpty("Private Message");
+        Mono<String> getGuildChannelName = event.getMessage().getChannel().flatMap(channel -> {
+            if (channel instanceof PrivateChannel)
+                return Mono.empty();
+            return Mono.just((GuildChannel) channel);
+        }).map(GuildChannel::getName).defaultIfEmpty("Private Message");
 
-		return zipMessage(content, getUser, getGuildName, getGuildChannelName);
-	}
+        return zipMessage(content, getUser, getGuildName, getGuildChannelName);
+    }
 
-	private Mono<Void> zipMessage(String content, Mono<User> getUser, Mono<String> getGuildName,
-			Mono<String> getGuildChannelName) {
+    private Mono<Void> zipMessage(String content, Mono<User> getUser, Mono<String> getGuildName,
+                                  Mono<String> getGuildChannelName) {
 
-		return Mono.zip(getUser, getGuildName, getGuildChannelName).map(tuple -> {
-			User user = tuple.getT1();
-			String guildName = tuple.getT2();
-			String channelName = tuple.getT3();
-			String username;
+        return Mono.zip(getUser, getGuildName, getGuildChannelName).map(tuple -> {
+            User user = tuple.getT1();
+            String guildName = tuple.getT2();
+            String channelName = tuple.getT3();
+            String username;
 
-			username = user.getUsername();
+            username = user.getUsername();
 
-			String sb = "New message: " + "(" + guildName + ")" +
-					"(" + channelName + ")" +
-					" " + username +
-					" - \"" + content + "\"";
-			LOGGER.info(sb);
-			return Mono.empty();
-		}).then();
-	}
+            String sb = "New message: " + "(" + guildName + ")" +
+                    "(" + channelName + ")" +
+                    " " + username +
+                    " - \"" + content + "\"";
+            LOGGER.info(sb);
+            return Mono.empty();
+        }).then();
+    }
 
 }

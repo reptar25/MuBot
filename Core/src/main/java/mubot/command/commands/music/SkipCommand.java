@@ -15,50 +15,50 @@ import java.util.function.Consumer;
 
 public class SkipCommand extends MusicCommand {
 
-	public SkipCommand() {
-		super("skip", Collections.singletonList("next"));
-	}
+    public SkipCommand() {
+        super("skip", Collections.singletonList("next"));
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return skip(args, scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return skip(args, scheduler);
+    }
 
-	/**
-	 * Stops the current song and plays the next in queue if there is any
-	 * 
-	 * @param args      the track to skip to or nothing to skip the current track
-	 * @param scheduler the track scheduler
-	 * @return the response to skipping
-	 */
-	public Mono<CommandResponse> skip(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
-		if (scheduler.getNowPlaying() != null) {
+    /**
+     * Stops the current song and plays the next in queue if there is any
+     *
+     * @param args      the track to skip to or nothing to skip the current track
+     * @param scheduler the track scheduler
+     * @return the response to skipping
+     */
+    public Mono<CommandResponse> skip(@NonNull String[] args, @NonNull TrackScheduler scheduler) {
+        if (scheduler.getNowPlaying() != null) {
 
-			if (args.length > 0 && !args[0].isBlank()) {
-				try {
-					int element = Integer.parseInt(args[0]);
-					return CommandResponse.create(EmojiHelper.NEXT_TRACK + " Skipping to "
-							+ scheduler.skipQueue(element) + " " + EmojiHelper.NEXT_TRACK);
-				} catch (NumberFormatException ignored) {
-					// if there isn't an int as the args than just skip the current song
-				}
-			}
+            if (args.length > 0 && !args[0].isBlank()) {
+                try {
+                    int element = Integer.parseInt(args[0]);
+                    return CommandResponse.create(EmojiHelper.NEXT_TRACK + " Skipping to "
+                            + scheduler.skipQueue(element) + " " + EmojiHelper.NEXT_TRACK);
+                } catch (NumberFormatException ignored) {
+                    // if there isn't an int as the args than just skip the current song
+                }
+            }
 
-			String response = EmojiHelper.NEXT_TRACK + " Skipping " + CommandUtil.trackInfo(scheduler.getNowPlaying())
-					+ " " + EmojiHelper.NEXT_TRACK;
-			scheduler.nextTrack();
-			return CommandResponse.create(response);
-		} else {
-			return CommandResponse.create("No song is currently playing");
-		}
-	}
+            String response = EmojiHelper.NEXT_TRACK + " Skipping " + CommandUtil.trackInfo(scheduler.getNowPlaying())
+                    + " " + EmojiHelper.NEXT_TRACK;
+            scheduler.nextTrack();
+            return CommandResponse.create(response);
+        } else {
+            return CommandResponse.create("No song is currently playing");
+        }
+    }
 
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription(
-				"Skips the currently playing song and plays the next song in the queue or skips to the specific song number in the queue.")
-				.addArg("skipTo", "skips to the specific number in the queue", true).addExample("").addExample("3");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription(
+                "Skips the currently playing song and plays the next song in the queue or skips to the specific song number in the queue.")
+                .addArg("skipTo", "skips to the specific number in the queue", true).addExample("").addExample("3");
+    }
 
 }

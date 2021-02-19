@@ -21,52 +21,51 @@ import java.util.function.Consumer;
 
 public class ViewQueueCommand extends MusicPermissionCommand {
 
-	public ViewQueueCommand() {
-		super("viewqueue", Arrays.asList("vq", "queue", "q"), Permission.MANAGE_MESSAGES);
-	}
+    public ViewQueueCommand() {
+        super("viewqueue", Arrays.asList("vq", "queue", "q"), Permission.MANAGE_MESSAGES);
+    }
 
-	@Override
-	protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
-			VoiceChannel channel) {
-		return viewQueue(scheduler);
-	}
+    @Override
+    protected Mono<CommandResponse> action(MessageCreateEvent event, String[] args, TrackScheduler scheduler,
+                                           VoiceChannel channel) {
+        return viewQueue(scheduler);
+    }
 
-	/**
-	 * Returns a list of the currently queued songs
-	 *
+    /**
+     * Returns a list of the currently queued songs
+     *
+     * @param scheduler The TrackScheduler for this guild
+     * @return List of songs in the queue, or "The queue is empty" if empty
+     */
+    public Mono<CommandResponse> viewQueue(@NonNull TrackScheduler scheduler) {
+        // get list of songs currently in the queue
+        List<AudioTrack> queue = scheduler.getQueue();
+        Builder paginatorBuilder = new Paginator.Builder();
+        // if the queue is not empty
+        if (queue.size() > 0) {
+            String[] queueEntries = new String[queue.size()];
+            // print total number of songs
+            paginatorBuilder.withMessageContent("Currently playing: " + CommandUtil.trackInfo(scheduler.getNowPlaying())
+                    + "\n" + "There are currently " + EmojiHelper.numToEmoji(queue.size()) + " songs in the queue");
+            for (int i = 0; i < queue.size(); i++) {
+                AudioTrack track = queue.get(i);
+                // print title and author of song on its own line
+                queueEntries[i] = EmojiHelper.numToEmoji(i + 1) + " - " + CommandUtil.trackInfo(track) + "\n";
+            }
 
-	 * @param scheduler   The TrackScheduler for this guild
-	 * @return List of songs in the queue, or "The queue is empty" if empty
-	 */
-	public Mono<CommandResponse> viewQueue(@NonNull TrackScheduler scheduler) {
-		// get list of songs currently in the queue
-		List<AudioTrack> queue = scheduler.getQueue();
-		Builder paginatorBuilder = new Paginator.Builder();
-		// if the queue is not empty
-		if (queue.size() > 0) {
-			String[] queueEntries = new String[queue.size()];
-			// print total number of songs
-			paginatorBuilder.withMessageContent("Currently playing: " + CommandUtil.trackInfo(scheduler.getNowPlaying())
-					+ "\n" + "There are currently " + EmojiHelper.numToEmoji(queue.size()) + " songs in the queue");
-			for (int i = 0; i < queue.size(); i++) {
-				AudioTrack track = queue.get(i);
-				// print title and author of song on its own line
-				queueEntries[i] = EmojiHelper.numToEmoji(i + 1) + " - " + CommandUtil.trackInfo(track) + "\n";
-			}
+            Paginator paginator = paginatorBuilder.withEntries(queueEntries).build();
+            Consumer<? super MessageCreateSpec> spec = paginator.createMessage();
 
-			Paginator paginator = paginatorBuilder.withEntries(queueEntries).build();
-			Consumer<? super MessageCreateSpec> spec = paginator.createMessage();
+            return CommandResponse.create(spec, paginator);
 
-			return CommandResponse.create(spec, paginator);
+        } else {
+            return CommandResponse.create("The queue is empty");
+        }
+    }
 
-		} else {
-			return CommandResponse.create("The queue is empty");
-		}
-	}
-
-	@Override
-	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Displays all the songs currently in the queue.");
-	}
+    @Override
+    public Consumer<? super CommandHelpSpec> createHelpSpec() {
+        return spec -> spec.setDescription("Displays all the songs currently in the queue.");
+    }
 
 }
