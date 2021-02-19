@@ -19,7 +19,7 @@ public class FastForwardCommand extends TrackSeekingCommand {
 
 	@Override
 	public Consumer<? super CommandHelpSpec> createHelpSpec() {
-		return spec -> spec.setDescription("Fast fowards the currently playing song by the given amount of seconds.")
-				.addArg("time", "amount of time in seconds to fast foward", false).addExample("60");
+		return spec -> spec.setDescription("Fast forwards the currently playing song by the given amount of seconds.")
+				.addArg("time", "amount of time in seconds to fast forward", false).addExample("60");
 	}
 }

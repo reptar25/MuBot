@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class DatabaseCache {
 
-	protected DatabaseManager databaseManager;
-	protected AtomicInteger counter;
+	final protected DatabaseManager databaseManager;
+	final protected AtomicInteger counter;
 
 	public DatabaseCache(DatabaseManager databaseManager) {
 		this.databaseManager = databaseManager;

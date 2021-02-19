@@ -14,7 +14,7 @@ List of current commands:<br/>
 `!ban` - Ban a user and delete their messages from the last 7 days.<br/>
 `!clear` - Clears the queue of all songs.<br/>
 `!echo` - Bot replies with a simple echo message.<br/>
-`!fastforward` - Fast fowards the currently playing song by the given amount of seconds.<br/>
+`!fastforward` - Fast forwards the currently playing song by the given amount of seconds.<br/>
 `!help` - Displays a list of available commands you can use with the bot.<br/>
 `!join` - Requests the bot to join the same voice channel as user who used the command.<br/>
 `!joke` - Tells a random joke from the chosen category of jokes.<br/>
