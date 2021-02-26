@@ -1,1 +1,1 @@
-web: java -XX:+UseContainerSupport -Xmx256m -jar bin/mubot-1.0.0-SNAPSHOT.jar $token
+web: java -XX:+UseContainerSupport -Xmx256m -jar Core/bin/mubot-1.0.0.jar $token

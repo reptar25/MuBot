@@ -1,0 +1,3 @@
+module jokeapi {
+    exports jokeapi;
+}
