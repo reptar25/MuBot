@@ -23,11 +23,23 @@ public class ReadyListener implements EventListener<ReadyEvent> {
      */
     private static Flux<Object> processReadyEvent(ReadyEvent event) {
         LOGGER.info("Ready Event consumed.");
+        return rejoinVoiceChannels(event);
+    }
+
+    private static Flux<Object> rejoinVoiceChannels(ReadyEvent event) {
         return Flux.fromIterable(event.getGuilds()).flatMap(guild -> event.getSelf().asMember(guild.getId()).flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel).flatMap(channel -> GuildMusicManager.getOrCreate(channel.getGuildId()).flatMap(
                         guildMusic -> channel.join(spec -> spec.setProvider(guildMusic.getAudioProvider())))).elapsed().doOnNext(TupleUtils.consumer((elapsed, response) -> LOGGER
-                        .info("ReadyEvent channel reconnect took {} ms to be processed", elapsed)))
+                        .info("ReadyEvent channel reconnect took {} ms to be processed", elapsed))).onErrorResume(error -> {
+                    LOGGER.error("Error in ready event message.\nError: " + error.getMessage());
+                    return Mono.empty();
+                })
                 .then());
+    }
+
+    @Override
+    public Mono<Void> consume(ReadyEvent e) {
+        return Mono.just(e).flatMapMany(ReadyListener::processReadyEvent).then();
     }
 
     @Override
@@ -35,8 +47,4 @@ public class ReadyListener implements EventListener<ReadyEvent> {
         return ReadyEvent.class;
     }
 
-    @Override
-    public Mono<Void> consume(ReadyEvent e) {
-        return Mono.just(e).flatMapMany(ReadyListener::processReadyEvent).then();
-    }
 }
