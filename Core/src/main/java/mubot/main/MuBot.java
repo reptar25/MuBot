@@ -28,12 +28,10 @@ public class MuBot {
         } else {
             LOGGER.info("Not running on Heroku");
             // only log messages on the local client
-            // MessageLogger.create(client);
             registerListener(new MessageLogger());
         }
 
         DatabaseManager.create();
-        client.getEventDispatcher();
         registerListener(new ReadyListener());
         registerListener(new VoiceStateUpdateListener());
         registerListener(new CommandListener());
@@ -44,8 +42,11 @@ public class MuBot {
     }
 
     private <T extends Event> void registerListener(EventListener<T> listener) {
-        client.getEventDispatcher().on(listener.getEventType()).flatMap(listener::consume).subscribe(null,
-                error -> LOGGER.error(error.getMessage(), error));
+        client.getEventDispatcher();
+        client.getEventDispatcher().on(listener.getEventType())
+                .flatMap(listener::consume)
+                .subscribe(null,
+                        error -> LOGGER.error("Error in listener with type " + listener.getEventType() + ": " + error.getMessage()));
     }
 
 }
