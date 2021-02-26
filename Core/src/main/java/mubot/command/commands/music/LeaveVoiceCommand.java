@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class LeaveVoiceCommand extends MusicCommand {
 
     public LeaveVoiceCommand() {
-        super("leave", Arrays.asList("quit", "q", "l"));
+        super("leave", Arrays.asList("quit", "l"));
     }
 
     @Override
