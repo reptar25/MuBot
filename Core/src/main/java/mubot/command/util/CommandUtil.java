@@ -9,9 +9,9 @@ import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.core.object.entity.channel.PrivateChannel;
 import discord4j.rest.util.Permission;
 import discord4j.rest.util.PermissionSet;
+import mubot.api.API;
 import mubot.command.CommandResponse;
 import mubot.command.exceptions.SendMessagesException;
-import mubot.database.DatabaseManager;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -138,7 +138,8 @@ public final class CommandUtil {
     }
 
     public static String getRawGuildPrefixFromId(long guildId) {
-        return DatabaseManager.getInstance().getPrefixCache().getPrefix(guildId);
+        //return DatabaseManager.getInstance().getPrefixCache().getPrefix(guildId);
+        return API.getAPI().getPrefixService().getById(guildId);
     }
 
     public static String escapeSpecialRegexChars(String str) {

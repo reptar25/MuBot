@@ -1,7 +1,7 @@
 package mubot.eventlistener;
 
 import discord4j.core.event.domain.guild.GuildDeleteEvent;
-import mubot.database.DatabaseManager;
+import mubot.api.API;
 import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -19,7 +19,10 @@ public class GuildDeleteListener implements EventListener<GuildDeleteEvent> {
     public Mono<Void> consume(GuildDeleteEvent e) {
         return Mono.just(e).flatMap(event -> {
             LOGGER.info("GuildDeleteEvent consumed: " + event.getGuildId().asLong());
-            return DatabaseManager.getInstance().getGuildCache().removeGuild(event.getGuildId().asLong());
+            String json = "{ \"guild_id\" : " + event.getGuildId().asLong() + " }";
+
+            return Mono.just(API.getAPI().getGuildService().remove(json)).then();
+            //return DatabaseManager.getInstance().getGuildCache().removeGuild(event.getGuildId().asLong());
         });
     }
 

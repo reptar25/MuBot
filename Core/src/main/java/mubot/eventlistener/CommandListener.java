@@ -17,7 +17,8 @@ import reactor.util.Loggers;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-import static mubot.command.util.CommandUtil.*;
+import static mubot.command.util.CommandUtil.getEscapedGuildPrefixFromEvent;
+import static mubot.command.util.CommandUtil.sendReply;
 
 public class CommandListener implements EventListener<MessageCreateEvent> {
 
@@ -57,11 +58,12 @@ public class CommandListener implements EventListener<MessageCreateEvent> {
     }
 
     private Flux<String> parseCommands(MessageCreateEvent event) {
+        String prefix = getEscapedGuildPrefixFromEvent(event);
         return Mono.justOrEmpty(event.getMessage().getContent())
-                .map(content -> content.split(" (?=" + getEscapedGuildPrefixFromEvent(event) + ")"))
+                .map(content -> content.split(" (?=" + prefix + ")"))
                 .flatMapMany(Flux::fromArray).map(content -> {
-                    if (content.startsWith(getRawGuildPrefixFromEvent(event)))
-                        return content.replaceAll(getEscapedGuildPrefixFromEvent(event), "");
+                    if (content.startsWith(prefix))
+                        return content.replaceAll(prefix, "");
                     else
                         return "";
                 }).filter(Predicate.not(String::isBlank)).take(MAX_COMMANDS_PER_MESSAGE);

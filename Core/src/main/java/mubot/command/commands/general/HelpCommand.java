@@ -33,14 +33,15 @@ public class HelpCommand extends Command {
      * @return List of available commands
      */
     public Mono<CommandResponse> help(MessageCreateEvent event) {
+        String prefix = getEscapedGuildPrefixFromEvent(event);
         Set<Entry<String, Command>> entries = CommandsHelper.getEntries();
         String commands = entries.stream()
-                .map(entry -> String.format("%n%s%s", getEscapedGuildPrefixFromEvent(event),
+                .map(entry -> String.format("%n%s%s", prefix,
                         entry.getValue().getPrimaryTrigger()))
                 .distinct().sorted().collect(Collectors.joining());
 
         return CommandResponse.create(message -> message.setEmbed(
-                embed -> embed.setTitle(String.format("Use ***help*** with any command to get more information on that command, for example `%splay help`.", getEscapedGuildPrefixFromEvent(event)))
+                embed -> embed.setTitle(String.format("Use ***help*** with any command to get more information on that command, for example `%splay help`.", prefix))
                         .addField("Available commands: ", commands, false)));
     }
 

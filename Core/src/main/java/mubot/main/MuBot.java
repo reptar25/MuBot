@@ -2,7 +2,6 @@ package mubot.main;
 
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
-import mubot.database.DatabaseManager;
 import mubot.eventlistener.*;
 import mubot.heroku.HerokuServer;
 import reactor.util.Logger;
@@ -31,7 +30,7 @@ public class MuBot {
             registerListener(new MessageLogger());
         }
 
-        DatabaseManager.create();
+        //DatabaseManager.create();
         registerListener(new ReadyListener());
         registerListener(new VoiceStateUpdateListener());
         registerListener(new CommandListener());

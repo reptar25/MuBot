@@ -28,7 +28,6 @@ public class Main {
         }
 
         final GatewayDiscordClient client = DiscordClientBuilder.create(discordApiToken).build().login().block();
-
         new MuBot(client);
 
         LOGGER.info("Bot is ready");
