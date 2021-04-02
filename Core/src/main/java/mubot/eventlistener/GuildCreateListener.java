@@ -21,7 +21,7 @@ public class GuildCreateListener implements EventListener<GuildCreateEvent> {
             LOGGER.info("GuildCreateEvent consumed: " + event.getGuild().getId().asLong() + ", "
                     + event.getGuild().getName());
 
-            return Mono.just(API.getAPI().getGuildService().add(event.getGuild())).then();//DatabaseManager.getInstance().getGuildCache().offerGuild(event.getGuild());
+            return Mono.just(API.getAPI().getGuildService().createOrUpdate(event.getGuild())).then();//DatabaseManager.getInstance().getGuildCache().offerGuild(event.getGuild());
         });
     }
 

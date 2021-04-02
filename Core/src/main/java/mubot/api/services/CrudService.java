@@ -8,18 +8,18 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import mubot.api.AccessToken;
 
-public abstract class Endpoint {
+public abstract class CrudService {
     protected static ObjectMapper mapper = new ObjectMapper();
-    protected final String BASE_URL = System.getenv("API_BASE_URL");//"http://localhost:3000";
+    protected final String BASE_URL = System.getenv("API_BASE_URL");
     protected final String[] authHeader;
     protected final String route;
 
-    public Endpoint(AccessToken token, String route) {
+    public CrudService(AccessToken token, String route) {
         authHeader = new String[]{"Authorization", token.getTokenType() + " " + token.getAccessToken()};
         this.route = route;
     }
 
-    public RequestBodyEntity add(Object body) {
+    public RequestBodyEntity createOrUpdate(Object body) {
         return Unirest.post(BASE_URL + route).header(authHeader[0], authHeader[1]).body(body.toString());
     }
 

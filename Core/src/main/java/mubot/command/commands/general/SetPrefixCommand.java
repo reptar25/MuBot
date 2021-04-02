@@ -28,7 +28,7 @@ public class SetPrefixCommand extends Command {
 //                    .onErrorResume(error -> Mono.empty()).subscribe();
             String json = "{ \"guild_id\":" + event.getGuildId().orElseThrow().asLong() + ", \"prefix\":\"" + args[0] + "\"}";
 
-            return Mono.just(API.getAPI().getPrefixService().add(json)).then(CommandResponse.create("Set guild command prefix to " + args[0]));
+            return Mono.just(API.getAPI().getPrefixService().createOrUpdate(json)).then(CommandResponse.create("Set guild command prefix to " + args[0]));
         }
         return getHelp(event);
     }

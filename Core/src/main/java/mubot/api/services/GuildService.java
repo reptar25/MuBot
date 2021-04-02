@@ -10,7 +10,7 @@ import reactor.util.Loggers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class GuildService extends Endpoint {
+public class GuildService extends CrudService {
 
     private static final ConcurrentHashMap<Long, String> GUILD_CACHE = new ConcurrentHashMap<>();
     private static final Logger LOGGER = Loggers.getLogger(GuildService.class);
@@ -35,7 +35,7 @@ public class GuildService extends Endpoint {
     }
 
     @Override
-    public RequestBodyEntity add(Object body) {
+    public RequestBodyEntity createOrUpdate(Object body) {
         if (!(body instanceof Guild))
             throw new IllegalArgumentException("Not a guild");
 
@@ -43,7 +43,7 @@ public class GuildService extends Endpoint {
 
         String json = "{ \"guild_id\" : \"" + g.getId().asLong() + "\", \"guild_name\" : \"" + g.getName() + "\"}";
         GUILD_CACHE.put(g.getId().asLong(), g.getName());
-        return super.add(json);
+        return super.createOrUpdate(json);
     }
 
     public String getById(long id) {

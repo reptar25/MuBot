@@ -9,7 +9,7 @@ import reactor.util.Loggers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PrefixService extends Endpoint {
+public class PrefixService extends CrudService {
 
     private static final ConcurrentHashMap<Long, String> PREFIX_CACHE = new ConcurrentHashMap<>();
     private static final String DEFAULT_COMMAND_PREFIX = "!";
@@ -35,7 +35,7 @@ public class PrefixService extends Endpoint {
     }
 
     @Override
-    public RequestBodyEntity add(Object body) {
+    public RequestBodyEntity createOrUpdate(Object body) {
 
         try {
             JsonNode json = mapper.readTree(body.toString());
@@ -43,7 +43,7 @@ public class PrefixService extends Endpoint {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return super.add(body);
+        return super.createOrUpdate(body);
     }
 
     @Override
